@@ -27,7 +27,7 @@ void centeredText(String text, int yCord, int xCord = 0/*, uint16_t color = ILI9
   Serial.print(" w:");  Serial.print(w);
   Serial.print(" h:");  Serial.println(h);
 #endif
-  display.fillRect(((display.width() - w) / 2), (yCord - (h / 2)), (w + offSet) , (h + offSet), ILI9341_BLACK);
+  //display.fillRect(((display.width() - w) / 2), (yCord - (h / 2)), (w + offSet) , (h + offSet), ILI9341_BLACK);
   display.setCursor(((display.width() - w) / 2), (yCord + (h / 2)));
   //display.setTextColor(color);
   display.println(text);
@@ -102,7 +102,8 @@ void menuScreen() {
   display.setCursor(210, 26);                      //  text position
   display.print("+");
   display.setTextSize(1);
-  centeredText("Test", 17, ILI9341_RED);
+  display.setTextColor(ILI9341_GREEN, ILI9341_BLACK);
+  centeredText("Test", 17);
 //  display.setTextSize(1);
 //  display.setCursor(80, 120);                      //  text position
 //  display.print("OPTIONAL - NOT IN USE");
@@ -130,7 +131,7 @@ void loopScreen() {
     Serial.println(temp);
 #endif
     if (inputInt < 50) {
-      display.setTextColor(ILI9341_GREEN);
+      display.setTextColor(ILI9341_GREEN, ILI9341_BLACK);
       centeredText(temp, tempTextPos, ILI9341_GREEN);
     } else if ((inputInt > 50) && (inputInt < 100)) {
       //display.setTextColor();

@@ -237,9 +237,7 @@ void reflow_main() {
 #endif
 
     // If thermocouple problem detected
-    if (input == MAX31856_FAULT_CJRANGE)// || (input == FAULT_SHORT_GND) ||
-      //(input == FAULT_SHORT_VCC))
-    {
+    if (input == MAX31856_FAULT_CJRANGE){
       // Illegal operation
       reflowState = REFLOW_STATE_ERROR;
       reflowStatus = REFLOW_STATUS_OFF;
@@ -275,21 +273,7 @@ void reflow_main() {
     if (reflowState == REFLOW_STATE_ERROR)
     {
       // No thermocouple wire connected
-      //lcd.print("TC Error!");
-    }
-    else
-    {
-      // Print current temperature
-      //lcd.print(input);
-
-#if ARDUINO >= 100
-      // Print degree Celsius symbol
-      //lcd.write((uint8_t)0);
-#else
-      // Print degree Celsius symbol
-      //lcd.print(0, BYTE);
-#endif
-      //lcd.print("C ");
+      Serial.println("TC Error!");
     }
   }
 
