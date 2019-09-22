@@ -2,7 +2,10 @@
 Adafruit_ILI9341 display = Adafruit_ILI9341(display_cs, display_dc, display_rst);
 //Adafruit_ILI9341 display = Adafruit_ILI9341(display_cs, display_dc, display_mosi, display_sclk, display_rst);
 //extern void centeredText();
+//extern typedef enum REFLOW_STATE;
 extern int inputInt;
+extern String activeStatus;
+extern bool menu;
 //#define font &FreeSans9pt7b
 
 char* string2char(String command) {
@@ -12,16 +15,21 @@ char* string2char(String command) {
   }
 }
 
-void centeredText(String text) {
+void centeredText(String text, int yCord, int xCord = 0/*, uint16_t color = ILI9341_WHITE*/) {
   int16_t x1, y1;
   uint16_t w, h;
+  int offSet = 10;
   display.getTextBounds(string2char(text), 0, 0, &x1, &y1, &w, &h);
-    Serial.print("x1:");  Serial.println(x1);
-    Serial.print("y1:");  Serial.println(y1);
-    Serial.print("w :");  Serial.println(w);
-    Serial.print("h :");  Serial.println(h);
-  display.fillRect(((ILI9341_TFTWIDTH - w) / 2),240, (w +10), (h +10), ILI9341_BLACK);
-  display.setCursor(((ILI9341_TFTWIDTH - w) / 2), (240 + (h/2)));
+#ifdef DEBUG
+  Serial.print("Text bounds for: \"" + text + "\"");
+  Serial.print(" x1:");  Serial.print(x1);
+  Serial.print(" y1:");  Serial.print(y1);
+  Serial.print(" w:");  Serial.print(w);
+  Serial.print(" h:");  Serial.println(h);
+#endif
+  display.fillRect(((display.width() - w) / 2), (yCord - (h / 2)), (w + offSet) , (h + offSet), ILI9341_BLACK);
+  display.setCursor(((display.width() - w) / 2), (yCord + (h / 2)));
+  //display.setTextColor(color);
   display.println(text);
 }
 
@@ -35,13 +43,13 @@ void infoScreen() {
   //  display.setCursor(0, 15);
   //  display.print("WIFI: ");
   //  display.print(WiFi.SSID());
-  display.setCursor(0, 15);
+  display.setCursor(5, 15);
   display.print("IP: ");
   display.println(WiFi.localIP());
   //  display.setCursor(80, 275);
   //  display.print("Temp: ");
   //  display.println(input);
-  display.setCursor(0, 300);
+  display.setCursor(5, 315);
   display.print("FW: ");
   display.println(fwVersion);
   //  if (online == 1) {
@@ -59,16 +67,14 @@ void infoScreen() {
   //  }
 }
 void startScreen() {
+  int y = 100;
   infoScreen();
   display.setFont(&FreeSans9pt7b);
-  display.setTextColor(ILI9341_WHITE);
+  //display.setTextColor(ILI9341_WHITE);
   display.setTextSize(2);
-  display.setCursor(50, 70);
-  display.println("ESP32");
-  display.setCursor(50, 120);
-  display.println("Reflow");
-  display.setCursor(25, 200);
-  display.println("Controller");
+  centeredText("ESP32", y);
+  centeredText("Reflow", y + 32);
+  centeredText("Controller", y + 64);
 }
 
 void accessScreen() {
@@ -80,28 +86,69 @@ void accessScreen() {
   display.setCursor(70, 130);
 }
 
+void menuScreen() {
+  display.fillScreen(ILI9341_BLACK);
+  display.setTextColor(ILI9341_WHITE);
+  display.setTextSize(2);
+  
+  display.drawRect(45, 10, 150, 20, ILI9341_WHITE);        //  draw outer box
+  
+  display.fillRect(10, 10, 30, 20, ILI9341_RED);           //  draw - button box
+  display.drawRect(10, 10, 30, 20, ILI9341_WHITE);         //  draw button outer box
+  display.setCursor(17, 26);                       //  text position
+  display.print("-");
+  display.fillRect(205, 10, 30, 20, ILI9341_GREEN);        //  draw + button box
+  display.drawRect(205, 10, 30, 20, ILI9341_WHITE);        //  draw button outer box
+  display.setCursor(210, 26);                      //  text position
+  display.print("+");
+  display.setTextSize(1);
+  centeredText("Test", 17, ILI9341_RED);
+//  display.setTextSize(1);
+//  display.setCursor(80, 120);                      //  text position
+//  display.print("OPTIONAL - NOT IN USE");
+}
+
 void loopScreen() {
   //startScreen();
-  display.fillRect(0, 220, 240, 40, ILI9341_BLACK);
-  display.setFont(&FreeSans9pt7b);
-  display.setTextColor(ILI9341_GREEN);
-  display.setTextSize(2);
-  display.setCursor(20, 250);
-  display.print("Temp : ");
-  display.println(inputInt);
-//  String temp = ("Temp : " + String(inputInt));
-//  //  String temp = "Temp : ";
-//  Serial.println(temp);
-//  centeredText(temp);
+  infoScreen();
+//  if (menu != 0) {
+//    menuScreen();
+//  } else {
+    int tempTextPos = 240;
+    int infoText = 50;
+    display.setFont(&FreeSans9pt7b);
+    display.setTextSize(1);
+    display.setTextColor(ILI9341_WHITE);
+    centeredText("Status:", infoText);
+    display.setTextSize(2);
+    centeredText(activeStatus, infoText + 32);
+    //centeredText(reflowState, infoText);
+    //display.setTextSize(2);
+
+    String temp = ("Temp : " + String(inputInt));
+#ifdef DEBUG
+    Serial.println(temp);
+#endif
+    if (inputInt < 50) {
+      display.setTextColor(ILI9341_GREEN);
+      centeredText(temp, tempTextPos, ILI9341_GREEN);
+    } else if ((inputInt > 50) && (inputInt < 100)) {
+      //display.setTextColor();
+      centeredText(temp, tempTextPos, ILI9341_BLUE);
+    } else if (inputInt > 100) {
+      //display.setTextColor(ILI9341_RED);
+      centeredText(temp, tempTextPos, ILI9341_RED);
+    }
+//  }
 }
 
 
 /* Saved for later use.. */
 /*
-void updateProcessDisplay() {
+  void updateProcessDisplay() {
   const uint8_t h =  86;
   const uint8_t w = 160;
-  const uint8_t yOffset =  30; // space not available for graph  
+  const uint8_t yOffset =  30; // space not available for graph
 
   uint16_t dx, dy;
   uint8_t y = 2;
@@ -116,17 +163,17 @@ void updateProcessDisplay() {
     tft.fillScreen(ST7735_WHITE);
     tft.fillRect(0, 0, tft.width(), menuItemHeight, ST7735_BLUE);
     tft.setCursor(2, y);
-#ifndef PIDTUNE
+  #ifndef PIDTUNE
     tft.print("Profile ");
     tft.print(activeProfileId);
-#else
+  #else
     tft.print("Tuning ");
-#endif
+  #endif
 
     tmp = h / (activeProfile.peakTemp * 1.10) * 100.0;
     pxPerC = (uint16_t)tmp;
-    
-#if 0 // pxPerS should be calculated from the selected profile, wint fit in flash right now
+
+  #if 0 // pxPerS should be calculated from the selected profile, wint fit in flash right now
     double estimatedTotalTime = 60 * 12;
     // estimate total run time for current profile
     estimatedTotalTime = activeProfile.soakDuration + activeProfile.peakDuration;
@@ -136,9 +183,9 @@ void updateProcessDisplay() {
     //estimatedTotalTime *= 2; // add some spare
     Serial.print("total est. time: ");
     Serial.println((uint16_t)estimatedTotalTime);
-#endif
+  #endif
     tmp = 60 * 8;
-    tmp = w / tmp * 10.0; 
+    tmp = w / tmp * 10.0;
     pxPerS = (uint16_t)tmp;
 
     // 50°C grid
@@ -147,18 +194,18 @@ void updateProcessDisplay() {
       uint16_t l = h - (tg * pxPerC / 100) + yOffset;
       tft.drawFastHLine(0, l, 160, tft.Color565(0xe0, 0xe0, 0xe0));
     }
-#ifdef GRAPH_VERBOSE
+  #ifdef GRAPH_VERBOSE
     Serial.print("Calc pxPerC/S: ");
     Serial.print(pxPerC);
     Serial.print("/");
     Serial.println(pxPerS);
-#endif
+  #endif
   }
 
   // elapsed time
   uint16_t elapsed = (zeroCrossTicks - startCycleZeroCrossTicks) / 100;
   tft.setCursor(125, y);
-  alignRightPrefix(elapsed); 
+  alignRightPrefix(elapsed);
   tft.print(elapsed);
   tft.print("s");
 
@@ -173,12 +220,12 @@ void updateProcessDisplay() {
   displayThermocoupleData(&A);
   tft.setTextSize(1);
 
-#ifndef PIDTUNE
+  #ifndef PIDTUNE
   // current state
   y -= 2;
   tft.setCursor(95, y);
   tft.setTextColor(ST7735_BLACK, ST7735_GREEN);
-  
+
   switch (currentState) {
     #define casePrintState(state) case state: tft.print(#state); break;
     casePrintState(RampToSoak);
@@ -193,13 +240,13 @@ void updateProcessDisplay() {
   tft.print("        "); // lazy: fill up space
 
   tft.setTextColor(ST7735_BLACK, ST7735_WHITE);
-#endif
+  #endif
 
   // set point
   y += 10;
   tft.setCursor(95, y);
-  tft.print("Sp:"); 
-  alignRightPrefix((int)Setpoint); 
+  tft.print("Sp:");
+  alignRightPrefix((int)Setpoint);
   printDouble(Setpoint);
   tft.print("\367C  ");
 
@@ -231,17 +278,17 @@ void updateProcessDisplay() {
   // set values
   tft.setCursor(2, y);
   tft.print("\xef");
-  alignRightPrefix((int)heaterValue); 
+  alignRightPrefix((int)heaterValue);
   tft.print((int)heaterValue);
   tft.print('%');
 
   tft.print(" \x2a");
-  alignRightPrefix((int)fanValue); 
+  alignRightPrefix((int)fanValue);
   tft.print((int)fanValue);
   tft.print('%');
 
   tft.print(" \x12 "); // alternative: \x7f
   printDouble(rampRate);
   tft.print("\367C/s    ");
-} 
- */
+  }
+*/

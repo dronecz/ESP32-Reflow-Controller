@@ -1,3 +1,5 @@
+#define DEBUG
+
 // LCD pin definition
 
 #define display_cs   5  // goes to TFT CS
@@ -31,7 +33,7 @@ int buzzerPin = 15;
 
 // FW info
 
-const String fwVersion = "0.1.14_beta";
+const String fwVersion = "0.1.16_beta";
 
 // Setup
 

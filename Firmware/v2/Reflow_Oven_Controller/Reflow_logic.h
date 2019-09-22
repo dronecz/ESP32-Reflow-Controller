@@ -297,6 +297,7 @@ void reflow_main() {
   switch (reflowState)
   {
     case REFLOW_STATE_IDLE:
+    activeStatus = "Idle";
       // If oven temperature is still above room temperature
       if (input >= TEMPERATURE_ROOM)
       {

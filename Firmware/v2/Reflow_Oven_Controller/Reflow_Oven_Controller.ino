@@ -30,6 +30,8 @@ Adafruit_MAX31856 max31856 = Adafruit_MAX31856(max_cs);
 Button AXIS_Y = Button(BUTTON_AXIS_Y, true, DEBOUNCE_MS);
 Button AXIS_X = Button(BUTTON_AXIS_X, true, DEBOUNCE_MS);
 Button BtnSelect = Button(BUTTON_SELECT, true, DEBOUNCE_MS);
+String activeStatus = "";
+bool menu = 0;
 
 void setup() {
 
@@ -38,6 +40,9 @@ void setup() {
   Serial.println("**** ESP32 Reflow Oven Controller ****");
 
   Serial.println("FW version is: " + fwVersion);
+  
+  display.begin();
+  startScreen();
 
   wifiMulti.addAP("SSID", "PASSWORD");
   wifiMulti.addAP("SSID", "PASSWORD");
@@ -83,8 +88,7 @@ void setup() {
     Serial.print("IP address: ");
     Serial.println(WiFi.localIP());
   }
-  display.begin();
-  startScreen();
+
   wifiStatus = WiFi.status();
 
   max31856.begin();
@@ -128,15 +132,21 @@ void setup() {
 void loop()
 {
   reflow_main();
+  //loopScreen();
 
-/* For testing select button (not yet implemented)& LED functionality. */
-/*
-  if (BtnSelect.read() == 1) {
-    digitalWrite(buzzerPin, HIGH);
-    digitalWrite(ledPin, HIGH);
-  } else {
-    digitalWrite(buzzerPin, LOW);
-    digitalWrite(ledPin, LOW);
-  }
-*/
+  /* For testing select button (not yet implemented)& LED functionality. */
+  ///*
+    if (BtnSelect.read() == 1) {
+      //digitalWrite(buzzerPin, HIGH);
+      digitalWrite(ledPin, HIGH);
+      if (menu == 0){
+        menuScreen();
+      }else{
+        loopScreen();
+      }
+    } else {
+      //digitalWrite(buzzerPin, LOW);
+      digitalWrite(ledPin, LOW);
+    }
+  //*/
 }
