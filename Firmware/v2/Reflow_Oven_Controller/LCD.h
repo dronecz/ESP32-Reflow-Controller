@@ -8,6 +8,7 @@ extern String activeStatus;
 extern bool menu;
 //#define font &FreeSans9pt7b
 
+bool screanCleread = 0;
 char* string2char(String command) {
   if (command.length() != 0) {
     char *p = const_cast<char*>(command.c_str());
@@ -15,7 +16,7 @@ char* string2char(String command) {
   }
 }
 
-void centeredText(String text, int yCord, int xCord = 0/*, uint16_t color = ILI9341_WHITE*/) {
+void centeredText(String text, uint16_t color, int yCord, int xCord = 0) {
   int16_t x1, y1;
   uint16_t w, h;
   int offSet = 10;
@@ -27,9 +28,9 @@ void centeredText(String text, int yCord, int xCord = 0/*, uint16_t color = ILI9
   Serial.print(" w:");  Serial.print(w);
   Serial.print(" h:");  Serial.println(h);
 #endif
-  //display.fillRect(((display.width() - w) / 2), (yCord - (h / 2)), (w + offSet) , (h + offSet), ILI9341_BLACK);
+  display.setTextColor(color);
+  display.fillRect(((display.width() - w) / 2), (yCord - (h / 2)), (w + offSet) , (h + offSet), ILI9341_BLACK);
   display.setCursor(((display.width() - w) / 2), (yCord + (h / 2)));
-  //display.setTextColor(color);
   display.println(text);
 }
 
@@ -72,9 +73,9 @@ void startScreen() {
   display.setFont(&FreeSans9pt7b);
   //display.setTextColor(ILI9341_WHITE);
   display.setTextSize(2);
-  centeredText("ESP32", y);
-  centeredText("Reflow", y + 32);
-  centeredText("Controller", y + 64);
+  centeredText("ESP32", ILI9341_WHITE, y);
+  centeredText("Reflow", ILI9341_WHITE, y + 32);
+  centeredText("Controller", ILI9341_WHITE, y + 64);
 }
 
 void accessScreen() {
@@ -90,9 +91,9 @@ void menuScreen() {
   display.fillScreen(ILI9341_BLACK);
   display.setTextColor(ILI9341_WHITE);
   display.setTextSize(2);
-  
+
   display.drawRect(45, 10, 150, 20, ILI9341_WHITE);        //  draw outer box
-  
+
   display.fillRect(10, 10, 30, 20, ILI9341_RED);           //  draw - button box
   display.drawRect(10, 10, 30, 20, ILI9341_WHITE);         //  draw button outer box
   display.setCursor(17, 26);                       //  text position
@@ -103,26 +104,29 @@ void menuScreen() {
   display.print("+");
   display.setTextSize(1);
   display.setTextColor(ILI9341_GREEN, ILI9341_BLACK);
-  centeredText("Test", 17);
-//  display.setTextSize(1);
-//  display.setCursor(80, 120);                      //  text position
-//  display.print("OPTIONAL - NOT IN USE");
+  centeredText("Test", ILI9341_WHITE, 17);
+  //  display.setTextSize(1);
+  //  display.setCursor(80, 120);                      //  text position
+  //  display.print("OPTIONAL - NOT IN USE");
 }
 
 void loopScreen() {
   //startScreen();
-  infoScreen();
-//  if (menu != 0) {
-//    menuScreen();
-//  } else {
+  if (screanCleread !=1) {
+    infoScreen(); //one time clear screen 
+    screanCleread = 1;
+  }
+  if (menu != 0) {
+    menuScreen();
+  } else {
     int tempTextPos = 240;
     int infoText = 50;
     display.setFont(&FreeSans9pt7b);
     display.setTextSize(1);
-    display.setTextColor(ILI9341_WHITE);
-    centeredText("Status:", infoText);
+    //display.setTextColor(ILI9341_WHITE);
+    centeredText("Status:", ILI9341_WHITE, infoText);
     display.setTextSize(2);
-    centeredText(activeStatus, infoText + 32);
+    centeredText(activeStatus, ILI9341_WHITE, infoText + 32);
     //centeredText(reflowState, infoText);
     //display.setTextSize(2);
 
@@ -131,16 +135,16 @@ void loopScreen() {
     Serial.println(temp);
 #endif
     if (inputInt < 50) {
-      display.setTextColor(ILI9341_GREEN, ILI9341_BLACK);
-      centeredText(temp, tempTextPos, ILI9341_GREEN);
+      //display.setTextColor(ILI9341_GREEN, ILI9341_BLACK);
+      centeredText(temp, ILI9341_GREEN, tempTextPos);
     } else if ((inputInt > 50) && (inputInt < 100)) {
       //display.setTextColor();
-      centeredText(temp, tempTextPos, ILI9341_BLUE);
+      centeredText(temp, ILI9341_ORANGE, tempTextPos);
     } else if (inputInt > 100) {
       //display.setTextColor(ILI9341_RED);
-      centeredText(temp, tempTextPos, ILI9341_RED);
+      centeredText(temp, ILI9341_RED, tempTextPos);
     }
-//  }
+  }
 }
 
 

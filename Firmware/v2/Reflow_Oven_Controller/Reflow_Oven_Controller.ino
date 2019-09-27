@@ -87,6 +87,8 @@ void setup() {
     Serial.println("WiFi connected");
     Serial.print("IP address: ");
     Serial.println(WiFi.localIP());
+  }else{
+    Serial.println("Skipping, no matching network found.");
   }
 
   wifiStatus = WiFi.status();
