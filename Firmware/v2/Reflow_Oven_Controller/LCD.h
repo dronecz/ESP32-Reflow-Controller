@@ -6,6 +6,7 @@ Adafruit_ILI9341 display = Adafruit_ILI9341(display_cs, display_dc, display_rst)
 extern int inputInt;
 extern String activeStatus;
 extern bool menu;
+extern bool isFault;
 //#define font &FreeSans9pt7b
 
 bool screanCleread = 0;
@@ -112,8 +113,8 @@ void menuScreen() {
 
 void loopScreen() {
   //startScreen();
-  if (screanCleread !=1) {
-    infoScreen(); //one time clear screen 
+  if (screanCleread != 1) {
+    infoScreen(); //one time clear screen
     screanCleread = 1;
   }
   if (menu != 0) {
@@ -134,7 +135,10 @@ void loopScreen() {
 #ifdef DEBUG
     Serial.println(temp);
 #endif
-    if (inputInt < 50) {
+    if (isFault != 0) {
+      display.setTextSize(1);
+      centeredText("Thermocouple error", ILI9341_RED, tempTextPos);
+    } else if (inputInt < 50) {
       //display.setTextColor(ILI9341_GREEN, ILI9341_BLACK);
       centeredText(temp, ILI9341_GREEN, tempTextPos);
     } else if ((inputInt > 50) && (inputInt < 100)) {

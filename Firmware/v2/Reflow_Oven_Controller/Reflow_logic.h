@@ -221,6 +221,19 @@ void reflow_main() {
     // Read current temperature
 
     input = max31856.readThermocoupleTemperature();
+      // Check and print any faults
+  uint8_t fault = max31856.readFault();
+  if (fault) {
+//    if (fault & MAX31856_FAULT_CJRANGE) Serial.println("Cold Junction Range Fault");
+//    if (fault & MAX31856_FAULT_TCRANGE) Serial.println("Thermocouple Range Fault");
+//    if (fault & MAX31856_FAULT_CJHIGH)  Serial.println("Cold Junction High Fault");
+//    if (fault & MAX31856_FAULT_CJLOW)   Serial.println("Cold Junction Low Fault");
+//    if (fault & MAX31856_FAULT_TCHIGH)  Serial.println("Thermocouple High Fault");
+//    if (fault & MAX31856_FAULT_TCLOW)   Serial.println("Thermocouple Low Fault");
+//    if (fault & MAX31856_FAULT_OVUV)    Serial.println("Over/Under Voltage Fault");
+//    if (fault & MAX31856_FAULT_OPEN)    Serial.println("Thermocouple Open Fault");
+    isFault = 1;
+  } 
 
     //    inputInt = (int) input;
     //    if ((input <= inputInt) || (input >= inputInt))  {

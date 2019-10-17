@@ -32,6 +32,7 @@ Button AXIS_X = Button(BUTTON_AXIS_X, true, DEBOUNCE_MS);
 Button BtnSelect = Button(BUTTON_SELECT, true, DEBOUNCE_MS);
 String activeStatus = "";
 bool menu = 0;
+bool isFault = 0;
 
 void setup() {
 
