@@ -112,43 +112,44 @@ void menuScreen() {
 }
 
 void loopScreen() {
+  display.fillScreen(ILI9341_BLACK);
   //startScreen();
-  if (screanCleread != 1) {
-    infoScreen(); //one time clear screen
-    screanCleread = 1;
-  }
-  if (menu != 0) {
-    menuScreen();
-  } else {
-    int tempTextPos = 240;
-    int infoText = 50;
-    display.setFont(&FreeSans9pt7b);
-    display.setTextSize(1);
-    //display.setTextColor(ILI9341_WHITE);
-    centeredText("Status:", ILI9341_WHITE, infoText);
-    display.setTextSize(2);
-    centeredText(activeStatus, ILI9341_WHITE, infoText + 32);
-    //centeredText(reflowState, infoText);
-    //display.setTextSize(2);
+  //  if (screanCleread != 1) {
+  //    infoScreen(); //one time clear screen
+  //    screanCleread = 1;
+  //  }
+  //  if (menu != 0) {
+  //    menuScreen();
+  //  } else {
+  int tempTextPos = 240;
+  int infoText = 50;
+  display.setFont(&FreeSans9pt7b);
+  display.setTextSize(1);
+  //display.setTextColor(ILI9341_WHITE);
+  centeredText("Status:", ILI9341_WHITE, infoText);
+  display.setTextSize(2);
+  centeredText(activeStatus, ILI9341_WHITE, infoText + 32);
+  //centeredText(reflowState, infoText);
+  //display.setTextSize(2);
 
-    String temp = ("Temp : " + String(inputInt));
+  String temp = ("Temp : " + String(inputInt));
 #ifdef DEBUG
-    Serial.println(temp);
+  Serial.println(temp);
 #endif
-    if (isFault != 0) {
-      display.setTextSize(1);
-      centeredText("Thermocouple error", ILI9341_RED, tempTextPos);
-    } else if (inputInt < 50) {
-      //display.setTextColor(ILI9341_GREEN, ILI9341_BLACK);
-      centeredText(temp, ILI9341_GREEN, tempTextPos);
-    } else if ((inputInt > 50) && (inputInt < 100)) {
-      //display.setTextColor();
-      centeredText(temp, ILI9341_ORANGE, tempTextPos);
-    } else if (inputInt > 100) {
-      //display.setTextColor(ILI9341_RED);
-      centeredText(temp, ILI9341_RED, tempTextPos);
-    }
+  if (isFault != 0) {
+    display.setTextSize(1);
+    centeredText("Thermocouple error", ILI9341_RED, tempTextPos);
+  } else if (inputInt < 50) {
+    //display.setTextColor(ILI9341_GREEN, ILI9341_BLACK);
+    centeredText(temp, ILI9341_GREEN, tempTextPos);
+  } else if ((inputInt > 50) && (inputInt < 100)) {
+    //display.setTextColor();
+    centeredText(temp, ILI9341_ORANGE, tempTextPos);
+  } else if (inputInt > 100) {
+    //display.setTextColor(ILI9341_RED);
+    centeredText(temp, ILI9341_RED, tempTextPos);
   }
+  // }
 }
 
 
