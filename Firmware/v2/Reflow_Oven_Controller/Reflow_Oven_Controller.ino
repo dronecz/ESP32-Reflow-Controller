@@ -30,15 +30,15 @@ Adafruit_MAX31856 max31856 = Adafruit_MAX31856(max_cs);
 Button AXIS_Y = Button(BUTTON_AXIS_Y, true, DEBOUNCE_MS);
 Button AXIS_X = Button(BUTTON_AXIS_X, true, DEBOUNCE_MS);
 Button BtnSelect = Button(BUTTON_SELECT, true, DEBOUNCE_MS);
-Button Menu = Button(BUTTON_MENU, true, DEBOUNCE_MS);
-Button Back = Button(BUTTON_BACK, true, DEBOUNCE_MS);
-//const int Menu = 32;
-//const int Back = 33;
+//Button Menu = Button(BUTTON_MENU, true, DEBOUNCE_MS);
+//Button Back = Button(BUTTON_BACK, true, DEBOUNCE_MS);
+const int Menu = 32;
+const int Back = 33;
 
 int buttonState;             // the current reading from the input pin
 int lastButtonState = LOW;
 unsigned long lastDebounceTime_ = 0;  // the last time the output pin was toggled
-unsigned long debounceDelay = 50;    // the debounce time; increase if the output flicker
+unsigned long debounceDelay = 200;    // the debounce time; increase if the output flicker
 
 String activeStatus = "";
 bool menu = 0;
@@ -73,8 +73,7 @@ void setup() {
 
   // Start-up splash
   digitalWrite(buzzerPin, LOW);
-  //pinMode(Menu, INPUT);
-  //pinMode(Back, INPUT);
+
 
   delay(100);
   // This is for testing on different board
@@ -93,7 +92,8 @@ void setup() {
   pinMode(BUTTON_SELECT, INPUT_PULLUP);
   pinMode(BUTTON_AXIS_Y, INPUT_PULLDOWN);
   pinMode(BUTTON_AXIS_X, INPUT_PULLDOWN);
-
+  pinMode(Menu, INPUT_PULLUP);
+  pinMode(Back, INPUT_PULLUP);
 
   Serial.println("Connecting Wifi...");
   if (wifiMulti.run() == WL_CONNECTED) {
@@ -170,7 +170,7 @@ int buttonRead(int pin) {
       // only toggle the LED if the new button state is HIGH
       if (buttonState == HIGH) {
         Serial.println("Button was pressed!");
-        return 1;
+        //return 1;
       }
     }
   }
@@ -186,13 +186,13 @@ void loop()
 
   /* For testing select button (not yet implemented)& LED functionality. */
   ///*
-  //if (buttonRead(Menu) == 1) {
-  if (Menu.read() == 1) {
+  if (buttonRead(Menu) == 0) {
+    //if (Menu.read() == 1) {
     Serial.println("Menu button pressed");
     menuScreen();
   }
-  //if (buttonRead(Back) == 1) {
-  if (Back.read() == 1) {
+  if (buttonRead(Back) == 0) {
+    //if (Back.read() == 1) {
     Serial.println("Back button pressed");
     loopScreen();
   }
