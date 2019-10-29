@@ -244,9 +244,11 @@ void reflow_main() {
     }
     inputInt = input / 1;
 #ifdef DEBUG
+if ((input > 0) && (input <= 500)){
     Serial.print(input);
     Serial.print(";");
     Serial.println(inputInt);
+}
 #endif
 
     // If thermocouple problem detected
@@ -447,7 +449,7 @@ void reflow_main() {
       // No valid switch press
       switchStatus = SWITCH_NONE;
       // If switch #1 is pressed
-      if (AXIS_X.readAxis() == 1)
+      if(input == -1)// (AXIS_X.readAxis() == 1)
       {
         // Intialize debounce counter
         lastDebounceTime = millis();
@@ -458,7 +460,7 @@ void reflow_main() {
       break;
 
     case DEBOUNCE_STATE_CHECK:
-      if (AXIS_X.readAxis() == 1)
+      if(input == -1)// (AXIS_X.readAxis() == 1)
       {
         // If minimum debounce period is completed
         if ((millis() - lastDebounceTime) > DEBOUNCE_PERIOD_MIN)
@@ -476,7 +478,7 @@ void reflow_main() {
       break;
 
     case DEBOUNCE_STATE_RELEASE:
-      if (AXIS_X.readAxis() > 0)
+      if(input == -1)// (AXIS_X.readAxis() > 0)
       {
         // Valid switch 1 press
         switchStatus = SWITCH_1;

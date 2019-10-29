@@ -27,13 +27,15 @@ int wifiStatus;
 Adafruit_MAX31856 max31856 = Adafruit_MAX31856(max_cs);
 
 #define DEBOUNCE_MS 100
-Button AXIS_Y = Button(BUTTON_AXIS_Y, true, DEBOUNCE_MS);
-Button AXIS_X = Button(BUTTON_AXIS_X, true, DEBOUNCE_MS);
-Button BtnSelect = Button(BUTTON_SELECT, true, DEBOUNCE_MS);
+//Button AXIS_Y = Button(BUTTON_AXIS_Y, true, DEBOUNCE_MS);
+//Button AXIS_X = Button(BUTTON_AXIS_X, true, DEBOUNCE_MS);
+//Button BtnSelect = Button(BUTTON_SELECT, true, DEBOUNCE_MS);
 //Button Menu = Button(BUTTON_MENU, true, DEBOUNCE_MS);
 //Button Back = Button(BUTTON_BACK, true, DEBOUNCE_MS);
-const int Menu = 32;
-const int Back = 33;
+//const int Menu = 32;
+//const int Back = 33;
+int buttonPin[] = {27, 32, 33, 34, 35};                      // analog input pin to use as a digital input
+#define numButtons sizeof(buttonPin)
 
 int buttonState;             // the current reading from the input pin
 int lastButtonState = LOW;
@@ -43,6 +45,16 @@ unsigned long debounceDelay = 200;    // the debounce time; increase if the outp
 String activeStatus = "";
 bool menu = 0;
 bool isFault = 0;
+
+// Button variables
+int buttonVal[numButtons] = {0};                            // value read from button
+int buttonLast[numButtons] = {0};                           // buffered value of the button's previous state
+long btnDnTime[numButtons];                               // time the button was pressed down
+long btnUpTime[numButtons];                               // time the button was released
+boolean ignoreUp[numButtons] = {false};                     // whether to ignore the button release because the click+hold was triggered
+boolean menuMode[numButtons] = {false};                     // whether menu mode has been activated or not
+int debounce = 50;
+int holdTime = 1000;
 
 void setup() {
 
@@ -89,11 +101,20 @@ void setup() {
   digitalWrite(ledPin, ledState);
 
   // Button initialization
-  pinMode(BUTTON_SELECT, INPUT_PULLUP);
+  //pinMode(BUTTON_SELECT, INPUT_PULLUP);
   pinMode(BUTTON_AXIS_Y, INPUT_PULLDOWN);
   pinMode(BUTTON_AXIS_X, INPUT_PULLDOWN);
-  pinMode(Menu, INPUT_PULLUP);
-  pinMode(Back, INPUT_PULLUP);
+  //pinMode(Menu, INPUT_PULLUP);
+  //pinMode(Back, INPUT_PULLUP);
+
+  for (byte i = 0; i < numButtons - 1 ; i++) {
+    // Set button input pin
+    if (buttonPin[i] > 20  && buttonPin[i] < 40) {
+    pinMode(buttonPin[i], INPUT_PULLUP);
+    digitalWrite(buttonPin[i], LOW  );
+    Serial.println(buttonPin[i]);
+    }
+  }
 
   Serial.println("Connecting Wifi...");
   if (wifiMulti.run() == WL_CONNECTED) {
@@ -186,15 +207,18 @@ void loop()
 
   /* For testing select button (not yet implemented)& LED functionality. */
   ///*
-  if (buttonRead(Menu) == 0) {
-    //if (Menu.read() == 1) {
-    Serial.println("Menu button pressed");
-    menuScreen();
-  }
-  if (buttonRead(Back) == 0) {
-    //if (Back.read() == 1) {
-    Serial.println("Back button pressed");
-    loopScreen();
+  //  if (buttonRead(Menu) == 0) {
+  //    //if (Menu.read() == 1) {
+  //    Serial.println("Menu button pressed");
+  //    menuScreen();
+  //  }
+  //  if (buttonRead(Back) == 0) {
+  //    //if (Back.read() == 1) {
+  //    Serial.println("Back button pressed");
+  //    loopScreen();
+  //  }
+  for (int i = 0; i < numButtons; i++) {
+    button(buttonPin[i]);
   }
   //*/
 }

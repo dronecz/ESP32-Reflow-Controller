@@ -3,12 +3,26 @@ Adafruit_ILI9341 display = Adafruit_ILI9341(display_cs, display_dc, display_rst)
 //Adafruit_ILI9341 display = Adafruit_ILI9341(display_cs, display_dc, display_mosi, display_sclk, display_rst);
 //extern void centeredText();
 //extern typedef enum REFLOW_STATE;
+
+byte menuCursor[8] = {
+  B01000, //  *
+  B00100, //   *
+  B00010, //    *
+  B00001, //     *
+  B00010, //    *
+  B00100, //   *
+  B01000, //  *
+  B00000  //
+};
+
 extern int inputInt;
 extern String activeStatus;
 extern bool menu;
 extern bool isFault;
 //#define font &FreeSans9pt7b
-
+String menuItems[] = {"Select profile", "Change profile", "Add profile", "Settings", "Info"};
+#define menuItemsSize sizeof(menuItems)
+int activeMenu = 0;
 bool screanCleread = 0;
 char* string2char(String command) {
   if (command.length() != 0) {
@@ -35,6 +49,41 @@ void centeredText(String text, uint16_t color, int yCord, int xCord = 0) {
   display.println(text);
 }
 
+void rightText(String text, uint16_t color, int yCord, int xCord = 0) {
+  int16_t x1, y1;
+  uint16_t w, h;
+  int offSet = 10;
+  display.getTextBounds(string2char(text), 0, 0, &x1, &y1, &w, &h);
+#ifdef DEBUG
+  Serial.print("Text bounds for: \"" + text + "\"");
+  Serial.print(" x1:");  Serial.print(x1);
+  Serial.print(" y1:");  Serial.print(y1);
+  Serial.print(" w:");  Serial.print(w);
+  Serial.print(" h:");  Serial.println(h);
+#endif
+  display.setTextColor(color);
+  //display.fillRect(((display.width() - w) / 2), (yCord - (h / 2)), (w + offSet) , (h + offSet), ILI9341_BLACK);// 
+  display.setCursor(((display.width() - w) -10), yCord/*(yCord + (h /2))*/); //
+  display.println(text);
+}
+
+void leftText(String text, uint16_t color, int yCord, int xCord = 0) {
+  int16_t x1, y1;
+  uint16_t w, h;
+  int offSet = 10;
+  display.getTextBounds(string2char(text), 0, 0, &x1, &y1, &w, &h);
+#ifdef DEBUG
+  Serial.print("Text bounds for: \"" + text + "\"");
+  Serial.print(" x1:");  Serial.print(x1);
+  Serial.print(" y1:");  Serial.print(y1);
+  Serial.print(" w:");  Serial.print(w);
+  Serial.print(" h:");  Serial.println(h);
+#endif
+  display.setTextColor(color);
+  //display.fillRect(((display.width() - w) / 2), (yCord - (h / 2)), (w + offSet) , (h + offSet), ILI9341_BLACK);// 
+  display.setCursor(xCord + 30, yCord/*(yCord + (h /2))*/); //
+  display.print(text);
+}
 void infoScreen() {
   display.fillScreen(ILI9341_BLACK);
   display.setRotation(2);
@@ -89,26 +138,43 @@ void accessScreen() {
 }
 
 void menuScreen() {
+  int y = 20;
+  int h = 20;
+  display.setFont(&FreeSans9pt7b);
   display.fillScreen(ILI9341_BLACK);
   display.setTextColor(ILI9341_WHITE);
-  display.setTextSize(2);
-
-  display.drawRect(45, 10, 150, 20, ILI9341_WHITE);        //  draw outer box
-
-  display.fillRect(10, 10, 30, 20, ILI9341_RED);           //  draw - button box
-  display.drawRect(10, 10, 30, 20, ILI9341_WHITE);         //  draw button outer box
-  display.setCursor(17, 26);                       //  text position
-  display.print("-");
-  display.fillRect(205, 10, 30, 20, ILI9341_GREEN);        //  draw + button box
-  display.drawRect(205, 10, 30, 20, ILI9341_WHITE);        //  draw button outer box
-  display.setCursor(210, 26);                      //  text position
-  display.print("+");
   display.setTextSize(1);
-  display.setTextColor(ILI9341_GREEN, ILI9341_BLACK);
-  centeredText("Test", ILI9341_WHITE, 17);
+  display.setCursor(10,y);
+  //  display.drawRect(45, 10, 150, 20, ILI9341_WHITE);        //  draw outer box
+  //
+  //  display.fillRect(10, 10, 30, 20, ILI9341_RED);           //  draw - button box
+  //  display.drawRect(10, 10, 30, 20, ILI9341_WHITE);         //  draw button outer box
+  //  display.setCursor(17, 26);                       //  text position
+  //  display.print("-");
+  //  display.fillRect(205, 10, 30, 20, ILI9341_GREEN);        //  draw + button box
+  //  display.drawRect(205, 10, 30, 20, ILI9341_WHITE);        //  draw button outer box
+  //  display.setCursor(210, 26);                      //  text position
+  //  display.print("+");
+  //  display.setTextSize(1);
+  //  display.setTextColor(ILI9341_GREEN, ILI9341_BLACK);
+  //  centeredText("Test", ILI9341_WHITE, 17);
   //  display.setTextSize(1);
   //  display.setCursor(80, 120);                      //  text position
   //  display.print("OPTIONAL - NOT IN USE");
+
+  for (int i = 0; i < menuItemsSize; i++) {
+if (activeMenu == 1){
+    display.print(menuItems[i]);
+}else{
+    display.print("> ");display.println(menuItems[i]);
+  }
+//if (menuItem == 0)
+//display.print("> "); leftText("Select profile", ILI9341_WHITE,y); rightText("->", ILI9341_WHITE,y);
+//leftText("Change profile",ILI9341_WHITE,(y + h)); rightText("->", ILI9341_WHITE,(y + h));
+//leftText("Add profile", ILI9341_WHITE,(y + 2*h)); rightText("->", ILI9341_WHITE,(y + 2*h));
+//leftText("Settings", ILI9341_WHITE,(y + 3*h)); rightText("->", ILI9341_WHITE,(y + 3*h));
+//leftText("Info", ILI9341_WHITE,(y + 4*h)); rightText("->", ILI9341_WHITE,(y + 4*h));
+}
 }
 
 void loopScreen() {
