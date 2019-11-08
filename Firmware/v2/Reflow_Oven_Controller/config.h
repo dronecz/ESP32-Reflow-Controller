@@ -30,12 +30,12 @@ int buzzerPin = 15;
 #define BUTTON_SELECT 27
 #define BUTTON_AXIS_Y 35
 #define BUTTON_AXIS_X 34
-//#define BUTTON_MENU 32
-//#define BUTTON_BACK 33
+#define BUTTON_MENU 32
+#define BUTTON_BACK 33
 
 // FW info
 
-const String fwVersion = "0.1.17_beta";
+const String fwVersion = "0.1.18_beta";
 
 // Setup
 

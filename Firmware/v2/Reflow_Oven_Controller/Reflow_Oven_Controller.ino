@@ -27,15 +27,12 @@ int wifiStatus;
 Adafruit_MAX31856 max31856 = Adafruit_MAX31856(max_cs);
 
 #define DEBOUNCE_MS 100
-//Button AXIS_Y = Button(BUTTON_AXIS_Y, true, DEBOUNCE_MS);
-//Button AXIS_X = Button(BUTTON_AXIS_X, true, DEBOUNCE_MS);
-//Button BtnSelect = Button(BUTTON_SELECT, true, DEBOUNCE_MS);
-//Button Menu = Button(BUTTON_MENU, true, DEBOUNCE_MS);
-//Button Back = Button(BUTTON_BACK, true, DEBOUNCE_MS);
-//const int Menu = 32;
-//const int Back = 33;
-int buttonPin[] = {27, 32, 33, 34, 35};                      // analog input pin to use as a digital input
-#define numButtons sizeof(buttonPin)
+Button AXIS_Y = Button(BUTTON_AXIS_Y, true, DEBOUNCE_MS);
+Button AXIS_X = Button(BUTTON_AXIS_X, true, DEBOUNCE_MS);
+
+int digitalButtonPins[] = {BUTTON_SELECT, BUTTON_MENU, BUTTON_BACK};                     
+
+#define numDigButtons sizeof(digitalButtonPins)
 
 int buttonState;             // the current reading from the input pin
 int lastButtonState = LOW;
@@ -47,12 +44,12 @@ bool menu = 0;
 bool isFault = 0;
 
 // Button variables
-int buttonVal[numButtons] = {0};                            // value read from button
-int buttonLast[numButtons] = {0};                           // buffered value of the button's previous state
-long btnDnTime[numButtons];                               // time the button was pressed down
-long btnUpTime[numButtons];                               // time the button was released
-boolean ignoreUp[numButtons] = {false};                     // whether to ignore the button release because the click+hold was triggered
-boolean menuMode[numButtons] = {false};                     // whether menu mode has been activated or not
+int buttonVal[numDigButtons] = {0};                            // value read from button
+int buttonLast[numDigButtons] = {0};                           // buffered value of the button's previous state
+long btnDnTime[numDigButtons];                               // time the button was pressed down
+long btnUpTime[numDigButtons];                               // time the button was released
+boolean ignoreUp[numDigButtons] = {false};                     // whether to ignore the button release because the click+hold was triggered
+boolean menuMode[numDigButtons] = {false};                     // whether menu mode has been activated or not
 int debounce = 50;
 int holdTime = 1000;
 
@@ -107,12 +104,12 @@ void setup() {
   //pinMode(Menu, INPUT_PULLUP);
   //pinMode(Back, INPUT_PULLUP);
 
-  for (byte i = 0; i < numButtons - 1 ; i++) {
+  for (byte i = 0; i < numDigButtons - 1 ; i++) {
     // Set button input pin
-    if (buttonPin[i] > 20  && buttonPin[i] < 40) {
-    pinMode(buttonPin[i], INPUT_PULLUP);
-    digitalWrite(buttonPin[i], LOW  );
-    Serial.println(buttonPin[i]);
+    if (digitalButtonPins[i] > 20  && digitalButtonPins[i] < 40) {
+      pinMode(digitalButtonPins[i], INPUT_PULLUP);
+      //digitalWrite(digitalButtonPins[i], HIGH  );
+      Serial.println(digitalButtonPins[i]);
     }
   }
 
@@ -168,7 +165,8 @@ void setup() {
 
 int buttonRead(int pin) {
   // read the state of the switch into a local variable:
-  int reading = digitalRead(pin);
+  int reading = analogRead(pin);
+  Serial.println(reading);
 
   // check to see if you just pressed the button
   // (i.e. the input went from LOW to HIGH), and you've waited long enough
@@ -200,6 +198,17 @@ int buttonRead(int pin) {
   lastButtonState = reading;
 }
 
+void readAnalogButtons() {
+  if (AXIS_X.wasAxisPressed() == 1) {
+    Serial.println("Down");
+  } else if (AXIS_X.wasAxisPressed() == 2) {
+    Serial.println("Up");
+  } else if (AXIS_Y.wasAxisPressed() == 1) {
+    Serial.println("Left");
+  } else if (AXIS_Y.wasAxisPressed() == 2) {
+    Serial.println("Right");
+  }
+}
 void loop()
 {
   reflow_main();
@@ -217,8 +226,12 @@ void loop()
   //    Serial.println("Back button pressed");
   //    loopScreen();
   //  }
-  for (int i = 0; i < numButtons; i++) {
-    button(buttonPin[i]);
+  for (int i = 0; i < numDigButtons; i++) {
+    digitalButton(digitalButtonPins[i]);
   }
+  AXIS_X.readAxis();
+  AXIS_Y.readAxis();
+  readAnalogButtons();
+  //analogButton(analogButtonPin);
   //*/
 }
