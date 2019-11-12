@@ -1,26 +1,37 @@
-// Use hardware SPI
-Adafruit_ILI9341 display = Adafruit_ILI9341(display_cs, display_dc, display_rst);
-//Adafruit_ILI9341 display = Adafruit_ILI9341(display_cs, display_dc, display_mosi, display_sclk, display_rst);
-//extern void centeredText();
-//extern typedef enum REFLOW_STATE;
 
-byte menuCursor[8] = {
-  B01000, //  *
-  B00100, //   *
-  B00010, //    *
-  B00001, //     *
-  B00010, //    *
-  B00100, //   *
-  B01000, //  *
-  B00000  //
-};
+//extern byte menuPrintLine;
+//extern byte menuSelectLine;
+#define ARROW 0x7e
 
-extern int inputInt;
-extern String activeStatus;
-extern bool menu;
-extern bool isFault;
+
+void processMenu() {
+  if (state == 0) { // home screen
+    //loopScreen();
+    return;
+  } else if (state == 1) { // main menu
+    //mainMenuScreen();
+    return;
+  } else if (state == 2) { // select profile
+
+  } else if (state == 3) { // change profile
+
+  } else if (state == 4) { // add profile
+
+  } else if (state == 5) { // settings
+
+  } else if (state == 6) { // info
+
+  } else {
+
+  }
+  //return;
+}
+
+//extern int inputInt;
+
+//extern bool menu;
 //#define font &FreeSans9pt7b
-String menuItems[] = {"Select profile", "Change profile", "Add profile", "Settings", "Info"};
+char *menuItems[] = {"Select profile", "Change profile", "Add profile", "Settings", "Info"};
 #define menuItemsSize sizeof(menuItems)
 int activeMenu = 0;
 bool screanCleread = 0;
@@ -62,8 +73,8 @@ void rightText(String text, uint16_t color, int yCord, int xCord = 0) {
   Serial.print(" h:");  Serial.println(h);
 #endif
   display.setTextColor(color);
-  //display.fillRect(((display.width() - w) / 2), (yCord - (h / 2)), (w + offSet) , (h + offSet), ILI9341_BLACK);// 
-  display.setCursor(((display.width() - w) -10), yCord/*(yCord + (h /2))*/); //
+  //display.fillRect(((display.width() - w) / 2), (yCord - (h / 2)), (w + offSet) , (h + offSet), ILI9341_BLACK);//
+  display.setCursor(((display.width() - w) - 10), yCord/*(yCord + (h /2))*/); //
   display.println(text);
 }
 
@@ -80,10 +91,102 @@ void leftText(String text, uint16_t color, int yCord, int xCord = 0) {
   Serial.print(" h:");  Serial.println(h);
 #endif
   display.setTextColor(color);
-  //display.fillRect(((display.width() - w) / 2), (yCord - (h / 2)), (w + offSet) , (h + offSet), ILI9341_BLACK);// 
+  //display.fillRect(((display.width() - w) / 2), (yCord - (h / 2)), (w + offSet) , (h + offSet), ILI9341_BLACK);//
   display.setCursor(xCord + 30, yCord/*(yCord + (h /2))*/); //
   display.print(text);
 }
+
+void printMenuLine(char *c, int yCord, int xCord = 0) {
+  int lineWidth = display.width() - 1;
+  display.setCursor(xCord, yCord);
+  if (menuPrintLine == menuSelectLine) {
+    display.print("> ");
+    lineWidth = lineWidth - 1;
+  } else {
+    display.print(F("  "));
+    lineWidth = lineWidth - 1;
+  }
+  display.print(c);
+  for (int x = 0; x < (lineWidth - strlen(c)); x++) {
+    display.print(F(" "));
+  }
+  menuPrintLine++;
+  if (menuPrintLine > 5) menuPrintLine = 0;
+  processButtons();
+
+  //  if (ssrState) {
+  //    lcd.setCursor(19, 0);
+  //    lcd.print(F("!"));
+  //  } else {
+  //    lcd.setCursor(19, 0);
+  //    lcd.print(F("."));
+  //  }
+}
+
+void UpdateSettingsPointer()
+{
+  if ( state == 11 )
+  {
+    display.setTextColor( ILI9341_BLUE, ILI9341_BLACK );
+    display.setTextSize(2);
+    display.fillRect( 0, 20, 20, display.height() - 20, ILI9341_BLACK );
+    display.setCursor( 5, ( 45 + ( 19 * settings_pointer ) ) );
+    display.println(">");
+
+
+    display.setTextSize(1);
+    display.setTextColor( ILI9341_GREEN, ILI9341_BLACK );
+    display.fillRect( 0, display.height() - 40, display.width(), 40, ILI9341_BLACK );
+    switch ( settings_pointer )
+    {
+      //      case 0:
+      //        println_Center( display, "Select which profile to reflow", display.width() / 2, display.height() - 20 );
+      //        break;
+      //
+      //      case 1:
+      //        println_Center( display, "Enable fan for end of reflow, requires 5V DC fan", display.width() / 2, display.height() - 20 );
+      //        break;
+      //
+      //      case 2:
+      //        println_Center( display, "Keep fan on for XXX sec after reflow", display.width() / 2, display.height() - 20 );
+      //        break;
+      //
+      //      case 3:
+      //        println_Center( display, "Soak and Reflow look ahead for rate change speed", display.width() / 2, display.height() - 20 );
+      //        break;
+      //
+      //      case 4:
+      //        println_Center( display, "Adjust the power boost", display.width() / 2, display.height() - 20 );
+      //        break;
+      //
+      //      case 5:
+      //        println_Center( display, "Adjust temp probe reading offset", display.width() / 2, display.height() - 20 );
+      //        break;
+      //
+      //      case 6:
+      //        println_Center( display, "Force full power on initial ramp-up - be careful!", display.width() / 2, display.height() - 20 );
+      //        break;
+      //
+      //      case 7:
+      //        println_Center( display, "Reset to default settings", display.width() / 2, display.height() - 20 );
+      //        break;
+
+      default:
+        //println_Center( display, "", display.width() / 2, display.height() - 20 );
+        break;
+    }
+    display.setTextSize(2);
+  }
+  else if ( state == 12 )
+  {
+    display.setTextColor( ILI9341_BLUE, ILI9341_BLACK );
+    display.setTextSize(2);
+    display.fillRect( 0, 20, 20, display.height() - 20, ILI9341_BLACK );
+    display.setCursor( 5, ( 50 + ( 20 * ( settings_pointer * 2 ) ) ) );
+    display.println(">");
+  }
+}
+
 void infoScreen() {
   display.fillScreen(ILI9341_BLACK);
   display.setRotation(2);
@@ -126,6 +229,7 @@ void startScreen() {
   centeredText("ESP32", ILI9341_WHITE, y);
   centeredText("Reflow", ILI9341_WHITE, y + 32);
   centeredText("Controller", ILI9341_WHITE, y + 64);
+  state = 0;
 }
 
 void accessScreen() {
@@ -137,14 +241,18 @@ void accessScreen() {
   display.setCursor(70, 130);
 }
 
-void menuScreen() {
-  int y = 20;
+void mainMenuScreen() {
+  state = 1;
+#ifdef DEBUG
+  Serial.println("State is :" + String(state));
+#endif
+  int y = 10;
   int h = 20;
   display.setFont(&FreeSans9pt7b);
   display.fillScreen(ILI9341_BLACK);
   display.setTextColor(ILI9341_WHITE);
   display.setTextSize(1);
-  display.setCursor(10,y);
+  display.setCursor(30, y);
   //  display.drawRect(45, 10, 150, 20, ILI9341_WHITE);        //  draw outer box
   //
   //  display.fillRect(10, 10, 30, 20, ILI9341_RED);           //  draw - button box
@@ -162,22 +270,66 @@ void menuScreen() {
   //  display.setCursor(80, 120);                      //  text position
   //  display.print("OPTIONAL - NOT IN USE");
 
-  for (int i = 0; i < menuItemsSize; i++) {
-if (activeMenu == 1){
-    display.print(menuItems[i]);
-}else{
-    display.print("> ");display.println(menuItems[i]);
+  //  for (int i = 0; i < menuItemsSize; i++) {
+  //    //      if (activeMenu == 1) {
+  //    //        display.print(menuItems[i]);
+  //    //      } else {
+  //    //        display.print("> "); display.println(menuItems[i]);
+  //    printMenuLine(menuItems[i]);
+  //  }
+
+  printMenuLine("Select profile", y + h);
+  //  display.setCursor(20, y + h);
+  printMenuLine("Change profile", y + (h * 2));
+  //  display.setCursor(20, y + (h*2));
+  printMenuLine("Add profile", y + (h * 3));
+  //  display.setCursor(20, y+ (h*3));
+  printMenuLine("Settings", y + (h * 4));
+  //  display.setCursor(20, y+ (h*4));
+  printMenuLine("Info", y + (h * 5));
+
+  switch (menuSelectLine) {
+
+    //current status
+    case 0:
+      menuState = MENU_STATE_REFLOWPROFILE;
+      Serial.println("Reflow profile selected");
+      break;
+
+    // reflow profile
+    case 1:
+      menuState = MENU_STATE_EDIT_REFLOW;
+      //menuSelectLine = rememberHomeMenuSelectLine;
+      Serial.println("Edit reflow profile selected");
+      menuSelectLine = 0;
+      break;
+
+    case 2: // Settings
+      menuState = MENU_SETTING_LIST;
+      Serial.println("Settings selected");
+      menuSelectLine = 0;
+      break;
+
+    case 3: // Manual Control (Bacon)
+      menuState = MENU_STATE_INFO;
+      Serial.println("Info selected");
+      menuSelectLine = 0;
+      break;
   }
-//if (menuItem == 0)
-//display.print("> "); leftText("Select profile", ILI9341_WHITE,y); rightText("->", ILI9341_WHITE,y);
-//leftText("Change profile",ILI9341_WHITE,(y + h)); rightText("->", ILI9341_WHITE,(y + h));
-//leftText("Add profile", ILI9341_WHITE,(y + 2*h)); rightText("->", ILI9341_WHITE,(y + 2*h));
-//leftText("Settings", ILI9341_WHITE,(y + 3*h)); rightText("->", ILI9341_WHITE,(y + 3*h));
-//leftText("Info", ILI9341_WHITE,(y + 4*h)); rightText("->", ILI9341_WHITE,(y + 4*h));
-}
+  //if (menuItem == 0)
+  //display.print("> "); leftText("Select profile", ILI9341_WHITE,y); rightText("->", ILI9341_WHITE,y);
+  //leftText("Change profile",ILI9341_WHITE,(y + h)); rightText("->", ILI9341_WHITE,(y + h));
+  //leftText("Add profile", ILI9341_WHITE,(y + 2*h)); rightText("->", ILI9341_WHITE,(y + 2*h));
+  //leftText("Settings", ILI9341_WHITE,(y + 3*h)); rightText("->", ILI9341_WHITE,(y + 3*h));
+  //leftText("Info", ILI9341_WHITE,(y + 4*h)); rightText("->", ILI9341_WHITE,(y + 4*h));
+  //}
 }
 
 void loopScreen() {
+  state = 0;
+#ifdef DEBUG
+  Serial.println("State is :" + String(state));
+#endif
   display.fillScreen(ILI9341_BLACK);
   //startScreen();
   //  if (screanCleread != 1) {
@@ -217,6 +369,8 @@ void loopScreen() {
   }
   // }
 }
+
+
 
 
 /* Saved for later use.. */

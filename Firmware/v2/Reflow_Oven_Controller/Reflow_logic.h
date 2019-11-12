@@ -3,6 +3,9 @@
 extern Adafruit_MAX31856 max31856;
 extern Button AXIS_X;
 extern Button AXIS_Y;
+
+extern bool isFault;
+extern String activeStatus;
 /*******************************************************************************
   Title: Reflow Oven Controller
   Version: 1.20
@@ -240,7 +243,7 @@ void reflow_main() {
     //      loopScreen();
     //    }
     if ((((int) input) < inputInt) || (((int) input) > inputInt))  {
-      loopScreen();
+      //loopScreen();
     }
     inputInt = input / 1;
 #ifdef DEBUG

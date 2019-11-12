@@ -9,7 +9,7 @@
 #include "SD.h"
 #include "SPI.h"
 #include "config.h"
-#include "LCD.h"
+//#include "LCD.h"
 #include "Button.h"
 #include "reflow_logic.h"
 #include "sd_card.h"
@@ -26,11 +26,15 @@ int wifiStatus;
 // use hardware SPI, just pass in the CS pin
 Adafruit_MAX31856 max31856 = Adafruit_MAX31856(max_cs);
 
+// Use hardware SPI
+Adafruit_ILI9341 display = Adafruit_ILI9341(display_cs, display_dc, display_rst);
+//Adafruit_ILI9341 display = Adafruit_ILI9341(display_cs, display_dc, display_mosi, display_sclk, display_rst);
+
 #define DEBOUNCE_MS 100
 Button AXIS_Y = Button(BUTTON_AXIS_Y, true, DEBOUNCE_MS);
 Button AXIS_X = Button(BUTTON_AXIS_X, true, DEBOUNCE_MS);
 
-int digitalButtonPins[] = {BUTTON_SELECT, BUTTON_MENU, BUTTON_BACK};                     
+int digitalButtonPins[] = {BUTTON_SELECT, BUTTON_MENU, BUTTON_BACK};
 
 #define numDigButtons sizeof(digitalButtonPins)
 
@@ -52,6 +56,28 @@ boolean ignoreUp[numDigButtons] = {false};                     // whether to ign
 boolean menuMode[numDigButtons] = {false};                     // whether menu mode has been activated or not
 int debounce = 50;
 int holdTime = 1000;
+
+byte state = 0; // 0 = boot, 1 = main menu, 2 = select profile, 3 = change profile, 4 = add profile, 5 = settings, 6 = info
+byte menuPrintLine = 0;
+byte menuSelectLine = 0;
+byte rememberHomeMenuSelectLine = 0;
+byte settings_pointer = 0;
+
+// Types for Menu
+typedef enum MENU_STATE {
+  MENU_STATE_HOME,
+  MENU_STATE_MAIN_MENU,
+  MENU_STATE_REFLOWPROFILE,
+  MENU_STATE_EDIT_REFLOW,
+  MENU_STATE_SETTINGS,
+  MENU_STATE_INFO,
+  MENU_STATE_EDIT_NUMBER,
+  MENU_STATE_EDIT_NUMBER_DONE,
+  MENU_SETTING_LIST,
+}
+menuState_t;
+
+menuState_t menuState;
 
 void setup() {
 
@@ -161,77 +187,38 @@ void setup() {
   Serial.printf("SD Card Size: %lluMB\n", cardSize);
   Serial.printf("Total space: %lluMB\n", SD.totalBytes() / (1024 * 1024));
   Serial.printf("Used space: %lluMB\n", SD.usedBytes() / (1024 * 1024));
+
 }
 
-int buttonRead(int pin) {
-  // read the state of the switch into a local variable:
-  int reading = analogRead(pin);
-  Serial.println(reading);
 
-  // check to see if you just pressed the button
-  // (i.e. the input went from LOW to HIGH), and you've waited long enough
-  // since the last press to ignore any noise:
-
-  // If the switch changed, due to noise or pressing:
-  if (reading != lastButtonState) {
-    // reset the debouncing timer
-    lastDebounceTime_ = millis();
-  }
-
-  if ((millis() - lastDebounceTime_) > debounceDelay) {
-    // whatever the reading is at, it's been there for longer than the debounce
-    // delay, so take it as the actual current state:
-
-    // if the button state has changed:
-    if (reading != buttonState) {
-      buttonState = reading;
-
-      // only toggle the LED if the new button state is HIGH
-      if (buttonState == HIGH) {
-        Serial.println("Button was pressed!");
-        //return 1;
-      }
-    }
-  }
-
-  // save the reading. Next time through the loop, it'll be the lastButtonState:
-  lastButtonState = reading;
-}
-
-void readAnalogButtons() {
-  if (AXIS_X.wasAxisPressed() == 1) {
-    Serial.println("Down");
-  } else if (AXIS_X.wasAxisPressed() == 2) {
-    Serial.println("Up");
-  } else if (AXIS_Y.wasAxisPressed() == 1) {
-    Serial.println("Left");
-  } else if (AXIS_Y.wasAxisPressed() == 2) {
-    Serial.println("Right");
-  }
-}
-void loop()
-{
-  reflow_main();
-  //loopScreen();
-
-  /* For testing select button (not yet implemented)& LED functionality. */
-  ///*
-  //  if (buttonRead(Menu) == 0) {
-  //    //if (Menu.read() == 1) {
-  //    Serial.println("Menu button pressed");
-  //    menuScreen();
-  //  }
-  //  if (buttonRead(Back) == 0) {
-  //    //if (Back.read() == 1) {
-  //    Serial.println("Back button pressed");
-  //    loopScreen();
-  //  }
+void processButtons() {
   for (int i = 0; i < numDigButtons; i++) {
     digitalButton(digitalButtonPins[i]);
   }
-  AXIS_X.readAxis();
-  AXIS_Y.readAxis();
   readAnalogButtons();
-  //analogButton(analogButtonPin);
-  //*/
+}
+
+void loop() {
+  reflow_main();
+  processButtons();
+  //processMenu();
+  if (state == 0) { // home screen
+    //loopScreen();
+    return;
+  } else if (state == 1) { // main menu
+    //mainMenuScreen();
+    return;
+  } else if (state == 2) { // select profile
+
+  } else if (state == 3) { // change profile
+
+  } else if (state == 4) { // add profile
+
+  } else if (state == 5) { // settings
+
+  } else if (state == 6) { // info
+
+  } else {
+
+  }
 }

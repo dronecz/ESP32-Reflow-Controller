@@ -1,3 +1,5 @@
+
+
 byte digitalButton (int pin) {
 
   for (int i = 0; i < numDigButtons; i++) {
@@ -52,55 +54,68 @@ long analogLastDebounceTime = 0;  // the last time the output pin was toggled
 //long debounceDelay = 8;    // the debounce time; increase if the output flickers
 
 
-void analogButton(int pin) {
-  // read the state of the switch into a local variable:
-  int reading = analogRead(pin);
-  //Serial.println(analogRead(pin));
-  // check to see if you just pressed the button
-  // (i.e. the input went from LOW to HIGH),  and you've waited
-  // long enough since the last press to ignore any noise:
-
-  // If the switch changed, due to noise or pressing:
-  if (reading != lastButtonState) {
-    // reset the debouncing timer
-    analogLastDebounceTime = millis();
-  }
-
-  if ((millis() - analogLastDebounceTime) > debounce) {
-    // whatever the reading is at, it's been there for longer
-    // than the debounce delay, so take it as the actual current state:
-
-    // if the button state has changed:
-    if (reading != buttonState) {
-      buttonState = reading;
-      if (pin == 34) {
-        if (reading > 1500 && reading < 2000) {
-          Serial.println("Left");
-        } else {
-          Serial.println("Right");
-        }
+void readAnalogButtons() {
+  AXIS_X.readAxis();
+  AXIS_Y.readAxis();
+  if (menuState != MENU_STATE_EDIT_NUMBER) {
+    if (AXIS_X.wasAxisPressed() == 1) {
+      if (menuSelectLine < 5) {
+        menuSelectLine++;
+#ifdef DEBUG
+        Serial.println("Down; Select line:  " + String(menuSelectLine) + "; Print line: " + String(menuPrintLine));
+#endif
       }
+    } else if (AXIS_X.wasAxisPressed() == 2) {
+      if (menuSelectLine > 0) {
+        menuSelectLine--;
+#ifdef DEBUG
+        Serial.println("Up; Select line: " + String(menuSelectLine) + "; Print line: " + String(menuPrintLine));
+#endif
+      }
+    } else if (AXIS_Y.wasAxisPressed() == 1) {
+#ifdef DEBUG
+      Serial.println("Left");
+#endif
+    } else if (AXIS_Y.wasAxisPressed() == 2) {
+#ifdef DEBUG
+      Serial.println("Right");
+#endif
     }
   }
-
-  // save the reading.  Next time through the loop,
-  // it'll be the lastButtonState:
-  lastButtonState = reading;
-
 }
+
+
 // Events to trigger by click and press+hold
 
-void event1(int pin)
-{
+void event1(int pin) {
   if (pin > 20  && pin < 40) {
     if (pin == 27) {
+#ifdef DEBUG
       Serial.println("Select");
+#endif
     } else if (pin == 32) {
+      state = 1;
+//      if (state == 1) {
+//        mainMenuScreen();
+//      }
+#ifdef DEBUG
       Serial.println("Menu");
+      Serial.println("State is :" + String(state));
+#endif
     } else if (pin == 33) {
+      state = 0; 
+      if (state == 0) {
+        loopScreen();
+      }
+#ifdef DEBUG
       Serial.println("Back");
+      Serial.println("State is :" + String(state));
+#endif
+      //      menuSelectLine = 0;
     } else
+#ifdef DEBUG
       Serial.println("button 1 (" + String(pin) + ")");
+#endif
   }
   delay(50);
   //  if (pin == 32) {
