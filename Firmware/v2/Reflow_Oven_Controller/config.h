@@ -35,7 +35,7 @@ int buzzerPin = 15;
 
 // FW info
 
-const String fwVersion = "0.1.18_beta";
+const String fwVersion = "0.2.21_beta";
 
 // Setup
 

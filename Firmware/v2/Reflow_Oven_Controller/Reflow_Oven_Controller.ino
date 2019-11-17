@@ -19,7 +19,6 @@
 //#define font &FreeSans9pt7b
 
 WiFiMulti wifiMulti;
-int wifiStatus;
 
 // Use software SPI: CS, DI, DO, CLK
 //Adafruit_MAX31856 max = Adafruit_MAX31856(max_cs, max_di, max_do, max_clk);
@@ -46,6 +45,7 @@ unsigned long debounceDelay = 200;    // the debounce time; increase if the outp
 String activeStatus = "";
 bool menu = 0;
 bool isFault = 0;
+bool connected = 0;
 
 // Button variables
 int buttonVal[numDigButtons] = {0};                            // value read from button
@@ -58,26 +58,28 @@ int debounce = 50;
 int holdTime = 1000;
 
 byte state = 0; // 0 = boot, 1 = main menu, 2 = select profile, 3 = change profile, 4 = add profile, 5 = settings, 6 = info
-byte menuPrintLine = 0;
-byte menuSelectLine = 0;
-byte rememberHomeMenuSelectLine = 0;
+byte previousState = 0;
+//byte menuPrintLine = 0;
+//byte menuSelectLine = 0;
+//byte rememberHomeMenuSelectLine = 0;
 byte settings_pointer = 0;
+byte previousSettingsPointer = 0;
 
-// Types for Menu
-typedef enum MENU_STATE {
-  MENU_STATE_HOME,
-  MENU_STATE_MAIN_MENU,
-  MENU_STATE_REFLOWPROFILE,
-  MENU_STATE_EDIT_REFLOW,
-  MENU_STATE_SETTINGS,
-  MENU_STATE_INFO,
-  MENU_STATE_EDIT_NUMBER,
-  MENU_STATE_EDIT_NUMBER_DONE,
-  MENU_SETTING_LIST,
-}
-menuState_t;
-
-menuState_t menuState;
+//// Types for Menu
+//typedef enum MENU_STATE {
+//  MENU_STATE_HOME,
+//  MENU_STATE_MAIN_MENU,
+//  MENU_STATE_REFLOWPROFILE,
+//  MENU_STATE_EDIT_REFLOW,
+//  MENU_STATE_SETTINGS,
+//  MENU_STATE_INFO,
+//  MENU_STATE_EDIT_NUMBER,
+//  MENU_STATE_EDIT_NUMBER_DONE,
+//  MENU_SETTING_LIST,
+//}
+//menuState_t;
+//
+//menuState_t menuState;
 
 void setup() {
 
@@ -109,32 +111,20 @@ void setup() {
   // Start-up splash
   digitalWrite(buzzerPin, LOW);
 
-
   delay(100);
-  // This is for testing on different board
-#ifdef ODROID
-  ledcSetup(2, 10000, 8);
-  ledcAttachPin(LCD_PIN, 2);
-  ledcWrite(2, 200);
-#endif
-
-  //digitalWrite(buzzerPin, HIGH);
 
   // Turn off LED (active low)
   digitalWrite(ledPin, ledState);
 
   // Button initialization
-  //pinMode(BUTTON_SELECT, INPUT_PULLUP);
   pinMode(BUTTON_AXIS_Y, INPUT_PULLDOWN);
   pinMode(BUTTON_AXIS_X, INPUT_PULLDOWN);
-  //pinMode(Menu, INPUT_PULLUP);
-  //pinMode(Back, INPUT_PULLUP);
 
   for (byte i = 0; i < numDigButtons - 1 ; i++) {
     // Set button input pin
     if (digitalButtonPins[i] > 20  && digitalButtonPins[i] < 40) {
       pinMode(digitalButtonPins[i], INPUT_PULLUP);
-      //digitalWrite(digitalButtonPins[i], HIGH  );
+      digitalWrite(digitalButtonPins[i], LOW  );
       Serial.println(digitalButtonPins[i]);
     }
   }
@@ -145,12 +135,11 @@ void setup() {
     Serial.println("WiFi connected");
     Serial.print("IP address: ");
     Serial.println(WiFi.localIP());
+    connected = 1;
   } else {
     Serial.println("Skipping, no matching network found.");
   }
-
-  wifiStatus = WiFi.status();
-
+  
   max31856.begin();
   max31856.setThermocoupleType(MAX31856_TCTYPE_K);
 
@@ -207,7 +196,7 @@ void loop() {
     return;
   } else if (state == 1) { // main menu
     //mainMenuScreen();
-    return;
+    //return;
   } else if (state == 2) { // select profile
 
   } else if (state == 3) { // change profile
