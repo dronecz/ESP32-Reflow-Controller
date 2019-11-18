@@ -59,29 +59,29 @@ void readAnalogButtons() {
   AXIS_Y.readAxis();
   //if (menuState != MENU_STATE_EDIT_NUMBER) {
   if (AXIS_X.wasAxisPressed() == 1) {
-    if (settings_pointer < 4) {
+    if (settings_pointer < numOfPointers) {
       settings_pointer++;
       UpdateSettingsPointer();
-#ifdef DEBUG
-      Serial.println("Down; Settings pointer:  " + String(settings_pointer));
-#endif
+      if (verboseOutput != 0) {
+        Serial.println("Down; Settings pointer:  " + String(settings_pointer));
+      }
     }
   } else if (AXIS_X.wasAxisPressed() == 2) {
     if (settings_pointer > 0) {
       settings_pointer--;
       UpdateSettingsPointer();
-#ifdef DEBUG
-      Serial.println("Up; Settings pointer: " + String(settings_pointer));
-#endif
+      if (verboseOutput != 0) {
+        Serial.println("Up; Settings pointer: " + String(settings_pointer));
+      }
     }
   } else if (AXIS_Y.wasAxisPressed() == 1) {
-#ifdef DEBUG
-    Serial.println("Left");
-#endif
+    if (verboseOutput != 0) {
+      Serial.println("Left");
+    }
   } else if (AXIS_Y.wasAxisPressed() == 2) {
-#ifdef DEBUG
-    Serial.println("Right");
-#endif
+    if (verboseOutput != 0) {
+      Serial.println("Right");
+    }
   }
   //}
 }
@@ -92,10 +92,11 @@ void readAnalogButtons() {
 void event1(int pin) {
   if (pin > 20  && pin < 40) {
     if (pin == 27) { // Select button
-      previousState = state;
-#ifdef DEBUG
-      Serial.println("Previous state is: " + String(previousState));
-#endif
+      //previousState = state;
+      if (verboseOutput != 0) {
+        Serial.println("Previous state is: " + String(previousState));
+        Serial.println("State is: " + String(state));
+      }
       if (state == 1) {
         if (settings_pointer == 0) {
           showSelectProfile();
@@ -111,51 +112,85 @@ void event1(int pin) {
         previousSettingsPointer = settings_pointer;
       } else if (state == 2) {
         if (settings_pointer == 0) {
-          
+
         } else if (settings_pointer == 1) {
-          
+
         } else if  (settings_pointer == 2) {
-          
+
         } else if  (settings_pointer == 3) {
-          
+
         } else {
-          
+
         }
+      } else if (state == 5) {
+        previousSettingsPointer = settings_pointer; //store previous position in menu
+        //settings_pointer = 0; // clear pointer
+        if (settings_pointer == 0) {
+          if (buttons != 0) {
+            buttons = 0;
+          } else {
+            buttons = 1;
+          }
+          if (verboseOutput != 0) {
+            Serial.println("Buttons value is: " + String(buttons));
+          }
+          setButtons(55);
+        } else if (settings_pointer == 1) {
+          if (fan != 0) {
+            fan = 0;
+          } else {
+            fan = 1;
+          }
+          if (verboseOutput != 0) {
+            Serial.println("Fan value is: " + String(fan));
+          }
+          setFan(75);
+        } else if  (settings_pointer == 2) {
+          if (horizontal != 0) {
+            horizontal = 0;
+          } else {
+            horizontal = 1;
+          }
+          if (verboseOutput != 0) {
+            Serial.println("Display value is: " + String(horizontal));
+          }
+          setDisplay(95);
+          //        } else if  (settings_pointer == 3) {
+          //
+          //        } else {
+          //
+        }
+
       }
-#ifdef DEBUG
-      Serial.println("Select");
-#endif
+      if (verboseOutput != 0) {
+        Serial.println("Select");
+      }
     } else if (pin == 32) { //Menu button
       //state = 1;
 
       if (state == 0) {
         mainMenuScreen();
       }
-#ifdef DEBUG
-      Serial.println("Menu");
-      Serial.println("State is :" + String(state));
-#endif
+      if (verboseOutput != 0) {
+        Serial.println("Menu");
+        Serial.println("State is :" + String(state));
+      }
     } else if (pin == 33) { // Back button
       //state = 0;
       if (state == 1) {
         loopScreen();
         settings_pointer = 0;
       } else {
-        state = previousState;
         settings_pointer = previousSettingsPointer;
-        if (state == 1) {
-          mainMenuScreen();
-        }
+        mainMenuScreen();
       }
-#ifdef DEBUG
-      Serial.println("Back");
-      Serial.println("State is :" + String(state));
-#endif
-      //      menuSelectLine = 0;
-    } else
-#ifdef DEBUG
+      if (verboseOutput != 0) {
+        Serial.println("Back");
+        Serial.println("State is :" + String(state));
+      }
+    } else if (verboseOutput != 0) {
       Serial.println("button 1 (" + String(pin) + ")");
-#endif
+    }
   }
   delay(50);
   //  if (pin == 32) {

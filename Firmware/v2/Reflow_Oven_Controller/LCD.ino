@@ -98,7 +98,7 @@ void leftText(String text, uint16_t color, int yCord, int xCord = 0) {
 
 void ShowMenuOptions( bool clearAll )
 {
-  int buttonPosY[] = { 19, 74, 129, 184 };
+  int buttonPosY[] = { 45, 100, 145, 200 };
   int buttonHeight = 16;
   int buttonWidth = 4;
 
@@ -112,7 +112,7 @@ void ShowMenuOptions( bool clearAll )
   //      display.fillRect( display.width() - 95,  buttonPosY[i] - 2, 95, buttonHeight + 4, ILI9341_BLACK );
   //  }
 
-  if ( state == 1 )
+  if ( state == 1 || state == 5)
   {
     // button 0
     //display.fillRect( display.width() - 5,  buttonPosY[0], buttonWidth, buttonHeight, ILI9341_GREEN );
@@ -223,63 +223,74 @@ void UpdateSettingsPointer() {
     //    if (settings_pointer >= 0 && settings_pointer <= 4) {
     display.setTextColor( ILI9341_WHITE, ILI9341_BLACK );
     display.setTextSize(1);
-    display.fillRect( 0, 20, 30, display.height() - 20, ILI9341_BLACK );
-    display.setCursor( 15, ( 29 + ( 20 * settings_pointer ) ) );
+    display.fillRect( 0, 40, 20, display.height() - 20, ILI9341_BLACK );
+    display.setCursor( 10, ( 54 + ( 20 * settings_pointer ) ) );
     display.println(">");
 
 
-    display.setTextSize(1);
+    display.setTextSize(0);
     display.setTextColor( ILI9341_GREEN, ILI9341_BLACK );
     display.fillRect( 0, display.height() - 40, display.width(), 40, ILI9341_BLACK );
     switch ( settings_pointer )
     {
-        //      case 0:
-        //        println_Center( display, "Select which profile to reflow", display.width() / 2, display.height() - 20 );
-        //        break;
-        //
-        //      case 1:
-        //        println_Center( display, "Enable fan for end of reflow, requires 5V DC fan", display.width() / 2, display.height() - 20 );
-        //        break;
-        //
-        //      case 2:
-        //        println_Center( display, "Keep fan on for XXX sec after reflow", display.width() / 2, display.height() - 20 );
-        //        break;
-        //
-        //      case 3:
-        //        println_Center( display, "Soak and Reflow look ahead for rate change speed", display.width() / 2, display.height() - 20 );
-        //        break;
-        //
-        //      case 4:
-        //        println_Center( display, "Adjust the power boost", display.width() / 2, display.height() - 20 );
-        //        break;
-        //
-        //      case 5:
-        //        println_Center( display, "Adjust temp probe reading offset", display.width() / 2, display.height() - 20 );
-        //        break;
-        //
-        //      case 6:
-        //        println_Center( display, "Force full power on initial ramp-up - be careful!", display.width() / 2, display.height() - 20 );
-        //        break;
-        //
-        //      case 7:
-        //        println_Center( display, "Reset to default settings", display.width() / 2, display.height() - 20 );
-        //        break;
-        //
-        //      default:
-        //        //println_Center( display, "", display.width() / 2, display.height() - 20 );
-        //        display.println("Test");
-        //        break;
+      case 0:
+        //println_Center( display, "Select which profile to reflow", display.width() / 2, display.height() - 20 );
+        centeredText("Select which profile to reflow", ILI9341_GREEN, 300);
+        break;
+
+      case 1:
+        centeredText("Change selected profile", ILI9341_GREEN, 300);
+        break;
+
+      case 2:
+        centeredText("Add reflow profile", ILI9341_GREEN, 300);
+        break;
+
+      case 3:
+        centeredText("Show settings menu", ILI9341_GREEN, 300);
+        break;
+
+      case 4:
+        centeredText("Show info menu", ILI9341_GREEN, 300);
+        break;
     }
     display.setTextSize(2);
   }
 
-  else if ( state == 12 )
+  else if ( state == 5 )
   {
-    display.setTextColor( ILI9341_BLUE, ILI9341_BLACK );
-    display.setTextSize(2);
-    display.fillRect( 0, 20, 20, display.height() - 20, ILI9341_BLACK );
-    display.setCursor( 5, ( 50 + ( 20 * ( settings_pointer * 2 ) ) ) );
+    display.setTextColor( ILI9341_WHITE, ILI9341_BLACK );
+    display.setTextSize(1);
+    display.fillRect( 0, 40, 20, display.height() - 20, ILI9341_BLACK );
+    display.setCursor( 10, ( 54 + ( 20 * settings_pointer ) ) );
     display.println(">");
+
+    display.setTextSize(0);
+    display.setTextColor( ILI9341_GREEN, ILI9341_BLACK );
+    display.fillRect( 0, display.height() - 40, display.width(), 40, ILI9341_BLACK );
+    switch ( settings_pointer )
+    {
+      case 0:
+        //println_Center( display, "Select which profile to reflow", display.width() / 2, display.height() - 20 );
+        centeredText("Set Yes if you have them", ILI9341_GREEN, 300);
+        break;
+
+      case 1:
+        centeredText("Set Yes to use fan", ILI9341_GREEN, 300);
+        break;
+
+      case 2:
+        centeredText("Orientation of the screen", ILI9341_GREEN, 300);
+        break;
+//
+//      case 3:
+//        centeredText("Show settings menu", ILI9341_GREEN, 300);
+//        break;
+//
+//      case 4:
+//        centeredText("Show info menu", ILI9341_GREEN, 300);
+//        break;
+    }
   }
 }
 
@@ -365,16 +376,21 @@ void loopScreen() {
 
 
 void mainMenuScreen() {
+  previousState = state;
   state = 1;
+  numOfPointers = 4;
 #ifdef DEBUG
   Serial.println("State is :" + String(state));
 #endif
-  int y = 30;
+  int y = 55;
   int h = 20;
   display.setFont(&FreeSans9pt7b);
   display.fillScreen(ILI9341_BLACK);
   display.setTextColor(ILI9341_WHITE);
   display.setTextSize(1);
+  display.setCursor(0, 4);
+  centeredText("Main menu", ILI9341_WHITE, 10);
+  display.fillRect(0, 28, 240, 3, ILI9341_WHITE );
   display.setCursor(10, y);
 
   leftText("Select profile", ILI9341_WHITE, y); rightText("->", ILI9341_WHITE, y);
@@ -387,51 +403,155 @@ void mainMenuScreen() {
 }
 
 void showSelectProfile() {
+  previousState = state;
   state = 2;
+#ifdef DEBUG
+  Serial.println("State is :" + String(state));
+#endif
   display.fillScreen(ILI9341_BLACK);
   display.setRotation(2);
   display.setFont(&FreeSans9pt7b);
   display.setTextColor(ILI9341_WHITE);
   display.setTextSize(1);
-  display.setCursor(5, 15);
-  display.println("Select profile");
+  display.setCursor(0, 4);
+  centeredText("Select profile menu", ILI9341_WHITE, 10);
+  display.fillRect(0, 28, 240, 3, ILI9341_WHITE );
 }
 
 void showChangeProfile() {
+  previousState = state;
   state = 3;
-  Serial.println("Change profile");
+#ifdef DEBUG
+  Serial.println("State is :" + String(state));
+#endif
+  int y = 55; //from left side of the LCD
+  int h = 20;
+  display.setFont(&FreeSans9pt7b);
+  display.fillScreen(ILI9341_BLACK);
+  display.setTextColor(ILI9341_WHITE);
+  display.setTextSize(1);
+  display.setCursor(0, 4);
+  centeredText("Change profile menu", ILI9341_WHITE, 10);
+  display.fillRect(0, 28, 240, 3, ILI9341_WHITE );
 }
 
 void showAddProfile() {
+  previousState = state;
   state = 4;
-  Serial.println("Add profile");
+#ifdef DEBUG
+  Serial.println("State is :" + String(state));
+#endif
+  int y = 55; //from left side of the LCD
+  int h = 20;
+  display.setFont(&FreeSans9pt7b);
+  display.fillScreen(ILI9341_BLACK);
+  display.setTextColor(ILI9341_WHITE);
+  display.setTextSize(1);
+  display.setCursor(0, 4);
+  centeredText("Add profile menu", ILI9341_WHITE, 10);
+  display.fillRect(0, 28, 240, 3, ILI9341_WHITE );
 }
 
 void showSettings() {
+  previousState = state;
   state = 5;
-  int y = 30; //from left side of the LCD
+  numOfPointers = 6;
+#ifdef DEBUG
+  Serial.println("State is :" + String(state));
+#endif
+  int y = 55; //from left side of the LCD
   int h = 20;
   display.setFont(&FreeSans9pt7b);
   display.fillScreen(ILI9341_BLACK);
   display.setTextColor(ILI9341_WHITE);
   display.setTextSize(1);
-  display.setCursor(10, y);
-  leftText("Settings", ILI9341_WHITE, y);
+  display.setCursor(0, 4);
+  centeredText("Settings menu", ILI9341_WHITE, 10);
+  display.fillRect(0, 28, 240, 3, ILI9341_WHITE );
+  display.setCursor(30, y);
+  //  leftText("Settings", ILI9341_WHITE, y);
+  setButtons(y); // y = 55
+  y += h;
+  setFan(y); // y = 75
+  y += h;
+  setDisplay(y); // y = 95
+  y += h;
+  ShowMenuOptions(true);
 }
 void showInfo() {
+  previousState = state;
   state = 6;
-  int y = 30; //from left side of the LCD
+#ifdef DEBUG
+  Serial.println("State is :" + String(state));
+#endif
+  int y = 55; //from left side of the LCD
   int h = 20;
   display.setFont(&FreeSans9pt7b);
   display.fillScreen(ILI9341_BLACK);
   display.setTextColor(ILI9341_WHITE);
   display.setTextSize(1);
-  display.setCursor(10, y);
-  leftText("FW version: " + fwVersion, ILI9341_WHITE, y);
+  display.setCursor(0, 4);
+  centeredText("Info menu", ILI9341_WHITE, 10);
+  display.fillRect(0, 28, 240, 3, ILI9341_WHITE );
+  leftText("- FW version: " + fwVersion, ILI9341_WHITE, y, -15);
   if (connected != 0) {
     String ipAddress = WiFi.localIP().toString();
-    leftText("WiFi: " + String(WiFi.SSID()), ILI9341_WHITE, y + h);
-    leftText("IP: " + ipAddress, ILI9341_WHITE, y + h * 2);
+    leftText("- WiFi: " + String(WiFi.SSID()), ILI9341_WHITE, y + h, -15);
+    leftText("- IP: " + ipAddress, ILI9341_WHITE, y + h * 2, -15);
+  }
+}
+
+void setButtons (int y) {
+  //  if (horizontal != 0) {
+  //     display.fillRect( 0, 20, 30, display.height() - 20, ILI9341_BLACK );
+  //  } else {
+  //    //display.fillRect( 0, 20, y - 5, display.height() - 20, ILI9341_BLACK );
+  //  }
+  display.fillRect( 30, y - 18, 200, 20, ILI9341_BLACK );
+  display.setTextColor(ILI9341_WHITE);
+  display.setTextSize(1);
+  display.setCursor(30, y);
+  display.print("Menu/Back buttons: ");
+  if (buttons != 0) {
+    display.println("Yes");
+  } else {
+    display.println("No");
+  }
+}
+
+void setFan (int y) {
+  //  if (horizontal != 0) {
+  //    //display.fillRect( 0, 20, y - 5, display.height() - 20, ILI9341_BLACK );
+  //  } else {
+  //    //display.fillRect( 0, 20, y - 5, display.height() - 20, ILI9341_BLACK );
+  //  }
+  display.fillRect( 30, y - 18, 200, 20, ILI9341_BLACK );
+  display.setTextColor(ILI9341_WHITE);
+  display.setTextSize(1);
+  display.setCursor(30, y);
+  display.print("Use fan: ");
+  if (fan != 0) {
+    display.println("Yes");
+  } else {
+    display.println("No");
+  }
+}
+
+void setDisplay (int y) {
+  //  if (horizontal != 0) {
+  //    //display.fillRect( 0, 20, y - 5, display.height() - 20, ILI9341_BLACK );
+  //  } else {
+  //    //display.fillRect( 0, 20, y - 5, display.height() - 20, ILI9341_BLACK );
+  //  }
+  display.fillRect( 30, y - 18, 200, 20, ILI9341_BLACK );
+  display.setTextColor(ILI9341_WHITE);
+  display.setTextSize(1);
+  display.setCursor(30, y);
+  display.print("Orientation: ");
+  if (horizontal != 0) {
+    display.println("Horizontal");
+  } else {
+    display.println("Vertical");
   }
 }
 

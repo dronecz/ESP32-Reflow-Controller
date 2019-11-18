@@ -46,7 +46,12 @@ String activeStatus = "";
 bool menu = 0;
 bool isFault = 0;
 bool connected = 0;
-
+bool horizontal = 0;
+bool fan = 0;
+bool buttons = 0;
+bool debug = 0;
+bool verboseOutput = 0; 
+ 
 // Button variables
 int buttonVal[numDigButtons] = {0};                            // value read from button
 int buttonLast[numDigButtons] = {0};                           // buffered value of the button's previous state
@@ -57,6 +62,7 @@ boolean menuMode[numDigButtons] = {false};                     // whether menu m
 int debounce = 50;
 int holdTime = 1000;
 
+byte numOfPointers = 0; 
 byte state = 0; // 0 = boot, 1 = main menu, 2 = select profile, 3 = change profile, 4 = add profile, 5 = settings, 6 = info
 byte previousState = 0;
 //byte menuPrintLine = 0;
@@ -191,23 +197,4 @@ void loop() {
   reflow_main();
   processButtons();
   //processMenu();
-  if (state == 0) { // home screen
-    //loopScreen();
-    return;
-  } else if (state == 1) { // main menu
-    //mainMenuScreen();
-    //return;
-  } else if (state == 2) { // select profile
-
-  } else if (state == 3) { // change profile
-
-  } else if (state == 4) { // add profile
-
-  } else if (state == 5) { // settings
-
-  } else if (state == 6) { // info
-
-  } else {
-
-  }
 }
