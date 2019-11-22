@@ -29,15 +29,18 @@ int ledState = LOW;
 int buzzerPin = 15;
 //int switchPin = 27; // Select button
 /*Swich pin definition*/
-#define BUTTON_SELECT 27
-#define BUTTON_AXIS_Y 35
-#define BUTTON_AXIS_X 34
-#define BUTTON_MENU 32
-#define BUTTON_BACK 33
+#define BUTTON_SELECT   27
+#define BUTTON_AXIS_Y   35
+#define BUTTON_AXIS_X   34
+#define BUTTON_MENU     32
+#define BUTTON_BACK     33
+#define SD_CS_pin       22
 
 // FW info
 
-const String fwVersion = "0.2.22_beta";
+const String fwVersion = "0.2.24_beta";
+#define ServerVersion "1.0"
+#define projectName "ESP32 Reflow Oven Controller"
 
 // Setup
 

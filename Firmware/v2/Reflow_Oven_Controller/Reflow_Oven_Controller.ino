@@ -3,20 +3,19 @@
 #include <Adafruit_MAX31856.h>
 #include "Adafruit_GFX.h"
 #include <Fonts/FreeSans9pt7b.h>
+#include <Preferences.h>
 #include <WiFi.h>
 #include <WiFiMulti.h>
+#include <WebServer.h>
+#include <ESPmDNS.h>
 #include "FS.h"
-#include "SD.h"
+#include <SD.h>
 #include "SPI.h"
 #include "config.h"
 //#include "LCD.h"
 #include "Button.h"
 #include "reflow_logic.h"
-#include "sd_card.h"
-
-//#include <PID_v1.h>
-
-//#define font &FreeSans9pt7b
+#include "webserver.h"
 
 WiFiMulti wifiMulti;
 
@@ -28,6 +27,9 @@ Adafruit_MAX31856 max31856 = Adafruit_MAX31856(max_cs);
 // Use hardware SPI
 Adafruit_ILI9341 display = Adafruit_ILI9341(display_cs, display_dc, display_rst);
 //Adafruit_ILI9341 display = Adafruit_ILI9341(display_cs, display_dc, display_mosi, display_sclk, display_rst);
+
+Preferences preferences;
+WebServer server(80);
 
 #define DEBOUNCE_MS 100
 Button AXIS_Y = Button(BUTTON_AXIS_Y, true, DEBOUNCE_MS);
@@ -50,8 +52,8 @@ bool horizontal = 0;
 bool fan = 0;
 bool buttons = 0;
 bool debug = 0;
-bool verboseOutput = 0; 
- 
+bool verboseOutput = 1;
+
 // Button variables
 int buttonVal[numDigButtons] = {0};                            // value read from button
 int buttonLast[numDigButtons] = {0};                           // buffered value of the button's previous state
@@ -62,7 +64,7 @@ boolean menuMode[numDigButtons] = {false};                     // whether menu m
 int debounce = 50;
 int holdTime = 1000;
 
-byte numOfPointers = 0; 
+byte numOfPointers = 0;
 byte state = 0; // 0 = boot, 1 = main menu, 2 = select profile, 3 = change profile, 4 = add profile, 5 = settings, 6 = info
 byte previousState = 0;
 //byte menuPrintLine = 0;
@@ -70,6 +72,7 @@ byte previousState = 0;
 //byte rememberHomeMenuSelectLine = 0;
 byte settings_pointer = 0;
 byte previousSettingsPointer = 0;
+bool   SD_present = false;
 
 //// Types for Menu
 //typedef enum MENU_STATE {
@@ -91,9 +94,38 @@ void setup() {
 
   Serial.begin(115200);
 
-  Serial.println("**** ESP32 Reflow Oven Controller ****");
+  Serial.println(projectName);
 
-  Serial.println("FW version is: " + fwVersion);
+  Serial.println("FW version is: " + String(fwVersion) + "_&_" + String(__DATE__) + "_&_" + String(__TIME__));
+
+  preferences.begin("store", false);
+  buttons = preferences.getBool("buttons", 0);
+  fan = preferences.getBool("fan", 0);
+  horizontal = preferences.getBool("horizontal", 0);
+  //  savedData = preferences.getString("data_bck", "");
+  //  savedDataFlag = preferences.getBool("data_bck_flag", 0);
+  //  prevSessId = preferences.getULong("prevSessId", 0);
+  //
+  //  machineName = preferences.getString("machineName", "");
+  //  SSIDString = preferences.getString("SSIDString", "");
+  //  passwordString = preferences.getString("passwordString", "");
+  //  sendName = preferences.getBool("sendName", 0);
+  //  sendFilament = preferences.getBool("sendFilament", 0);
+  //  sendTime = preferences.getBool("sendTime", 0);
+  preferences.end();
+
+  Serial.println("Buttons: " + String(buttons));
+  Serial.println("Fan is: " + String(fan));
+  Serial.println("Horizontal: " + String(horizontal));
+  //  Serial.println("API key is : " + (API_key));
+  //  Serial.println("Saved data are: " + (savedData));
+  //  Serial.println("Saved data flag is: " + String(savedDataFlag));
+  //  Serial.println("Previous session ID was: " + String(prevSessId));
+  //  Serial.println("Send name: " + String(sendName) + ", Send filament: " + String(sendFilament) + ", Send time: " + String(sendTime));
+  //  Serial.println("Reset settings: " + String(resetSettings));
+  //  Serial.println("SSIDs are: " + SSIDString);
+  //  Serial.println("passwords are: " + passwordString);
+
 
   display.begin();
   startScreen();
@@ -135,17 +167,29 @@ void setup() {
     }
   }
 
-  Serial.println("Connecting Wifi...");
-  if (wifiMulti.run() == WL_CONNECTED) {
-    Serial.println("");
-    Serial.println("WiFi connected");
-    Serial.print("IP address: ");
-    Serial.println(WiFi.localIP());
-    connected = 1;
-  } else {
-    Serial.println("Skipping, no matching network found.");
+  Serial.println("Connecting ...");
+  while (wifiMulti.run() != WL_CONNECTED) { // Wait for the Wi-Fi to connect: scan for Wi-Fi networks, and connect to the strongest of the networks above
+    delay(250); Serial.print('.');
   }
-  
+  Serial.println("\nConnected to " + WiFi.SSID() + " Use IP address: " + WiFi.localIP().toString()); // Report which SSID and IP is in use
+
+  // The logical name http://fileserver.local will also access the device if you have 'Bonjour' running or your system supports multicast dns
+  if (!MDNS.begin("reflowserver")) {          // Set your preferred server name, if you use "myserver" the address would be http://myserver.local/
+    Serial.println(F("Error setting up MDNS responder!"));
+    ESP.restart();
+  }
+
+  ///////////////////////////// Server Commands
+  server.on("/",         HomePage);
+  server.on("/download", File_Download);
+  server.on("/upload",   File_Upload);
+  server.on("/fupload",  HTTP_POST, []() {
+    server.send(200);
+  }, handleFileUpload);
+  ///////////////////////////// End of Request commands
+  server.begin();
+  Serial.println("HTTP server started");
+
   max31856.begin();
   max31856.setThermocoupleType(MAX31856_TCTYPE_K);
 
@@ -156,35 +200,41 @@ void setup() {
   // Initialize thermocouple reading variable
   nextRead = millis();
 
-  if (!SD.begin(22)) {
-    Serial.println("Card Mount Failed");
-    return;
+  Serial.print(F("Initializing SD card..."));
+  if (!SD.begin(SD_CS_pin)) { // see if the card is present and can be initialised. Wemos SD-Card CS uses D8
+    Serial.println(F("Card failed or not present, no SD Card data logging possible..."));
+    SD_present = false;
   }
-  uint8_t cardType = SD.cardType();
-
-  if (cardType == CARD_NONE) {
-    Serial.println("No SD card attached");
-    return;
+  else
+  {
+    Serial.println(F("Card initialised... file access enabled..."));
+    SD_present = true;
   }
-
-  Serial.print("SD Card Type: ");
-  if (cardType == CARD_MMC) {
-    Serial.println("MMC");
-  } else if (cardType == CARD_SD) {
-    Serial.println("SDSC");
-  } else if (cardType == CARD_SDHC) {
-    Serial.println("SDHC");
-  } else {
-    Serial.println("UNKNOWN");
-  }
-
-  uint64_t cardSize = SD.cardSize() / (1024 * 1024);
-  Serial.printf("SD Card Size: %lluMB\n", cardSize);
-  Serial.printf("Total space: %lluMB\n", SD.totalBytes() / (1024 * 1024));
-  Serial.printf("Used space: %lluMB\n", SD.usedBytes() / (1024 * 1024));
 
 }
 
+void updatePreferences() {
+  preferences.begin("store", false);
+  preferences.putBool("buttons", buttons);
+  preferences.putBool("fan", fan);
+  preferences.putBool("horizontal", horizontal);
+  //  savedData = preferences.getString("data_bck", "");
+  //  savedDataFlag = preferences.getBool("data_bck_flag", 0);
+  //  prevSessId = preferences.getULong("prevSessId", 0);
+  //
+  //  machineName = preferences.getString("machineName", "");
+  //  SSIDString = preferences.getString("SSIDString", "");
+  //  passwordString = preferences.getString("passwordString", "");
+  //  sendName = preferences.getBool("sendName", 0);
+  //  sendFilament = preferences.getBool("sendFilament", 0);
+  //  sendTime = preferences.getBool("sendTime", 0);
+  preferences.end();
+  if (verboseOutput != 0) {
+    Serial.println("Buttons: " + String(buttons));
+    Serial.println("Fan is: " + String(fan));
+    Serial.println("Horizontal: " + String(horizontal));
+  }
+}
 
 void processButtons() {
   for (int i = 0; i < numDigButtons; i++) {
@@ -196,5 +246,5 @@ void processButtons() {
 void loop() {
   reflow_main();
   processButtons();
-  //processMenu();
+  server.handleClient(); // Listen for client connections
 }

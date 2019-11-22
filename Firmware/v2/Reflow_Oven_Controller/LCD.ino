@@ -255,6 +255,7 @@ void UpdateSettingsPointer() {
         break;
     }
     display.setTextSize(2);
+    previousSettingsPointer = settings_pointer;
   }
 
   else if ( state == 5 )
@@ -282,21 +283,21 @@ void UpdateSettingsPointer() {
       case 2:
         centeredText("Orientation of the screen", ILI9341_GREEN, 300);
         break;
-//
-//      case 3:
-//        centeredText("Show settings menu", ILI9341_GREEN, 300);
-//        break;
-//
-//      case 4:
-//        centeredText("Show info menu", ILI9341_GREEN, 300);
-//        break;
+        //
+        //      case 3:
+        //        centeredText("Show settings menu", ILI9341_GREEN, 300);
+        //        break;
+        //
+        //      case 4:
+        //        centeredText("Show info menu", ILI9341_GREEN, 300);
+        //        break;
     }
   }
 }
 
 void infoScreen() {
   display.fillScreen(ILI9341_BLACK);
-  display.setRotation(2);
+  //display.setRotation(2);
   display.setFont(&FreeSans9pt7b);
   //display.setFont(&FreeSans9pt7b);
   display.setTextColor(ILI9341_WHITE);
@@ -329,17 +330,32 @@ void infoScreen() {
 }
 void startScreen() {
   display.fillScreen(ILI9341_BLACK);
-  display.setRotation(2);
-  int y = 100;
-  display.setFont(&FreeSans9pt7b);
-  display.setTextSize(2);
-  centeredText("ESP32", ILI9341_WHITE, y);
-  centeredText("Reflow", ILI9341_WHITE, y + 32);
-  centeredText("Controller", ILI9341_WHITE, y + 64);
-  display.setTextSize(1);
-  centeredText("by", ILI9341_WHITE, y + 164);
-  centeredText("Czech maker", ILI9341_WHITE, y + 184);
-  centeredText("www.czechmaker.com", ILI9341_WHITE, y + 204);
+  int y;
+  if (horizontal != 0) {
+    display.setRotation(3);
+    y = 40;
+    display.setFont(&FreeSans9pt7b);
+    display.setTextSize(2);
+    centeredText("ESP32", ILI9341_WHITE, y);
+    centeredText("Reflow", ILI9341_WHITE, y + 32);
+    centeredText("Controller", ILI9341_WHITE, y + 64);
+    display.setTextSize(1);
+    centeredText("by", ILI9341_WHITE, y + 134);
+    centeredText("Czech maker", ILI9341_WHITE, y + 154);
+    centeredText("www.czechmaker.com", ILI9341_WHITE, y + 174);
+  } else {
+    display.setRotation(2);
+    y = 100;
+    display.setFont(&FreeSans9pt7b);
+    display.setTextSize(2);
+    centeredText("ESP32", ILI9341_WHITE, y);
+    centeredText("Reflow", ILI9341_WHITE, y + 32);
+    centeredText("Controller", ILI9341_WHITE, y + 64);
+    display.setTextSize(1);
+    centeredText("by", ILI9341_WHITE, y + 164);
+    centeredText("Czech maker", ILI9341_WHITE, y + 184);
+    centeredText("www.czechmaker.com", ILI9341_WHITE, y + 204);
+  }
   delay(2000);
   loopScreen();
 }
@@ -409,7 +425,7 @@ void showSelectProfile() {
   Serial.println("State is :" + String(state));
 #endif
   display.fillScreen(ILI9341_BLACK);
-  display.setRotation(2);
+  //display.setRotation(2);
   display.setFont(&FreeSans9pt7b);
   display.setTextColor(ILI9341_WHITE);
   display.setTextSize(1);
@@ -456,6 +472,7 @@ void showSettings() {
   previousState = state;
   state = 5;
   numOfPointers = 6;
+  settings_pointer = 0; // clear pointer
 #ifdef DEBUG
   Serial.println("State is :" + String(state));
 #endif

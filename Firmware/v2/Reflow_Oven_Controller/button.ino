@@ -96,6 +96,8 @@ void event1(int pin) {
       if (verboseOutput != 0) {
         Serial.println("Previous state is: " + String(previousState));
         Serial.println("State is: " + String(state));
+        Serial.println("Settings pointer: " + String(settings_pointer));
+        Serial.println("Previous settings pointer: " + String(previousSettingsPointer));
       }
       if (state == 1) {
         if (settings_pointer == 0) {
@@ -109,7 +111,7 @@ void event1(int pin) {
         } else {
           showInfo();
         }
-        previousSettingsPointer = settings_pointer;
+        //previousSettingsPointer = settings_pointer;
       } else if (state == 2) {
         if (settings_pointer == 0) {
 
@@ -123,44 +125,39 @@ void event1(int pin) {
 
         }
       } else if (state == 5) {
-        previousSettingsPointer = settings_pointer; //store previous position in menu
+
         //settings_pointer = 0; // clear pointer
         if (settings_pointer == 0) {
-          if (buttons != 0) {
-            buttons = 0;
-          } else {
-            buttons = 1;
-          }
+          buttons = !buttons;
+
           if (verboseOutput != 0) {
             Serial.println("Buttons value is: " + String(buttons));
           }
           setButtons(55);
+          updatePreferences();
         } else if (settings_pointer == 1) {
-          if (fan != 0) {
-            fan = 0;
-          } else {
-            fan = 1;
-          }
+          fan = !fan;
+
           if (verboseOutput != 0) {
             Serial.println("Fan value is: " + String(fan));
           }
           setFan(75);
+          updatePreferences();
         } else if  (settings_pointer == 2) {
-          if (horizontal != 0) {
-            horizontal = 0;
-          } else {
-            horizontal = 1;
-          }
+          horizontal = !horizontal;
           if (verboseOutput != 0) {
             Serial.println("Display value is: " + String(horizontal));
           }
           setDisplay(95);
+          updatePreferences();
+          previousSettingsPointer,settings_pointer = 0;
+          startScreen();
           //        } else if  (settings_pointer == 3) {
           //
           //        } else {
           //
         }
-
+        //previousSettingsPointer = settings_pointer; //store previous position in menu
       }
       if (verboseOutput != 0) {
         Serial.println("Select");
@@ -187,6 +184,8 @@ void event1(int pin) {
       if (verboseOutput != 0) {
         Serial.println("Back");
         Serial.println("State is :" + String(state));
+        Serial.println("Settings pointer: " + String(settings_pointer));
+        Serial.println("Previous settings pointer: " + String(previousSettingsPointer));
       }
     } else if (verboseOutput != 0) {
       Serial.println("button 1 (" + String(pin) + ")");
