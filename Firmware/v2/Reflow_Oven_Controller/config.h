@@ -38,7 +38,7 @@ int buzzerPin = 15;
 
 // FW info
 
-const String fwVersion = "0.2.24_beta";
+const String fwVersion = "0.2.27_beta";
 #define ServerVersion "1.0"
 #define projectName "ESP32 Reflow Oven Controller"
 

@@ -53,6 +53,7 @@ bool fan = 0;
 bool buttons = 0;
 bool debug = 0;
 bool verboseOutput = 1;
+bool disableMenu = 0;
 
 // Button variables
 int buttonVal[numDigButtons] = {0};                            // value read from button
@@ -63,9 +64,10 @@ boolean ignoreUp[numDigButtons] = {false};                     // whether to ign
 boolean menuMode[numDigButtons] = {false};                     // whether menu mode has been activated or not
 int debounce = 50;
 int holdTime = 1000;
+int oldTemp = 0;
 
 byte numOfPointers = 0;
-byte state = 0; // 0 = boot, 1 = main menu, 2 = select profile, 3 = change profile, 4 = add profile, 5 = settings, 6 = info
+byte state = 0; // 0 = boot, 1 = main menu, 2 = select profile, 3 = change profile, 4 = add profile, 5 = settings, 6 = info, 7 = start reflow, 8 = stop reflow
 byte previousState = 0;
 //byte menuPrintLine = 0;
 //byte menuSelectLine = 0;
@@ -73,6 +75,7 @@ byte previousState = 0;
 byte settings_pointer = 0;
 byte previousSettingsPointer = 0;
 bool   SD_present = false;
+
 
 //// Types for Menu
 //typedef enum MENU_STATE {
@@ -168,12 +171,14 @@ void setup() {
   }
 
   Serial.println("Connecting ...");
-  while (wifiMulti.run() != WL_CONNECTED) { // Wait for the Wi-Fi to connect: scan for Wi-Fi networks, and connect to the strongest of the networks above
-    delay(250); Serial.print('.');
+  if (wifiMulti.run() == WL_CONNECTED) { // Wait for the Wi-Fi to connect: scan for Wi-Fi networks, and connect to the strongest of the networks above
+    //delay(250); Serial.print('.');
+    Serial.println("\nConnected to " + WiFi.SSID() + " Use IP address: " + WiFi.localIP().toString()); // Report which SSID and IP is in use
+    connected = 1;
   }
-  Serial.println("\nConnected to " + WiFi.SSID() + " Use IP address: " + WiFi.localIP().toString()); // Report which SSID and IP is in use
+  
 
-  // The logical name http://fileserver.local will also access the device if you have 'Bonjour' running or your system supports multicast dns
+    // The logical name http://reflowserver.local will also access the device if you have 'Bonjour' running or your system supports multicast dns
   if (!MDNS.begin("reflowserver")) {          // Set your preferred server name, if you use "myserver" the address would be http://myserver.local/
     Serial.println(F("Error setting up MDNS responder!"));
     ESP.restart();
@@ -209,6 +214,9 @@ void setup() {
   {
     Serial.println(F("Card initialised... file access enabled..."));
     SD_present = true;
+
+    listDir(SD, "/", 0);
+    //readFile(SD, "/Sn42Bi576Ag04.json", 0);
   }
 
 }
@@ -247,4 +255,55 @@ void loop() {
   reflow_main();
   processButtons();
   server.handleClient(); // Listen for client connections
+}
+
+void listDir(fs::FS &fs, const char * dirname, uint8_t levels) {
+  Serial.printf("Listing directory: %s\n", dirname);
+  
+  File root = fs.open(dirname);
+  if (!root) {
+    Serial.println("Failed to open directory");
+    return;
+  }
+  if (!root.isDirectory()) {
+    Serial.println("Not a directory");
+    return;
+  }
+
+  File file = root.openNextFile();
+  while (file) {
+    if (file.isDirectory()) {
+      Serial.print("  DIR : ");
+      Serial.println(file.name());
+      if (levels) {
+        listDir(fs, file.name(), levels - 1);
+      }
+    } else {
+//      Serial.print("  FILE: ");
+//      Serial.print(file.name());
+      //            Serial.print("  SIZE: ");
+      //            Serial.println(file.size());
+      String fName = file.name();
+      if (fName.endsWith("json")){
+        Serial.println(fName);
+      }
+    }
+    file = root.openNextFile();
+  }
+}
+
+void readFile(fs::FS &fs, const char * path, const char * type) {
+  Serial.printf("Reading file: %s\n", path);
+
+  File file = fs.open(path);
+  if (!file) {
+    Serial.println("Failed to open file for reading");
+    return;
+  }
+
+  Serial.print("Read from file: ");
+  while (file.available()) {
+    Serial.write(file.read());
+  }
+  file.close();
 }

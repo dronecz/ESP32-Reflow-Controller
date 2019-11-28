@@ -59,6 +59,9 @@ void HomePage(){
   SendHTML_Header();
 //  webpage += F("<a href='/download'><button>Download</button></a>");
   webpage += F("<a href='/upload'><button>Upload</button></a>");
+  webpage += F("<h3>Temp is: "); 
+  webpage += String(inputInt);
+  webpage += F("</h3>");
   append_page_footer();
   SendHTML_Content();
   SendHTML_Stop(); // Stop is needed because no content length was sent

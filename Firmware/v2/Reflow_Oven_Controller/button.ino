@@ -18,9 +18,9 @@ byte digitalButton (int pin) {
     // Test for button release and store the up time
     if (buttonVal[i] == LOW && buttonLast[i] == HIGH && (millis() - btnUpTime[i]) > debounce)
     {
-      if (ignoreUp[i] == false && menuMode[i] == false) event1(digitalButtonPins[i]);
+      if (ignoreUp[i] == false ) event1(digitalButtonPins[i]);
       else ignoreUp[i] = false;
-      btnUpTime[i] = millis();
+      btnDnTime[i] = millis();
     }
     /*-----------------------------------------------------------------------------------------------------*/
     // Test for button held down for longer than the hold time
@@ -78,9 +78,24 @@ void readAnalogButtons() {
     if (verboseOutput != 0) {
       Serial.println("Left");
     }
+    if ( buttons != 1 ) {
+      if (state == 0 ) { // menu button if there is not dedicted Menu button on board
+        mainMenuScreen();
+      }
+    }
   } else if (AXIS_Y.wasAxisPressed() == 2) {
     if (verboseOutput != 0) {
       Serial.println("Right");
+    } if (buttons != 1) { // back button if there is not dedicted Back button on board
+      if (state == 1 || state == 7 || state == 8) {
+        loopScreen();
+        settings_pointer = 0;
+      } else {
+        if (state > 0) {
+          settings_pointer = previousSettingsPointer;
+          mainMenuScreen();
+        }
+      }
     }
   }
   //}
@@ -99,9 +114,22 @@ void event1(int pin) {
         Serial.println("Settings pointer: " + String(settings_pointer));
         Serial.println("Previous settings pointer: " + String(previousSettingsPointer));
       }
-      if (state == 1) {
+      if (state == 0) {
+        if (reflowStatus == REFLOW_STATUS_ON) {
+          stopReflowScreen();
+          disableMenu = 0;
+        } else {
+          startReflowScreen();
+          disableMenu = 1;
+        }
+      }
+      else if (state == 1) {
         if (settings_pointer == 0) {
-          showSelectProfile();
+          if (disableMenu != 0) {
+            showInfo();
+          } else {
+            showSelectProfile();
+          }
         } else if (settings_pointer == 1) {
           showChangeProfile();
         } else if  (settings_pointer == 2) {
@@ -150,7 +178,7 @@ void event1(int pin) {
           }
           setDisplay(95);
           updatePreferences();
-          previousSettingsPointer,settings_pointer = 0;
+          previousSettingsPointer, settings_pointer = 0;
           startScreen();
           //        } else if  (settings_pointer == 3) {
           //
@@ -158,6 +186,16 @@ void event1(int pin) {
           //
         }
         //previousSettingsPointer = settings_pointer; //store previous position in menu
+      } else if (state == 7) {
+        reflowStatus = REFLOW_STATUS_ON;
+        loopScreen();
+      } else if (state == 8) {
+        // Button press is for cancelling
+        // Turn off reflow process
+        reflowStatus = REFLOW_STATUS_OFF;
+        // Reinitialize state machine
+        reflowState = REFLOW_STATE_IDLE;
+        loopScreen();
       }
       if (verboseOutput != 0) {
         Serial.println("Select");
@@ -174,12 +212,14 @@ void event1(int pin) {
       }
     } else if (pin == 33) { // Back button
       //state = 0;
-      if (state == 1) {
+      if (state == 1 || state == 7 || state == 8) {
         loopScreen();
         settings_pointer = 0;
       } else {
-        settings_pointer = previousSettingsPointer;
-        mainMenuScreen();
+        if (state > 0) {
+          settings_pointer = previousSettingsPointer;
+          mainMenuScreen();
+        }
       }
       if (verboseOutput != 0) {
         Serial.println("Back");

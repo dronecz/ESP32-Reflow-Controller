@@ -6,6 +6,11 @@ extern Button AXIS_Y;
 
 extern bool isFault;
 extern String activeStatus;
+extern void loopScreen();
+extern int oldTemp;
+extern byte state;
+extern bool disableMenu;
+
 /*******************************************************************************
   Title: Reflow Oven Controller
   Version: 1.20
@@ -217,26 +222,26 @@ void reflow_main() {
   //loopScreen();
 
   // Time to read thermocouple?
-  if (millis() > nextRead)
-  {
+  if (millis() > nextRead) {
+
     // Read thermocouple next sampling period
     nextRead += SENSOR_SAMPLING_TIME;
     // Read current temperature
 
     input = max31856.readThermocoupleTemperature();
-      // Check and print any faults
-  uint8_t fault = max31856.readFault();
-  if (fault) {
-//    if (fault & MAX31856_FAULT_CJRANGE) Serial.println("Cold Junction Range Fault");
-//    if (fault & MAX31856_FAULT_TCRANGE) Serial.println("Thermocouple Range Fault");
-//    if (fault & MAX31856_FAULT_CJHIGH)  Serial.println("Cold Junction High Fault");
-//    if (fault & MAX31856_FAULT_CJLOW)   Serial.println("Cold Junction Low Fault");
-//    if (fault & MAX31856_FAULT_TCHIGH)  Serial.println("Thermocouple High Fault");
-//    if (fault & MAX31856_FAULT_TCLOW)   Serial.println("Thermocouple Low Fault");
-//    if (fault & MAX31856_FAULT_OVUV)    Serial.println("Over/Under Voltage Fault");
-//    if (fault & MAX31856_FAULT_OPEN)    Serial.println("Thermocouple Open Fault");
-    isFault = 1;
-  } 
+    // Check and print any faults
+    uint8_t fault = max31856.readFault();
+    if (fault) {
+      if (fault & MAX31856_FAULT_CJRANGE) Serial.println("Cold Junction Range Fault");
+      if (fault & MAX31856_FAULT_TCRANGE) Serial.println("Thermocouple Range Fault");
+      if (fault & MAX31856_FAULT_CJHIGH)  Serial.println("Cold Junction High Fault");
+      if (fault & MAX31856_FAULT_CJLOW)   Serial.println("Cold Junction Low Fault");
+      if (fault & MAX31856_FAULT_TCHIGH)  Serial.println("Thermocouple High Fault");
+      if (fault & MAX31856_FAULT_TCLOW)   Serial.println("Thermocouple Low Fault");
+      if (fault & MAX31856_FAULT_OVUV)    Serial.println("Over/Under Voltage Fault");
+      if (fault & MAX31856_FAULT_OPEN)    Serial.println("Thermocouple Open Fault");
+      isFault = 1;
+    }
 
     //    inputInt = (int) input;
     //    if ((input <= inputInt) || (input >= inputInt))  {
@@ -246,20 +251,26 @@ void reflow_main() {
       //loopScreen();
     }
     inputInt = input / 1;
-#ifdef DEBUG
-if ((input > 0) && (input <= 500)){
-    Serial.print(input);
-    Serial.print(";");
-    Serial.println(inputInt);
-}
-#endif
 
+    if (oldTemp != inputInt) {
+      if (state == 0) {
+        loopScreen();
+      }
+#ifdef DEBUG
+      if ((input > 0) && (input <= 500)) {
+        Serial.print("Float temp: " + String(input));
+        Serial.print(" ; ");
+        Serial.println("Integer temp: " + String(inputInt));
+      }
+#endif
+    }
     // If thermocouple problem detected
-    if (input == MAX31856_FAULT_CJRANGE){
+    if (input == MAX31856_FAULT_CJRANGE) {
       // Illegal operation
       reflowState = REFLOW_STATE_ERROR;
       reflowStatus = REFLOW_STATUS_OFF;
     }
+    oldTemp = inputInt;
   }
 
   if (millis() > nextCheck)
@@ -299,7 +310,7 @@ if ((input > 0) && (input <= 500)){
   switch (reflowState)
   {
     case REFLOW_STATE_IDLE:
-    activeStatus = "Idle";
+      activeStatus = "Idle";
       // If oven temperature is still above room temperature
       if (input >= TEMPERATURE_ROOM)
       {
@@ -452,7 +463,7 @@ if ((input > 0) && (input <= 500)){
       // No valid switch press
       switchStatus = SWITCH_NONE;
       // If switch #1 is pressed
-      if(input == -1)// (AXIS_X.readAxis() == 1)
+      if (input == -1) // (AXIS_X.readAxis() == 1)
       {
         // Intialize debounce counter
         lastDebounceTime = millis();
@@ -463,7 +474,7 @@ if ((input > 0) && (input <= 500)){
       break;
 
     case DEBOUNCE_STATE_CHECK:
-      if(input == -1)// (AXIS_X.readAxis() == 1)
+      if (input == -1) // (AXIS_X.readAxis() == 1)
       {
         // If minimum debounce period is completed
         if ((millis() - lastDebounceTime) > DEBOUNCE_PERIOD_MIN)
@@ -481,7 +492,7 @@ if ((input > 0) && (input <= 500)){
       break;
 
     case DEBOUNCE_STATE_RELEASE:
-      if(input == -1)// (AXIS_X.readAxis() > 0)
+      if (input == -1) // (AXIS_X.readAxis() > 0)
       {
         // Valid switch 1 press
         switchStatus = SWITCH_1;
