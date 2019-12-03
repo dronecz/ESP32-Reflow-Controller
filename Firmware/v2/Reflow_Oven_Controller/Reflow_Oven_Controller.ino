@@ -3,6 +3,7 @@
 #include <Adafruit_MAX31856.h>
 #include "Adafruit_GFX.h"
 #include <Fonts/FreeSans9pt7b.h>
+#include <ArduinoJson.h>
 #include <Preferences.h>
 #include <WiFi.h>
 #include <WiFiMulti.h>
@@ -51,6 +52,7 @@ bool connected = 0;
 bool horizontal = 0;
 bool fan = 0;
 bool buttons = 0;
+bool buzzer = 0;
 bool debug = 0;
 bool verboseOutput = 1;
 bool disableMenu = 0;
@@ -75,7 +77,9 @@ byte previousState = 0;
 byte settings_pointer = 0;
 byte previousSettingsPointer = 0;
 bool   SD_present = false;
-
+//char* json = "";
+String jsonName = "";
+char json;
 
 //// Types for Menu
 //typedef enum MENU_STATE {
@@ -105,7 +109,7 @@ void setup() {
   buttons = preferences.getBool("buttons", 0);
   fan = preferences.getBool("fan", 0);
   horizontal = preferences.getBool("horizontal", 0);
-  //  savedData = preferences.getString("data_bck", "");
+  buzzer = preferences.getBool("buzzer", 0);
   //  savedDataFlag = preferences.getBool("data_bck_flag", 0);
   //  prevSessId = preferences.getULong("prevSessId", 0);
   //
@@ -120,7 +124,7 @@ void setup() {
   Serial.println("Buttons: " + String(buttons));
   Serial.println("Fan is: " + String(fan));
   Serial.println("Horizontal: " + String(horizontal));
-  //  Serial.println("API key is : " + (API_key));
+  Serial.println("Buzzer: " + String(buzzer));
   //  Serial.println("Saved data are: " + (savedData));
   //  Serial.println("Saved data flag is: " + String(savedDataFlag));
   //  Serial.println("Previous session ID was: " + String(prevSessId));
@@ -176,9 +180,9 @@ void setup() {
     Serial.println("\nConnected to " + WiFi.SSID() + " Use IP address: " + WiFi.localIP().toString()); // Report which SSID and IP is in use
     connected = 1;
   }
-  
 
-    // The logical name http://reflowserver.local will also access the device if you have 'Bonjour' running or your system supports multicast dns
+
+  // The logical name http://reflowserver.local will also access the device if you have 'Bonjour' running or your system supports multicast dns
   if (!MDNS.begin("reflowserver")) {          // Set your preferred server name, if you use "myserver" the address would be http://myserver.local/
     Serial.println(F("Error setting up MDNS responder!"));
     ESP.restart();
@@ -215,8 +219,10 @@ void setup() {
     Serial.println(F("Card initialised... file access enabled..."));
     SD_present = true;
 
-    listDir(SD, "/", 0);
-    //readFile(SD, "/Sn42Bi576Ag04.json", 0);
+    listDir(SD, "/profiles", 0);
+    readFile(SD, jsonName , 0);
+    //printFile(json);
+    //parseJsonProfile();
   }
 
 }
@@ -226,7 +232,7 @@ void updatePreferences() {
   preferences.putBool("buttons", buttons);
   preferences.putBool("fan", fan);
   preferences.putBool("horizontal", horizontal);
-  //  savedData = preferences.getString("data_bck", "");
+  preferences.putBool("buzzer", buzzer);
   //  savedDataFlag = preferences.getBool("data_bck_flag", 0);
   //  prevSessId = preferences.getULong("prevSessId", 0);
   //
@@ -259,7 +265,7 @@ void loop() {
 
 void listDir(fs::FS &fs, const char * dirname, uint8_t levels) {
   Serial.printf("Listing directory: %s\n", dirname);
-  
+
   File root = fs.open(dirname);
   if (!root) {
     Serial.println("Failed to open directory");
@@ -279,20 +285,20 @@ void listDir(fs::FS &fs, const char * dirname, uint8_t levels) {
         listDir(fs, file.name(), levels - 1);
       }
     } else {
-//      Serial.print("  FILE: ");
-//      Serial.print(file.name());
+      //      Serial.print("  FILE: ");
+      //      Serial.print(file.name());
       //            Serial.print("  SIZE: ");
       //            Serial.println(file.size());
-      String fName = file.name();
-      if (fName.endsWith("json")){
-        Serial.println(fName);
+      jsonName = file.name();
+      if (jsonName.endsWith("json")) {
+        Serial.println("Find this JSON file: "  + jsonName);
       }
     }
     file = root.openNextFile();
   }
 }
 
-void readFile(fs::FS &fs, const char * path, const char * type) {
+void readFile(fs::FS &fs, String path, const char * type) {
   Serial.printf("Reading file: %s\n", path);
 
   File file = fs.open(path);
@@ -300,7 +306,6 @@ void readFile(fs::FS &fs, const char * path, const char * type) {
     Serial.println("Failed to open file for reading");
     return;
   }
-
   Serial.print("Read from file: ");
   while (file.available()) {
     Serial.write(file.read());

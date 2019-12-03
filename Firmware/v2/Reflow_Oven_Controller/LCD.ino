@@ -277,21 +277,20 @@ void UpdateSettingsPointer() {
     switch ( settings_pointer )
     {
       case 0:
-        //println_Center( display, "Select which profile to reflow", display.width() / 2, display.height() - 20 );
-        centeredText("Set Yes if you have them", ILI9341_GREEN, 300);
+        centeredText("Set buzzer on/off.", ILI9341_GREEN, 300);
         break;
 
       case 1:
-        centeredText("Set Yes to use fan", ILI9341_GREEN, 300);
+        centeredText("Orientation of the screen.", ILI9341_GREEN, 300);
         break;
 
       case 2:
-        centeredText("Orientation of the screen", ILI9341_GREEN, 300);
+        centeredText("Set Yes if you have them.", ILI9341_GREEN, 300);
         break;
-        //
-        //      case 3:
-        //        centeredText("Show settings menu", ILI9341_GREEN, 300);
-        //        break;
+
+      case 3:
+        centeredText("Set Yes to use fan.", ILI9341_GREEN, 300);
+        break;
         //
         //      case 4:
         //        centeredText("Show info menu", ILI9341_GREEN, 300);
@@ -518,7 +517,7 @@ void showAddProfile() {
 void showSettings() {
   previousState = state;
   state = 5;
-  numOfPointers = 6;
+  numOfPointers = 0;
   settings_pointer = 0; // clear pointer
 #ifdef DEBUG
   Serial.println("State is :" + String(state));
@@ -533,13 +532,21 @@ void showSettings() {
   centeredText("Settings menu", ILI9341_WHITE, 10);
   display.fillRect(0, 28, 240, 3, ILI9341_WHITE );
   display.setCursor(30, y);
-  //  leftText("Settings", ILI9341_WHITE, y);
-  setButtons(y); // y = 55
+  setBuzzer(y); //y == 55;
   y += h;
-  setFan(y); // y = 75
+  numOfPointers++;
+  setDisplay(y);
   y += h;
-  setDisplay(y); // y = 95
+  numOfPointers++;
+  setButtons(y);
   y += h;
+  numOfPointers++;
+  if (buttons != 0) {
+    setFan(y);
+    y += h;
+    numOfPointers++;
+  }
+
   ShowMenuOptions(true);
 }
 void showInfo() {
@@ -562,6 +569,24 @@ void showInfo() {
     String ipAddress = WiFi.localIP().toString();
     leftText("- WiFi: " + String(WiFi.SSID()), ILI9341_WHITE, y + h, -15);
     leftText("- IP: " + ipAddress, ILI9341_WHITE, y + h * 2, -15);
+  }
+}
+
+void setBuzzer (int y) {
+  //  if (horizontal != 0) {
+  //     display.fillRect( 0, 20, 30, display.height() - 20, ILI9341_BLACK );
+  //  } else {
+  //    //display.fillRect( 0, 20, y - 5, display.height() - 20, ILI9341_BLACK );
+  //  }
+  display.fillRect( 30, y - 18, 200, 20, ILI9341_BLACK );
+  display.setTextColor(ILI9341_WHITE);
+  display.setTextSize(1);
+  display.setCursor(30, y);
+  display.print("Use buzzer: ");
+  if (buzzer != 0) {
+    display.println("Yes");
+  } else {
+    display.println("No");
   }
 }
 

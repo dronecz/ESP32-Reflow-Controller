@@ -156,30 +156,40 @@ void event1(int pin) {
 
         //settings_pointer = 0; // clear pointer
         if (settings_pointer == 0) {
+          buzzer = !buzzer;
+          if (verboseOutput != 0) {
+            Serial.println("Buzzer value is: " + String(buzzer));
+          }
+          setBuzzer(55);
+          updatePreferences();
+        } else if (settings_pointer == 1) {
+
+          horizontal = !horizontal;
+          if (verboseOutput != 0) {
+            Serial.println("Display value is: " + String(horizontal));
+          }
+          setDisplay(75);
+          updatePreferences();
+          previousSettingsPointer, settings_pointer = 0;
+          startScreen();
+        }
+        else if (settings_pointer == 2) {
           buttons = !buttons;
 
           if (verboseOutput != 0) {
             Serial.println("Buttons value is: " + String(buttons));
           }
-          setButtons(55);
+          setButtons(95);
           updatePreferences();
-        } else if (settings_pointer == 1) {
+          showSettings();
+        } else if  (settings_pointer == 3) {
           fan = !fan;
 
           if (verboseOutput != 0) {
             Serial.println("Fan value is: " + String(fan));
           }
-          setFan(75);
+          setFan(115);
           updatePreferences();
-        } else if  (settings_pointer == 2) {
-          horizontal = !horizontal;
-          if (verboseOutput != 0) {
-            Serial.println("Display value is: " + String(horizontal));
-          }
-          setDisplay(95);
-          updatePreferences();
-          previousSettingsPointer, settings_pointer = 0;
-          startScreen();
           //        } else if  (settings_pointer == 3) {
           //
           //        } else {
