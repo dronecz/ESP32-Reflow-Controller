@@ -10,6 +10,7 @@ extern void loopScreen();
 extern int oldTemp;
 extern byte state;
 extern bool disableMenu;
+extern bool profileIsOn;
 
 /*******************************************************************************
   Title: Reflow Oven Controller
@@ -233,14 +234,14 @@ void reflow_main() {
     uint8_t fault = max31856.readFault();
     if (fault) {
       if (fault & MAX31856_FAULT_CJRANGE) //Serial.println("Cold Junction Range Fault");
-      if (fault & MAX31856_FAULT_TCRANGE) //Serial.println("Thermocouple Range Fault");
-      if (fault & MAX31856_FAULT_CJHIGH)  //Serial.println("Cold Junction High Fault");
-      if (fault & MAX31856_FAULT_CJLOW)   //Serial.println("Cold Junction Low Fault");
-      if (fault & MAX31856_FAULT_TCHIGH)  //Serial.println("Thermocouple High Fault");
-      if (fault & MAX31856_FAULT_TCLOW)   //Serial.println("Thermocouple Low Fault");
-      if (fault & MAX31856_FAULT_OVUV)    //Serial.println("Over/Under Voltage Fault");
-      if (fault & MAX31856_FAULT_OPEN)    //Serial.println("Thermocouple Open Fault");
-      isFault = 1;
+        if (fault & MAX31856_FAULT_TCRANGE) //Serial.println("Thermocouple Range Fault");
+          if (fault & MAX31856_FAULT_CJHIGH)  //Serial.println("Cold Junction High Fault");
+            if (fault & MAX31856_FAULT_CJLOW)   //Serial.println("Cold Junction Low Fault");
+              if (fault & MAX31856_FAULT_TCHIGH)  //Serial.println("Thermocouple High Fault");
+                if (fault & MAX31856_FAULT_TCLOW)   //Serial.println("Thermocouple Low Fault");
+                  if (fault & MAX31856_FAULT_OVUV)    //Serial.println("Over/Under Voltage Fault");
+                    if (fault & MAX31856_FAULT_OPEN)    //Serial.println("Thermocouple Open Fault");
+                      isFault = 1;
     }
 
     //    inputInt = (int) input;
@@ -256,7 +257,7 @@ void reflow_main() {
       if (state == 0) {
         loopScreen();
       }
-#ifdef DEBUG
+#ifdef Serial
       if ((input > 0) && (input <= 500)) {
         Serial.print("Float temp: " + String(input));
         Serial.print(" ; ");
@@ -320,7 +321,8 @@ void reflow_main() {
       else
       {
         // If switch is pressed to start reflow process
-        if (switchStatus == SWITCH_1)
+        //if (switchStatus == SWITCH_1)
+        if (profileIsOn != 0)
         {
           // Send header for CSV file
           Serial.println("Time Setpoint Input Output");
@@ -342,6 +344,7 @@ void reflow_main() {
       break;
 
     case REFLOW_STATE_PREHEAT:
+      activeStatus = "Preheat";
       reflowStatus = REFLOW_STATUS_ON;
       // If minimum soak temperature is achieve
       if (input >= TEMPERATURE_SOAK_MIN)
@@ -358,6 +361,7 @@ void reflow_main() {
       break;
 
     case REFLOW_STATE_SOAK:
+      activeStatus = "Soak";
       // If micro soak temperature is achieved
       if (millis() > timerSoak)
       {
@@ -377,6 +381,7 @@ void reflow_main() {
       break;
 
     case REFLOW_STATE_REFLOW:
+      activeStatus = "Reflow";
       // We need to avoid hovering at peak temperature for too long
       // Crude method that works like a charm and safe for the components
       if (input >= (TEMPERATURE_REFLOW_MAX - 5))
@@ -391,6 +396,7 @@ void reflow_main() {
       break;
 
     case REFLOW_STATE_COOL:
+      activeStatus = "Cool";
       // If minimum cool temperature is achieve
       if (input <= TEMPERATURE_COOL_MIN)
       {
@@ -406,6 +412,7 @@ void reflow_main() {
       break;
 
     case REFLOW_STATE_COMPLETE:
+      activeStatus = "Complete";
       if (millis() > buzzerPeriod)
       {
         // Turn off buzzer and green LED
@@ -457,7 +464,7 @@ void reflow_main() {
 
   // Simple switch debounce state machine (for switch #1 (both analog & digital
   // switch supported))
-  switch (debounceState)
+  switch (debounceState)  
   {
     case DEBOUNCE_STATE_IDLE:
       // No valid switch press

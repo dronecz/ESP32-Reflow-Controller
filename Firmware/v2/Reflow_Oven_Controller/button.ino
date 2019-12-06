@@ -115,9 +115,10 @@ void event1(int pin) {
         Serial.println("Previous settings pointer: " + String(previousSettingsPointer));
       }
       if (state == 0) {
-        if (reflowStatus == REFLOW_STATUS_ON) {
+        if (profileIsOn != 0) {
           stopReflowScreen();
           disableMenu = 0;
+          activeStatus = "Idle";
         } else {
           startReflowScreen();
           disableMenu = 1;
@@ -136,8 +137,10 @@ void event1(int pin) {
           showAddProfile();
         } else if  (settings_pointer == 3) {
           showSettings();
-        } else {
+        } else if (settings_pointer == 4) {
           showInfo();
+        } else if (settings_pointer == 5 ) {
+          updateFirmware();
         }
         //previousSettingsPointer = settings_pointer;
       } else if (state == 2) {
@@ -196,9 +199,11 @@ void event1(int pin) {
         }
         //previousSettingsPointer = settings_pointer; //store previous position in menu
       } else if (state == 7) {
-        reflowStatus = REFLOW_STATUS_ON;
+        //reflowStatus = REFLOW_STATUS_ON;
+        profileIsOn = 1;
         loopScreen();
       } else if (state == 8) {
+        profileIsOn = 0;
         // Button press is for cancelling
         // Turn off reflow process
         reflowStatus = REFLOW_STATUS_OFF;

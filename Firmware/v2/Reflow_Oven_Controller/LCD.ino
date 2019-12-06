@@ -258,6 +258,11 @@ void UpdateSettingsPointer() {
       case 4:
         centeredText("Show info menu", ILI9341_GREEN, 300);
         break;
+      case 5:
+        if (updataAvailable = 1) {
+          centeredText("Press Select to start update", ILI9341_GREEN, 300);
+        }
+        break;
     }
     display.setTextSize(2);
     previousSettingsPointer = settings_pointer;
@@ -376,10 +381,14 @@ void loopScreen() {
   Serial.println("State is :" + String(state));
 #endif
   display.fillScreen(ILI9341_BLACK);
+
   int tempTextPos = 240;
   int infoText = 50;
   display.setFont(&FreeSans9pt7b);
   display.setTextSize(1);
+  if (updataAvailable != 0) {
+    centeredText("!UPDATE AVAILABLE!", ILI9341_GREEN, 10);
+  }
   centeredText("Status:", ILI9341_WHITE, infoText);
   display.setTextSize(2);
   centeredText(activeStatus, ILI9341_WHITE, infoText + 32);
@@ -466,6 +475,12 @@ void mainMenuScreen() {
     numOfPointers++;
   }
   leftText("Info", ILI9341_WHITE, y); rightText("->", ILI9341_WHITE, y);
+
+  if (updataAvailable == 1) {
+    y += h;
+    numOfPointers++;
+    leftText("Update firmware", ILI9341_GREEN, y);
+  }
 
   ShowMenuOptions(true);
 }
@@ -651,6 +666,26 @@ void setOTA (int y) {
   }
 }
 
+void updateOK() {
+  display.fillScreen(ILI9341_BLACK);
+  int y;
+  if (horizontal != 0) {
+    display.setRotation(3);
+    y = 40;
+    display.setFont(&FreeSans9pt7b);
+    display.setTextSize(1);
+    centeredText("Update successfully", ILI9341_GREEN, y);
+    centeredText("completed. Rebooting.", ILI9341_GREEN, y + 32);
+  } else {
+    display.setRotation(2);
+    y = 100;
+    display.setFont(&FreeSans9pt7b);
+    display.setTextSize(1);
+    centeredText("Update successfully", ILI9341_GREEN, y);
+    centeredText("completed. Rebooting.", ILI9341_GREEN, y + 32);
+  }
+  delay(2000);
+}
 /* Saved for later use.. */
 /*
   void updateProcessDisplay() {

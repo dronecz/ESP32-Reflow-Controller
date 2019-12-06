@@ -4,11 +4,13 @@
 #include "Adafruit_GFX.h"
 #include <Fonts/FreeSans9pt7b.h>
 #include <ArduinoJson.h>
+#include <HTTPClient.h>
 #include <Preferences.h>
 #include <WiFi.h>
 #include <WiFiMulti.h>
 #include <WebServer.h>
 #include <ESPmDNS.h>
+#include <Update.h>
 #include "FS.h"
 #include <SD.h>
 #include "SPI.h"
@@ -16,9 +18,11 @@
 //#include "LCD.h"
 #include "Button.h"
 #include "reflow_logic.h"
+//#include "OTA.h"
 #include "webserver.h"
 
 WiFiMulti wifiMulti;
+HTTPClient http;
 
 // Use software SPI: CS, DI, DO, CLK
 //Adafruit_MAX31856 max = Adafruit_MAX31856(max_cs, max_di, max_do, max_clk);
@@ -57,6 +61,8 @@ bool useOTA = 0;
 bool debug = 0;
 bool verboseOutput = 1;
 bool disableMenu = 0;
+bool profileIsOn = 0;
+bool updataAvailable = 0;
 
 // Button variables
 int buttonVal[numDigButtons] = {0};                            // value read from button
@@ -122,7 +128,7 @@ void setup() {
   //  sendFilament = preferences.getBool("sendFilament", 0);
   //  sendTime = preferences.getBool("sendTime", 0);
   preferences.end();
-  
+
   Serial.println();
   Serial.println("Buttons: " + String(buttons));
   Serial.println("Fan is: " + String(fan));
@@ -182,8 +188,12 @@ void setup() {
   Serial.println("Connecting ...");
   if (wifiMulti.run() == WL_CONNECTED) { // Wait for the Wi-Fi to connect: scan for Wi-Fi networks, and connect to the strongest of the networks above
     //delay(250); Serial.print('.');
-    Serial.println("\nConnected to " + WiFi.SSID() + " Use IP address: " + WiFi.localIP().toString()); // Report which SSID and IP is in use
+    Serial.println("\nConnected to " + WiFi.SSID() + "; IP address: " + WiFi.localIP().toString()); // Report which SSID and IP is in use
     connected = 1;
+
+    if (useOTA != 0) {
+      OTA();
+    }
   }
 
 
@@ -229,7 +239,6 @@ void setup() {
     //printFile(json);
     //parseJsonProfile();
   }
-
 }
 
 void updatePreferences() {
