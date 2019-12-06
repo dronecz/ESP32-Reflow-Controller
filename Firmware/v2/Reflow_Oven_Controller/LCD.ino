@@ -273,7 +273,7 @@ void UpdateSettingsPointer() {
 
     display.setTextSize(0);
     display.setTextColor( ILI9341_GREEN, ILI9341_BLACK );
-    display.fillRect( 0, display.height() - 40, display.width(), 40, ILI9341_BLACK );
+    display.fillRect( 0, display.height() - 50, display.width(), 40, ILI9341_BLACK );
     switch ( settings_pointer )
     {
       case 0:
@@ -285,11 +285,17 @@ void UpdateSettingsPointer() {
         break;
 
       case 2:
-        centeredText("Set Yes if you have them.", ILI9341_GREEN, 300);
+        centeredText("Set Yes if you want to", ILI9341_GREEN, 280);
+        centeredText("use FW updates from web.", ILI9341_GREEN, 300);
         break;
 
       case 3:
-        centeredText("Set Yes to use fan.", ILI9341_GREEN, 300);
+        centeredText("Set Yes if you have them.", ILI9341_GREEN, 300);
+        break;
+      case 4:
+        if (buttons != 0) {
+          centeredText("Set Yes to use fan.", ILI9341_GREEN, 300);
+        }
         break;
         //
         //      case 4:
@@ -532,15 +538,23 @@ void showSettings() {
   centeredText("Settings menu", ILI9341_WHITE, 10);
   display.fillRect(0, 28, 240, 3, ILI9341_WHITE );
   display.setCursor(30, y);
+
   setBuzzer(y); //y == 55;
   y += h;
   numOfPointers++;
+
   setDisplay(y);
   y += h;
   numOfPointers++;
+
+  setOTA(y);
+  y += h;
+  numOfPointers++;
+
   setButtons(y);
   y += h;
   numOfPointers++;
+
   if (buttons != 0) {
     setFan(y);
     y += h;
@@ -573,11 +587,6 @@ void showInfo() {
 }
 
 void setBuzzer (int y) {
-  //  if (horizontal != 0) {
-  //     display.fillRect( 0, 20, 30, display.height() - 20, ILI9341_BLACK );
-  //  } else {
-  //    //display.fillRect( 0, 20, y - 5, display.height() - 20, ILI9341_BLACK );
-  //  }
   display.fillRect( 30, y - 18, 200, 20, ILI9341_BLACK );
   display.setTextColor(ILI9341_WHITE);
   display.setTextSize(1);
@@ -591,11 +600,6 @@ void setBuzzer (int y) {
 }
 
 void setButtons (int y) {
-  //  if (horizontal != 0) {
-  //     display.fillRect( 0, 20, 30, display.height() - 20, ILI9341_BLACK );
-  //  } else {
-  //    //display.fillRect( 0, 20, y - 5, display.height() - 20, ILI9341_BLACK );
-  //  }
   display.fillRect( 30, y - 18, 200, 20, ILI9341_BLACK );
   display.setTextColor(ILI9341_WHITE);
   display.setTextSize(1);
@@ -609,11 +613,6 @@ void setButtons (int y) {
 }
 
 void setFan (int y) {
-  //  if (horizontal != 0) {
-  //    //display.fillRect( 0, 20, y - 5, display.height() - 20, ILI9341_BLACK );
-  //  } else {
-  //    //display.fillRect( 0, 20, y - 5, display.height() - 20, ILI9341_BLACK );
-  //  }
   display.fillRect( 30, y - 18, 200, 20, ILI9341_BLACK );
   display.setTextColor(ILI9341_WHITE);
   display.setTextSize(1);
@@ -627,11 +626,6 @@ void setFan (int y) {
 }
 
 void setDisplay (int y) {
-  //  if (horizontal != 0) {
-  //    //display.fillRect( 0, 20, y - 5, display.height() - 20, ILI9341_BLACK );
-  //  } else {
-  //    //display.fillRect( 0, 20, y - 5, display.height() - 20, ILI9341_BLACK );
-  //  }
   display.fillRect( 30, y - 18, 200, 20, ILI9341_BLACK );
   display.setTextColor(ILI9341_WHITE);
   display.setTextSize(1);
@@ -641,6 +635,19 @@ void setDisplay (int y) {
     display.println("Horizontal");
   } else {
     display.println("Vertical");
+  }
+}
+
+void setOTA (int y) {
+  display.fillRect( 30, y - 18, 200, 20, ILI9341_BLACK );
+  display.setTextColor(ILI9341_WHITE);
+  display.setTextSize(1);
+  display.setCursor(30, y);
+  display.print("Update FW by OTA: ");
+  if (useOTA != 0) {
+    display.println("Yes");
+  } else {
+    display.println("No");
   }
 }
 

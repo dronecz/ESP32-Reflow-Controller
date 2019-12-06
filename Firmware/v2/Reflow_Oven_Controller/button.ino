@@ -153,7 +153,6 @@ void event1(int pin) {
 
         }
       } else if (state == 5) {
-
         //settings_pointer = 0; // clear pointer
         if (settings_pointer == 0) {
           buzzer = !buzzer;
@@ -163,7 +162,6 @@ void event1(int pin) {
           setBuzzer(55);
           updatePreferences();
         } else if (settings_pointer == 1) {
-
           horizontal = !horizontal;
           if (verboseOutput != 0) {
             Serial.println("Display value is: " + String(horizontal));
@@ -172,28 +170,29 @@ void event1(int pin) {
           updatePreferences();
           previousSettingsPointer, settings_pointer = 0;
           startScreen();
+        } else if  (settings_pointer == 2) {
+          useOTA = !useOTA;
+          if (verboseOutput != 0) {
+            Serial.println("Download FW by OTA: " + String(useOTA));
+          }
+          setOTA(95);
+          updatePreferences();
         }
-        else if (settings_pointer == 2) {
+        else if (settings_pointer == 3) {
           buttons = !buttons;
-
           if (verboseOutput != 0) {
             Serial.println("Buttons value is: " + String(buttons));
           }
-          setButtons(95);
+          setButtons(115);
           updatePreferences();
           showSettings();
-        } else if  (settings_pointer == 3) {
+        } else if  (settings_pointer == 4) {
           fan = !fan;
-
           if (verboseOutput != 0) {
             Serial.println("Fan value is: " + String(fan));
           }
-          setFan(115);
+          setFan(135);
           updatePreferences();
-          //        } else if  (settings_pointer == 3) {
-          //
-          //        } else {
-          //
         }
         //previousSettingsPointer = settings_pointer; //store previous position in menu
       } else if (state == 7) {

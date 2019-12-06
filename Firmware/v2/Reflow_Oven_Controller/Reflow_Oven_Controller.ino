@@ -53,6 +53,7 @@ bool horizontal = 0;
 bool fan = 0;
 bool buttons = 0;
 bool buzzer = 0;
+bool useOTA = 0;
 bool debug = 0;
 bool verboseOutput = 1;
 bool disableMenu = 0;
@@ -110,6 +111,7 @@ void setup() {
   fan = preferences.getBool("fan", 0);
   horizontal = preferences.getBool("horizontal", 0);
   buzzer = preferences.getBool("buzzer", 0);
+  useOTA = preferences.getBool("useOTA", 0);
   //  savedDataFlag = preferences.getBool("data_bck_flag", 0);
   //  prevSessId = preferences.getULong("prevSessId", 0);
   //
@@ -120,11 +122,14 @@ void setup() {
   //  sendFilament = preferences.getBool("sendFilament", 0);
   //  sendTime = preferences.getBool("sendTime", 0);
   preferences.end();
-
+  
+  Serial.println();
   Serial.println("Buttons: " + String(buttons));
   Serial.println("Fan is: " + String(fan));
   Serial.println("Horizontal: " + String(horizontal));
   Serial.println("Buzzer: " + String(buzzer));
+  Serial.println("OTA: " + String(useOTA));
+  Serial.println();
   //  Serial.println("Saved data are: " + (savedData));
   //  Serial.println("Saved data flag is: " + String(savedDataFlag));
   //  Serial.println("Previous session ID was: " + String(prevSessId));
@@ -233,6 +238,7 @@ void updatePreferences() {
   preferences.putBool("fan", fan);
   preferences.putBool("horizontal", horizontal);
   preferences.putBool("buzzer", buzzer);
+  preferences.putBool("useOTA", useOTA);
   //  savedDataFlag = preferences.getBool("data_bck_flag", 0);
   //  prevSessId = preferences.getULong("prevSessId", 0);
   //
@@ -244,9 +250,12 @@ void updatePreferences() {
   //  sendTime = preferences.getBool("sendTime", 0);
   preferences.end();
   if (verboseOutput != 0) {
+    Serial.println();
     Serial.println("Buttons: " + String(buttons));
     Serial.println("Fan is: " + String(fan));
     Serial.println("Horizontal: " + String(horizontal));
+    Serial.println("OTA: " + String(useOTA));
+    Serial.println();
   }
 }
 
