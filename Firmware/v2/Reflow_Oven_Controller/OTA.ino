@@ -60,6 +60,7 @@ void parseVersion(String a, String b) {
     updataAvailable = 1;
   } else {
     Serial.println("No new version, continue to boot..");
+    Serial.println();
   }
 }
 

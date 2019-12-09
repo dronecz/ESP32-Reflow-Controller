@@ -7,12 +7,12 @@
 #include <HTTPClient.h>
 #include <Preferences.h>
 #include <WiFi.h>
-#include <WiFiMulti.h>
 #include <WebServer.h>
 #include <ESPmDNS.h>
 #include <Update.h>
 #include "FS.h"
 #include <SD.h>
+#include <WiFiManager.h>          //https://github.com/tzapu/WiFiManager (development branch) -> download ZIP file -> Arduino IDE -> Project -> Add library -> Add library from ZIP file -> select downloaded file
 #include "SPI.h"
 #include "config.h"
 //#include "LCD.h"
@@ -21,7 +21,6 @@
 //#include "OTA.h"
 #include "webserver.h"
 
-WiFiMulti wifiMulti;
 HTTPClient http;
 
 // Use software SPI: CS, DI, DO, CLK
@@ -78,9 +77,7 @@ int oldTemp = 0;
 byte numOfPointers = 0;
 byte state = 0; // 0 = boot, 1 = main menu, 2 = select profile, 3 = change profile, 4 = add profile, 5 = settings, 6 = info, 7 = start reflow, 8 = stop reflow
 byte previousState = 0;
-//byte menuPrintLine = 0;
-//byte menuSelectLine = 0;
-//byte rememberHomeMenuSelectLine = 0;
+
 byte settings_pointer = 0;
 byte previousSettingsPointer = 0;
 bool   SD_present = false;
@@ -88,23 +85,10 @@ bool   SD_present = false;
 String jsonName = "";
 char json;
 
-//// Types for Menu
-//typedef enum MENU_STATE {
-//  MENU_STATE_HOME,
-//  MENU_STATE_MAIN_MENU,
-//  MENU_STATE_REFLOWPROFILE,
-//  MENU_STATE_EDIT_REFLOW,
-//  MENU_STATE_SETTINGS,
-//  MENU_STATE_INFO,
-//  MENU_STATE_EDIT_NUMBER,
-//  MENU_STATE_EDIT_NUMBER_DONE,
-//  MENU_SETTING_LIST,
-//}
-//menuState_t;
-//
-//menuState_t menuState;
+WiFiManager wm;
 
 void setup() {
+  WiFi.mode(WIFI_STA); // explicitly set mode, esp defaults to STA+AP
 
   Serial.begin(115200);
 
@@ -118,15 +102,7 @@ void setup() {
   horizontal = preferences.getBool("horizontal", 0);
   buzzer = preferences.getBool("buzzer", 0);
   useOTA = preferences.getBool("useOTA", 0);
-  //  savedDataFlag = preferences.getBool("data_bck_flag", 0);
-  //  prevSessId = preferences.getULong("prevSessId", 0);
-  //
-  //  machineName = preferences.getString("machineName", "");
-  //  SSIDString = preferences.getString("SSIDString", "");
-  //  passwordString = preferences.getString("passwordString", "");
-  //  sendName = preferences.getBool("sendName", 0);
-  //  sendFilament = preferences.getBool("sendFilament", 0);
-  //  sendTime = preferences.getBool("sendTime", 0);
+
   preferences.end();
 
   Serial.println();
@@ -136,21 +112,20 @@ void setup() {
   Serial.println("Buzzer: " + String(buzzer));
   Serial.println("OTA: " + String(useOTA));
   Serial.println();
-  //  Serial.println("Saved data are: " + (savedData));
-  //  Serial.println("Saved data flag is: " + String(savedDataFlag));
-  //  Serial.println("Previous session ID was: " + String(prevSessId));
-  //  Serial.println("Send name: " + String(sendName) + ", Send filament: " + String(sendFilament) + ", Send time: " + String(sendTime));
-  //  Serial.println("Reset settings: " + String(resetSettings));
-  //  Serial.println("SSIDs are: " + SSIDString);
-  //  Serial.println("passwords are: " + passwordString);
-
 
   display.begin();
   startScreen();
 
-  wifiMulti.addAP("SSID", "PASSWORD");
-  wifiMulti.addAP("SSID", "PASSWORD");
-  wifiMulti.addAP("SSID", "PASSWORD");
+  //reset settings - wipe credentials for testing
+  //wm.resetSettings();
+
+  wm.setConfigPortalBlocking(false);
+  if (wm.autoConnect("ReflowOvenAP")) {
+    Serial.println("connected...yeey :)");
+  }
+  else {
+    Serial.println("Configportal running");
+  }
 
   // SSR pin initialization to ensure reflow oven is off
 
@@ -186,7 +161,7 @@ void setup() {
   }
 
   Serial.println("Connecting ...");
-  if (wifiMulti.run() == WL_CONNECTED) { // Wait for the Wi-Fi to connect: scan for Wi-Fi networks, and connect to the strongest of the networks above
+  if (WiFi.status() == WL_CONNECTED) { // Wait for the Wi-Fi to connect: scan for Wi-Fi networks, and connect to the strongest of the networks above
     //delay(250); Serial.print('.');
     Serial.println("\nConnected to " + WiFi.SSID() + "; IP address: " + WiFi.localIP().toString()); // Report which SSID and IP is in use
     connected = 1;
@@ -194,8 +169,7 @@ void setup() {
     if (useOTA != 0) {
       OTA();
     }
-  }
-
+  } 
 
   // The logical name http://reflowserver.local will also access the device if you have 'Bonjour' running or your system supports multicast dns
   if (!MDNS.begin("reflowserver")) {          // Set your preferred server name, if you use "myserver" the address would be http://myserver.local/
@@ -238,6 +212,7 @@ void setup() {
     readFile(SD, jsonName , 0);
     //printFile(json);
     //parseJsonProfile();
+
   }
 }
 
@@ -248,16 +223,8 @@ void updatePreferences() {
   preferences.putBool("horizontal", horizontal);
   preferences.putBool("buzzer", buzzer);
   preferences.putBool("useOTA", useOTA);
-  //  savedDataFlag = preferences.getBool("data_bck_flag", 0);
-  //  prevSessId = preferences.getULong("prevSessId", 0);
-  //
-  //  machineName = preferences.getString("machineName", "");
-  //  SSIDString = preferences.getString("SSIDString", "");
-  //  passwordString = preferences.getString("passwordString", "");
-  //  sendName = preferences.getBool("sendName", 0);
-  //  sendFilament = preferences.getBool("sendFilament", 0);
-  //  sendTime = preferences.getBool("sendTime", 0);
   preferences.end();
+  
   if (verboseOutput != 0) {
     Serial.println();
     Serial.println("Buttons: " + String(buttons));
@@ -276,6 +243,7 @@ void processButtons() {
 }
 
 void loop() {
+  wm.process();
   reflow_main();
   processButtons();
   server.handleClient(); // Listen for client connections
