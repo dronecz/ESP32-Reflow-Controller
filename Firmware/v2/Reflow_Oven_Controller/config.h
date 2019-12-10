@@ -28,7 +28,7 @@ int ledState = LOW;
 /*Buzzer pin definition*/
 int buzzerPin = 15;
 /* Fan pin definition */
-int fanPin = 25;
+int fanPin = -1 ; // pin 25 -> pin is still high (need to solve this)
 
 /*Swich pin definition*/
 #define BUTTON_SELECT   27
@@ -40,7 +40,7 @@ int fanPin = 25;
 
 // FW info
 
-const String fwVersion = "0.2.29";
+const String fwVersion = "0.2.31";
 #define ServerVersion "1.0"
 #define projectName "ESP32 Reflow Oven Controller"
 String version_url  = "http://czechmaker.com/roc_version.txt";

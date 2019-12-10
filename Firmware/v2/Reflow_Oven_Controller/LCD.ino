@@ -1,5 +1,5 @@
 
-//extern byte menuPrintLine;
+extern JsonArray array;
 //extern byte menuSelectLine;
 #define ARROW 0x7e
 
@@ -308,7 +308,7 @@ void UpdateSettingsPointer() {
         //        break;
     }
   }
-    else if ( state == 9 )
+  else if ( state == 9 )
   {
     display.setTextColor( ILI9341_WHITE, ILI9341_BLACK );
     display.setTextSize(1);
@@ -518,6 +518,8 @@ void mainMenuScreen() {
 void showSelectProfile() {
   previousState = state;
   state = 2;
+  int y = 55; //from left side of the LCD
+  int h = 20;
 #ifdef DEBUG
   Serial.println("State is :" + String(state));
 #endif
@@ -529,6 +531,12 @@ void showSelectProfile() {
   display.setCursor(0, 4);
   centeredText("Select profile menu", ILI9341_WHITE, 10);
   display.fillRect(0, 28, 240, 3, ILI9341_WHITE );
+
+  String tempName = array[0];
+  leftText(tempName, ILI9341_WHITE, y);
+  String tempAlloy = array[1];
+  y += h;
+  leftText(tempAlloy, ILI9341_BLUE, y, +15);
 }
 
 void showChangeProfile() {
@@ -778,58 +786,67 @@ void testOutputs() {
   numOfPointers++;
 }
 
-void testBuzzer(int y){
-  int prevState = 0;
-    display.fillRect( 30, y - 18, 200, 20, ILI9341_BLACK );
+void testBuzzer(int y) {
+  //testState = LOW;
+  display.fillRect( 30, y - 18, 200, 20, ILI9341_BLACK );
   display.setTextColor(ILI9341_WHITE);
   display.setTextSize(1);
   display.setCursor(30, y);
   display.print("Test buzzer: ");
-  if (buzzerPin != LOW) {
+  if (testState != LOW) {
     display.println("On");
-    digitalWrite(buzzerPin, LOW);
+    digitalWrite(buzzerPin, HIGH);
   } else {
     display.println("Off");
-    digitalWrite(buzzerPin, HIGH);
+    digitalWrite(buzzerPin, LOW);
   }
 }
 
 void testFan (int y) {
+  //testState = LOW;
   display.fillRect( 30, y - 18, 200, 20, ILI9341_BLACK );
   display.setTextColor(ILI9341_WHITE);
   display.setTextSize(1);
   display.setCursor(30, y);
   display.print("Test fan: ");
-  if (fanPin != LOW) {
+  if (testState != LOW) {
     display.println("On");
+    //digitalWrite(fanPin, LOW);
   } else {
     display.println("Off");
+    //digitalWrite(fanPin, HIGH);
   }
 }
 
-void testSSR(int y){
-    display.fillRect( 30, y - 18, 200, 20, ILI9341_BLACK );
+void testSSR(int y) {
+  //testState = LOW;
+  display.fillRect( 30, y - 18, 200, 20, ILI9341_BLACK );
   display.setTextColor(ILI9341_WHITE);
   display.setTextSize(1);
   display.setCursor(30, y);
   display.print("Test SSR: ");
-  if (ssrPin != LOW) {
+  if (testState != LOW) {
     display.println("On");
+    digitalWrite(ssrPin, HIGH);
   } else {
     display.println("Off");
+    digitalWrite(ssrPin, LOW);
   }
 }
 
-void testLED(int y){
-    display.fillRect( 30, y - 18, 200, 20, ILI9341_BLACK );
+void testLED(int y) {
+  //testState = LOW;
+  display.fillRect( 30, y - 18, 200, 20, ILI9341_BLACK );
   display.setTextColor(ILI9341_WHITE);
   display.setTextSize(1);
   display.setCursor(30, y);
   display.print("Test LED: ");
-  if (ledPin != LOW) {
+  if (testState != LOW) {
     display.println("On");
+    digitalWrite(ledPin, HIGH);
   } else {
     display.println("Off");
+    digitalWrite(ledPin, LOW);
   }
 }
 

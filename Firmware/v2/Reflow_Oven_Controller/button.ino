@@ -196,7 +196,7 @@ void event1(int pin) {
           }
           setFan(135);
           updatePreferences();
-        }else if  (settings_pointer == 5) {
+        } else if  (settings_pointer == 5) {
           testOutputs();
         }
         //previousSettingsPointer = settings_pointer; //store previous position in menu
@@ -215,12 +215,32 @@ void event1(int pin) {
       } else if (state == 9) {
         //settings_pointer = 0; // clear pointer
         if (settings_pointer == 0) {
+          if (testState != LOW) {
+            testState = LOW;
+          } else {
+            testState = HIGH;
+          }
           testBuzzer(55);
         } else if (settings_pointer == 1) {
-          testFan(75);
+          if (testState != LOW) {
+            testState = LOW;
+          } else {
+            testState = HIGH;
+          }
+          //testFan(75);
         } else if  (settings_pointer == 2) {
+          if (testState != LOW) {
+            testState = LOW;
+          } else {
+            testState = HIGH;
+          }
           testSSR(95);
         } else if (settings_pointer == 3) {
+          if (testState != LOW) {
+            testState = LOW;
+          } else {
+            testState = HIGH;
+          }
           testLED(115);
         }
         //        } else if  (settings_pointer == 4) {

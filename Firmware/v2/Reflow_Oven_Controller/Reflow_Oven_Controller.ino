@@ -62,6 +62,7 @@ bool verboseOutput = 1;
 bool disableMenu = 0;
 bool profileIsOn = 0;
 bool updataAvailable = 0;
+bool testState = 0;
 
 // Button variables
 int buttonVal[numDigButtons] = {0};                            // value read from button
@@ -140,9 +141,9 @@ void setup() {
   pinMode(ledPin, OUTPUT);
 
   // Start-up splash
-  pinMode(fanPin, OUTPUT);
   digitalWrite(fanPin, LOW);
-
+  pinMode(fanPin, OUTPUT);
+  
   delay(100);
 
   // Turn off LED (active low)
@@ -170,7 +171,7 @@ void setup() {
     if (useOTA != 0) {
       OTA();
     }
-  } 
+  }
 
   // The logical name http://reflowserver.local will also access the device if you have 'Bonjour' running or your system supports multicast dns
   if (!MDNS.begin("reflowserver")) {          // Set your preferred server name, if you use "myserver" the address would be http://myserver.local/
@@ -210,9 +211,9 @@ void setup() {
     SD_present = true;
 
     listDir(SD, "/profiles", 0);
-    readFile(SD, jsonName , 0);
+    //readFile(SD, jsonName , 0);
     //printFile(json);
-    //parseJsonProfile();
+    parseJsonProfile();
 
   }
 }
@@ -225,7 +226,7 @@ void updatePreferences() {
   preferences.putBool("buzzer", buzzer);
   preferences.putBool("useOTA", useOTA);
   preferences.end();
-  
+
   if (verboseOutput != 0) {
     Serial.println();
     Serial.println("Buttons: " + String(buttons));
@@ -280,6 +281,7 @@ void listDir(fs::FS &fs, const char * dirname, uint8_t levels) {
       if (jsonName.endsWith("json")) {
         Serial.println("Find this JSON file: "  + jsonName);
       }
+      
     }
     file = root.openNextFile();
   }
