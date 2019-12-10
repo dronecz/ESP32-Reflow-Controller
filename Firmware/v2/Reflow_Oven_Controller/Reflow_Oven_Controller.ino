@@ -21,7 +21,6 @@
 //#include "OTA.h"
 #include "webserver.h"
 
-WiFiMulti wifiMulti;
 HTTPClient http;
 
 // Use software SPI: CS, DI, DO, CLK
@@ -86,7 +85,7 @@ byte previousSettingsPointer = 0;
 bool   SD_present = false;
 //char* json = "";
 String jsonName = "";
-char json;
+String jsonProfileString = "";
 
 //// Types for Menu
 //typedef enum MENU_STATE {
@@ -103,6 +102,9 @@ char json;
 //menuState_t;
 //
 //menuState_t menuState;
+
+const char* ssid     = "";
+const char* password = "";
 
 void setup() {
 
@@ -148,10 +150,6 @@ void setup() {
   display.begin();
   startScreen();
 
-  wifiMulti.addAP("SSID", "PASSWORD");
-  wifiMulti.addAP("SSID", "PASSWORD");
-  wifiMulti.addAP("SSID", "PASSWORD");
-
   // SSR pin initialization to ensure reflow oven is off
 
   pinMode(ssrPin, OUTPUT);
@@ -186,9 +184,19 @@ void setup() {
   }
 
   Serial.println("Connecting ...");
-  if (wifiMulti.run() == WL_CONNECTED) { // Wait for the Wi-Fi to connect: scan for Wi-Fi networks, and connect to the strongest of the networks above
-    //delay(250); Serial.print('.');
-    Serial.println("\nConnected to " + WiFi.SSID() + "; IP address: " + WiFi.localIP().toString()); // Report which SSID and IP is in use
+  WiFi.begin(ssid, password);
+
+  while (WiFi.status() != WL_CONNECTED) {
+    delay(500);
+    Serial.print(".");
+  }
+
+  Serial.println("");
+  Serial.println("WiFi connected");
+  Serial.println("IP address: ");
+  Serial.println(WiFi.localIP());
+
+  if (WiFi.status() == WL_CONNECTED) { // 
     connected = 1;
 
     if (useOTA != 0) {
@@ -236,9 +244,11 @@ void setup() {
 
     listDir(SD, "/profiles", 0);
     readFile(SD, jsonName , 0);
-    //printFile(json);
-    //parseJsonProfile();
+
+    parseJSONProfile();
   }
+
+
 }
 
 void updatePreferences() {
@@ -325,8 +335,31 @@ void readFile(fs::FS &fs, String path, const char * type) {
     return;
   }
   Serial.print("Read from file: ");
+
   while (file.available()) {
-    Serial.write(file.read());
+    char c = (char)file.read();
+    jsonProfileString += c;
   }
+  Serial.println();
+  Serial.println(jsonProfileString);
+  Serial.println();
   file.close();
 }
+
+//void printFile(const char *filename) {
+//  // Open file for reading
+//  File file = SD.open(filename);
+//  if (!file) {
+//    Serial.println(F("Failed to read file"));
+//    return;
+//  }
+//
+//  // Extract each characters by one by one
+//  while (file.available()) {
+//    Serial.print((char)file.read());
+//  }
+//  Serial.println();
+//
+//  // Close the file (File's destructor doesn't close the file)
+//  file.close();
+//}

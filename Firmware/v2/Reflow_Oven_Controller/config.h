@@ -38,7 +38,7 @@ int buzzerPin = 15;
 
 // FW info
 
-const String fwVersion = "0.2.29";
+const String fwVersion = "0.2.30";
 #define ServerVersion "1.0"
 #define projectName "ESP32 Reflow Oven Controller"
 String version_url  = "http://czechmaker.com/roc_version.txt";
