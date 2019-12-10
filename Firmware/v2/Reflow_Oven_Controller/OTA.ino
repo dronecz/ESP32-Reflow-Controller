@@ -66,8 +66,8 @@ void parseVersion(String a, String b) {
 
 
 void updateFirmware() {
-  HTTPClient newHttp; 
-
+  HTTPClient newHttp;
+  startUpdateScreen();
   newHttp.begin("http://czechmaker.com/roc_rev_B.bin");
 
   // Start pulling down the firmware binary.

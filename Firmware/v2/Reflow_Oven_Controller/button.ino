@@ -196,6 +196,8 @@ void event1(int pin) {
           }
           setFan(135);
           updatePreferences();
+        }else if  (settings_pointer == 5) {
+          testOutputs();
         }
         //previousSettingsPointer = settings_pointer; //store previous position in menu
       } else if (state == 7) {
@@ -210,6 +212,26 @@ void event1(int pin) {
         // Reinitialize state machine
         reflowState = REFLOW_STATE_IDLE;
         loopScreen();
+      } else if (state == 9) {
+        //settings_pointer = 0; // clear pointer
+        if (settings_pointer == 0) {
+          testBuzzer(55);
+        } else if (settings_pointer == 1) {
+          testFan(75);
+        } else if  (settings_pointer == 2) {
+          testSSR(95);
+        } else if (settings_pointer == 3) {
+          testLED(115);
+        }
+        //        } else if  (settings_pointer == 4) {
+        //          fan = !fan;
+        //          if (verboseOutput != 0) {
+        //            Serial.println("Fan value is: " + String(fan));
+        //          }
+        //          setFan(135);
+        //          updatePreferences();
+        //        }
+        //previousSettingsPointer = settings_pointer; //store previous position in menu
       }
       if (verboseOutput != 0) {
         Serial.println("Select");

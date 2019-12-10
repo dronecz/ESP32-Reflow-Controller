@@ -308,6 +308,36 @@ void UpdateSettingsPointer() {
         //        break;
     }
   }
+    else if ( state == 9 )
+  {
+    display.setTextColor( ILI9341_WHITE, ILI9341_BLACK );
+    display.setTextSize(1);
+    display.fillRect( 0, 40, 20, display.height() - 20, ILI9341_BLACK );
+    display.setCursor( 10, ( 54 + ( 20 * settings_pointer ) ) );
+    display.println(">");
+
+    display.setTextSize(0);
+    display.setTextColor( ILI9341_GREEN, ILI9341_BLACK );
+    display.fillRect( 0, display.height() - 50, display.width(), 40, ILI9341_BLACK );
+    switch ( settings_pointer )
+    {
+      case 0:
+        centeredText("Test buzzer.", ILI9341_GREEN, 300);
+        break;
+
+      case 1:
+        centeredText("Test fan.", ILI9341_GREEN, 300);
+        break;
+
+      case 2:
+        centeredText("Test SSR.", ILI9341_GREEN, 300);
+        break;
+
+      case 3:
+        centeredText("Test LED.", ILI9341_GREEN, 300);
+        break;
+    }
+  }
 }
 
 void infoScreen() {
@@ -576,8 +606,13 @@ void showSettings() {
     numOfPointers++;
   }
 
+  leftText("Test outputs", ILI9341_WHITE, y); rightText("->", ILI9341_WHITE, y);
+  y += h;
+  numOfPointers++;
+
   ShowMenuOptions(true);
 }
+
 void showInfo() {
   previousState = state;
   state = 6;
@@ -666,6 +701,26 @@ void setOTA (int y) {
   }
 }
 
+void startUpdateScreen() {
+  display.fillScreen(ILI9341_BLACK);
+  int y;
+  if (horizontal != 0) {
+    display.setRotation(3);
+    y = 40;
+    display.setFont(&FreeSans9pt7b);
+    display.setTextSize(1);
+    centeredText("Update started.It may", ILI9341_GREEN, y);
+    centeredText("take 2 - 5 mins to complete.", ILI9341_GREEN, y + 20);
+  } else {
+    display.setRotation(2);
+    y = 100;
+    display.setFont(&FreeSans9pt7b);
+    display.setTextSize(1);
+    centeredText("Update started.It may", ILI9341_GREEN, y);
+    centeredText("take 2 - 5 mins to complete.", ILI9341_GREEN, y + 20);
+  }
+}
+
 void updateOK() {
   display.fillScreen(ILI9341_BLACK);
   int y;
@@ -686,6 +741,98 @@ void updateOK() {
   }
   delay(2000);
 }
+
+void testOutputs() {
+  previousState = state;
+  state = 9;
+  numOfPointers = 0;
+  settings_pointer = 0; // clear pointer
+#ifdef DEBUG
+  Serial.println("State is :" + String(state));
+#endif
+  int y = 55; //from left side of the LCD
+  int h = 20;
+  display.setFont(&FreeSans9pt7b);
+  display.fillScreen(ILI9341_BLACK);
+  display.setTextColor(ILI9341_WHITE);
+  display.setTextSize(1);
+  display.setCursor(0, 4);
+  centeredText("Test outputs menu", ILI9341_WHITE, 10);
+  display.fillRect(0, 28, 240, 3, ILI9341_WHITE );
+  display.setCursor(30, y);
+
+  testBuzzer(y); //y == 55;
+  y += h;
+  numOfPointers++;
+
+  testFan(y);
+  y += h;
+  numOfPointers++;
+
+  testSSR(y);
+  y += h;
+  numOfPointers++;
+
+  testLED(y);
+  y += h;
+  numOfPointers++;
+}
+
+void testBuzzer(int y){
+  int prevState = 0;
+    display.fillRect( 30, y - 18, 200, 20, ILI9341_BLACK );
+  display.setTextColor(ILI9341_WHITE);
+  display.setTextSize(1);
+  display.setCursor(30, y);
+  display.print("Test buzzer: ");
+  if (buzzerPin != LOW) {
+    display.println("On");
+    digitalWrite(buzzerPin, LOW);
+  } else {
+    display.println("Off");
+    digitalWrite(buzzerPin, HIGH);
+  }
+}
+
+void testFan (int y) {
+  display.fillRect( 30, y - 18, 200, 20, ILI9341_BLACK );
+  display.setTextColor(ILI9341_WHITE);
+  display.setTextSize(1);
+  display.setCursor(30, y);
+  display.print("Test fan: ");
+  if (fanPin != LOW) {
+    display.println("On");
+  } else {
+    display.println("Off");
+  }
+}
+
+void testSSR(int y){
+    display.fillRect( 30, y - 18, 200, 20, ILI9341_BLACK );
+  display.setTextColor(ILI9341_WHITE);
+  display.setTextSize(1);
+  display.setCursor(30, y);
+  display.print("Test SSR: ");
+  if (ssrPin != LOW) {
+    display.println("On");
+  } else {
+    display.println("Off");
+  }
+}
+
+void testLED(int y){
+    display.fillRect( 30, y - 18, 200, 20, ILI9341_BLACK );
+  display.setTextColor(ILI9341_WHITE);
+  display.setTextSize(1);
+  display.setCursor(30, y);
+  display.print("Test LED: ");
+  if (ledPin != LOW) {
+    display.println("On");
+  } else {
+    display.println("Off");
+  }
+}
+
 /* Saved for later use.. */
 /*
   void updateProcessDisplay() {

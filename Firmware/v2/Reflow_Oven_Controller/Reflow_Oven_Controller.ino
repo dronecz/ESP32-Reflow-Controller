@@ -75,7 +75,7 @@ int holdTime = 1000;
 int oldTemp = 0;
 
 byte numOfPointers = 0;
-byte state = 0; // 0 = boot, 1 = main menu, 2 = select profile, 3 = change profile, 4 = add profile, 5 = settings, 6 = info, 7 = start reflow, 8 = stop reflow
+byte state = 0; // 0 = boot, 1 = main menu, 2 = select profile, 3 = change profile, 4 = add profile, 5 = settings, 6 = info, 7 = start reflow, 8 = stop reflow, 9 = test outputs
 byte previousState = 0;
 
 byte settings_pointer = 0;
@@ -140,7 +140,8 @@ void setup() {
   pinMode(ledPin, OUTPUT);
 
   // Start-up splash
-  digitalWrite(buzzerPin, LOW);
+  pinMode(fanPin, OUTPUT);
+  digitalWrite(fanPin, LOW);
 
   delay(100);
 

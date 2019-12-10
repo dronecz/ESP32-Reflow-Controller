@@ -27,7 +27,9 @@ int ledPin = 2;
 int ledState = LOW;
 /*Buzzer pin definition*/
 int buzzerPin = 15;
-//int switchPin = 27; // Select button
+/* Fan pin definition */
+int fanPin = 25;
+
 /*Swich pin definition*/
 #define BUTTON_SELECT   27
 #define BUTTON_AXIS_Y   35
