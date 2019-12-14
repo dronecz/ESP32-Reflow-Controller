@@ -213,8 +213,6 @@ void setup() {
     SD_present = true;
 
     listDir(SD, "/profiles", 0);
-    //readFile(SD, jsonName , 0);
-    //printFile(json);
   }
   for (int i = 0; i < numOfProfiles; i++) {
     parseJsonProfile(jsonName[i]);

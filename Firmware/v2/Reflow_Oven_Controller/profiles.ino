@@ -1,7 +1,5 @@
-//const size_t capacity = 13 * JSON_ARRAY_SIZE(2) + JSON_ARRAY_SIZE(7) + JSON_OBJECT_SIZE(4) + JSON_OBJECT_SIZE(8) + 310;
-DynamicJsonDocument doc(2048);
 
-//char* json1 = "{\"title\":\"Lead 138\",\"alloy\":\"Sn42/Bi57.6/Ag0.4\",\"melting_point\":138,\"temp_range\":[30,165],\"time_range\":[0,390],\"reference\":\"http://www.chipquik.com/datasheets/TS391LT50.pdf\",\"stages\":{\"preheat\":[90,90],\"soak\":[180,130],\"reflow\":[210,138],\"cool\":[270,138]},\"profile\":[[0,30],[90,90],[180,130],[210,138],[240,165],[270,138],[390,50]]}";
+DynamicJsonDocument doc(2048);
 
 StaticJsonDocument<1280> newDoc[numOfProfiles];
 
@@ -80,23 +78,3 @@ void parseJsonProfile(String someName) {
 //  newDoc.clear();
   Serial.println();
 }
-
-//
-//// Prints the content of a file to the Serial
-//void printFile(const char *filename) {
-//  // Open file for reading
-//  File file = SD.open(filename);
-//  if (!file) {
-//    Serial.println(F("Failed to read file"));
-//    return;
-//  }
-//
-//  // Extract each characters by one by one
-//  while (file.available()) {
-//    Serial.print((char)file.read());
-//  }
-//  Serial.println();
-//
-//  // Close the file (File's destructor doesn't close the file)
-//  file.close();
-//}
