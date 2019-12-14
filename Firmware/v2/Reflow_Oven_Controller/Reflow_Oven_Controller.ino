@@ -83,7 +83,9 @@ byte settings_pointer = 0;
 byte previousSettingsPointer = 0;
 bool   SD_present = false;
 //char* json = "";
-String jsonName = "";
+int profileNum = 0;
+#define numOfProfiles 6
+String jsonName[numOfProfiles];
 char json;
 
 WiFiManager wm;
@@ -143,7 +145,7 @@ void setup() {
   // Start-up splash
   digitalWrite(fanPin, LOW);
   pinMode(fanPin, OUTPUT);
-  
+
   delay(100);
 
   // Turn off LED (active low)
@@ -213,9 +215,12 @@ void setup() {
     listDir(SD, "/profiles", 0);
     //readFile(SD, jsonName , 0);
     //printFile(json);
-    parseJsonProfile();
-
   }
+  for (int i = 0; i < numOfProfiles; i++) {
+    parseJsonProfile(jsonName[i]);
+  }
+
+  Serial.println("Number of profiles: " + profileNum);
 }
 
 void updatePreferences() {
@@ -265,6 +270,7 @@ void listDir(fs::FS &fs, const char * dirname, uint8_t levels) {
   }
 
   File file = root.openNextFile();
+  String tempFileName;
   while (file) {
     if (file.isDirectory()) {
       Serial.print("  DIR : ");
@@ -273,15 +279,12 @@ void listDir(fs::FS &fs, const char * dirname, uint8_t levels) {
         listDir(fs, file.name(), levels - 1);
       }
     } else {
-      //      Serial.print("  FILE: ");
-      //      Serial.print(file.name());
-      //            Serial.print("  SIZE: ");
-      //            Serial.println(file.size());
-      jsonName = file.name();
-      if (jsonName.endsWith("json")) {
-        Serial.println("Find this JSON file: "  + jsonName);
+      tempFileName = file.name();
+      if (tempFileName.endsWith("json")) {
+        Serial.println("Find this JSON file: "  + tempFileName);
+        jsonName[profileNum] = tempFileName;
+        profileNum++;
       }
-      
     }
     file = root.openNextFile();
   }

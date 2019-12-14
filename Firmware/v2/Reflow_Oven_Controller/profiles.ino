@@ -3,20 +3,20 @@ DynamicJsonDocument doc(2048);
 
 //char* json1 = "{\"title\":\"Lead 138\",\"alloy\":\"Sn42/Bi57.6/Ag0.4\",\"melting_point\":138,\"temp_range\":[30,165],\"time_range\":[0,390],\"reference\":\"http://www.chipquik.com/datasheets/TS391LT50.pdf\",\"stages\":{\"preheat\":[90,90],\"soak\":[180,130],\"reflow\":[210,138],\"cool\":[270,138]},\"profile\":[[0,30],[90,90],[180,130],[210,138],[240,165],[270,138],[390,50]]}";
 
-StaticJsonDocument<1024> newDoc;
+StaticJsonDocument<1280> newDoc[numOfProfiles];
 
-JsonArray array = newDoc.to<JsonArray>();
+JsonArray array = newDoc[numOfProfiles].to<JsonArray>();
 
-void parseJsonProfile() {
+void parseJsonProfile(String someName) {
   Serial.println();
-  Serial.println("Starting to parse " + jsonName + " file.");
+  Serial.println("Starting to parse " + someName + " file.");
   // Open file for reading
-  File file = SD.open(jsonName);
+  File file = SD.open(someName);
 
   // Allocate a temporary JsonDocument
   // Don't forget to change the capacity to match your requirements.
   // Use arduinojson.org/v6/assistant to compute the capacity.
-  StaticJsonDocument<1024> doc;
+  StaticJsonDocument<1280> doc;
 
   // Deserialize the JSON document
   DeserializationError error = deserializeJson(doc, file);
@@ -75,7 +75,9 @@ void parseJsonProfile() {
   array.add(stages_cool_1);
 
   // serialize the array and send the result to Serial
-  serializeJson(newDoc, Serial);
+  serializeJson(newDoc[numOfProfiles], Serial);
+//  doc.clear();
+//  newDoc.clear();
   Serial.println();
 }
 
