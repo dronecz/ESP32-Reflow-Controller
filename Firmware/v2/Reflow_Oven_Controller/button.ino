@@ -227,7 +227,7 @@ void event1(int pin) {
           } else {
             testState = HIGH;
           }
-          //testFan(75);
+          testFan(75);
         } else if  (settings_pointer == 2) {
           if (testState != LOW) {
             testState = LOW;

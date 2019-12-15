@@ -143,7 +143,7 @@ void setup() {
   pinMode(ledPin, OUTPUT);
 
   // Start-up splash
-  digitalWrite(fanPin, LOW);
+  //digitalWrite(fanPin, LOW);
   pinMode(fanPin, OUTPUT);
 
   delay(100);

@@ -1,6 +1,4 @@
 
-DynamicJsonDocument doc(2048);
-
 StaticJsonDocument<1280> newDoc[numOfProfiles];
 
 JsonArray array = newDoc[numOfProfiles].to<JsonArray>();

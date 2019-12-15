@@ -28,7 +28,7 @@ int ledState = LOW;
 /*Buzzer pin definition*/
 int buzzerPin = 15;
 /* Fan pin definition */
-int fanPin = -1 ; // pin 25 -> pin is still high (need to solve this)
+int fanPin = 12 ; // pin 25 -> pin is still high (need to solve this)
 
 /*Swich pin definition*/
 #define BUTTON_SELECT   27

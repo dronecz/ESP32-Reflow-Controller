@@ -811,10 +811,10 @@ void testFan (int y) {
   display.print("Test fan: ");
   if (testState != LOW) {
     display.println("On");
-    //digitalWrite(fanPin, LOW);
+    digitalWrite(fanPin, HIGH);
   } else {
     display.println("Off");
-    //digitalWrite(fanPin, HIGH);
+    digitalWrite(fanPin, LOW);
   }
 }
 
