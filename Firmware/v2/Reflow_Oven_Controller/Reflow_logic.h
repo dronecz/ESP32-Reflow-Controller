@@ -419,6 +419,8 @@ void reflow_main() {
         digitalWrite(buzzerPin, LOW);
         // Reflow process ended
         reflowState = REFLOW_STATE_IDLE;
+        profileIsOn = 0;
+        Serial.println("Profile is OFF");
       }
       break;
 

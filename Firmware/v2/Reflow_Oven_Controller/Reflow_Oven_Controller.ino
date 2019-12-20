@@ -249,12 +249,10 @@ void processButtons() {
 
 void loop() {
   wm.process();
-  reflow_main();
   processButtons();
   server.handleClient(); // Listen for client connections
 }
 
-void listDir(fs::FS &fs, const char * dirname, uint8_t levels) {
   Serial.printf("Listing directory: %s\n", dirname);
 
   File root = fs.open(dirname);
@@ -277,18 +275,26 @@ void listDir(fs::FS &fs, const char * dirname, uint8_t levels) {
         listDir(fs, file.name(), levels - 1);
       }
     } else {
+<<<<<<< Updated upstream
       tempFileName = file.name();
       if (tempFileName.endsWith("json")) {
         Serial.println("Find this JSON file: "  + tempFileName);
         jsonName[profileNum] = tempFileName;
         profileNum++;
       }
+=======
+      jsonName = file.name();
+      if (jsonName.endsWith("json")) {
+        Serial.println("Find this JSON file: "  + jsonName);
+      }
+
+>>>>>>> Stashed changes
     }
     file = root.openNextFile();
   }
 }
 
-void readFile(fs::FS &fs, String path, const char * type) {
+void readFile(fs::FS & fs, String path, const char * type) {
   Serial.printf("Reading file: %s\n", path);
 
   File file = fs.open(path);

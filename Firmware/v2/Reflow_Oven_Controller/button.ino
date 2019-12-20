@@ -203,9 +203,11 @@ void event1(int pin) {
       } else if (state == 7) {
         //reflowStatus = REFLOW_STATUS_ON;
         profileIsOn = 1;
+        Serial.println("Profile is ON");
         loopScreen();
       } else if (state == 8) {
         profileIsOn = 0;
+        Serial.println("Profile is OFF");
         // Button press is for cancelling
         // Turn off reflow process
         reflowStatus = REFLOW_STATUS_OFF;
