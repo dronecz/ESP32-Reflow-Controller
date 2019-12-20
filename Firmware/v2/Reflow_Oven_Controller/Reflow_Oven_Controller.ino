@@ -249,10 +249,14 @@ void processButtons() {
 
 void loop() {
   wm.process();
+  if (state != 9) {
+    reflow_main();
+  }
   processButtons();
   server.handleClient(); // Listen for client connections
 }
 
+void listDir(fs::FS & fs, const char * dirname, uint8_t levels) {
   Serial.printf("Listing directory: %s\n", dirname);
 
   File root = fs.open(dirname);
