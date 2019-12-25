@@ -59,48 +59,91 @@ void readAnalogButtons() {
   AXIS_Y.readAxis();
   //if (menuState != MENU_STATE_EDIT_NUMBER) {
   if (AXIS_X.wasAxisPressed() == 1) {
-    if (settings_pointer < numOfPointers) {
-      settings_pointer++;
-      UpdateSettingsPointer();
+    if (horizontal != 0) {
       if (verboseOutput != 0) {
-        Serial.println("Down; Settings pointer:  " + String(settings_pointer));
+        Serial.println("Right");
+      } if (buttons != 1) { // back button if there is not dedicted Back button on board
+        if (state == 1 || state == 7 || state == 8) {
+          loopScreen();
+          settings_pointer = 0;
+        } else {
+          if (state > 0) {
+            settings_pointer = previousSettingsPointer;
+            mainMenuScreen();
+          }
+        }
+      }
+    } else {
+      if (settings_pointer < numOfPointers) {
+        settings_pointer++;
+        UpdateSettingsPointer();
+        if (verboseOutput != 0) {
+          Serial.println("Down; Settings pointer:  " + String(settings_pointer));
+        }
       }
     }
   } else if (AXIS_X.wasAxisPressed() == 2) {
-    if (settings_pointer > 0) {
+    if (horizontal != 0) {
+      if (verboseOutput != 0) {
+        Serial.println("Left");
+      }
+      if ( buttons != 1 ) {
+        if (state == 0 ) { // menu button if there is not dedicted Menu button on board
+          mainMenuScreen();
+        }
+      }
+    } else {
+      if (settings_pointer > 0) {
+        settings_pointer--;
+        UpdateSettingsPointer();
+        if (verboseOutput != 0) {
+          Serial.println("Up; Settings pointer: " + String(settings_pointer));
+        }
+      }
+    }
+  } else if (AXIS_Y.wasAxisPressed() == 1) {
+    if (horizontal != 0) {
+      if (settings_pointer < numOfPointers) {
+        settings_pointer++;
+        UpdateSettingsPointer();
+        if (verboseOutput != 0) {
+          Serial.println("Down; Settings pointer:  " + String(settings_pointer));
+        }
+      }
+    } else {
+      if (verboseOutput != 0) {
+        Serial.println("Left");
+      }
+      if ( buttons != 1 ) {
+        if (state == 0 ) { // menu button if there is not dedicted Menu button on board
+          mainMenuScreen();
+        }
+      }
+    }
+  } else if (AXIS_Y.wasAxisPressed() == 2) {
+    if (horizontal != 0) {
       settings_pointer--;
       UpdateSettingsPointer();
       if (verboseOutput != 0) {
         Serial.println("Up; Settings pointer: " + String(settings_pointer));
       }
-    }
-  } else if (AXIS_Y.wasAxisPressed() == 1) {
-    if (verboseOutput != 0) {
-      Serial.println("Left");
-    }
-    if ( buttons != 1 ) {
-      if (state == 0 ) { // menu button if there is not dedicted Menu button on board
-        mainMenuScreen();
-      }
-    }
-  } else if (AXIS_Y.wasAxisPressed() == 2) {
-    if (verboseOutput != 0) {
-      Serial.println("Right");
-    } if (buttons != 1) { // back button if there is not dedicted Back button on board
-      if (state == 1 || state == 7 || state == 8) {
-        loopScreen();
-        settings_pointer = 0;
-      } else {
-        if (state > 0) {
-          settings_pointer = previousSettingsPointer;
-          mainMenuScreen();
+    } else {
+      if (verboseOutput != 0) {
+        Serial.println("Right");
+      } if (buttons != 1) { // back button if there is not dedicted Back button on board
+        if (state == 1 || state == 7 || state == 8) {
+          loopScreen();
+          settings_pointer = 0;
+        } else {
+          if (state > 0) {
+            settings_pointer = previousSettingsPointer;
+            mainMenuScreen();
+          }
         }
       }
     }
   }
-  //}
 }
-
 
 // Events to trigger by click and press+hold
 
@@ -109,6 +152,7 @@ void event1(int pin) {
     if (pin == 27) { // Select button
       //previousState = state;
       if (verboseOutput != 0) {
+        Serial.println("---------------------");
         Serial.println("Previous state is: " + String(previousState));
         Serial.println("State is: " + String(state));
         Serial.println("Settings pointer: " + String(settings_pointer));
@@ -190,12 +234,16 @@ void event1(int pin) {
           updatePreferences();
           showSettings();
         } else if  (settings_pointer == 4) {
-          fan = !fan;
-          if (verboseOutput != 0) {
-            Serial.println("Fan value is: " + String(fan));
+          if (buttons != 0) {
+            fan = !fan;
+            if (verboseOutput != 0) {
+              Serial.println("Fan value is: " + String(fan));
+            }
+            setFan(135);
+            updatePreferences();
+          } else {
+            testOutputs();
           }
-          setFan(135);
-          updatePreferences();
         } else if  (settings_pointer == 5) {
           testOutputs();
         }
@@ -257,6 +305,7 @@ void event1(int pin) {
       }
       if (verboseOutput != 0) {
         Serial.println("Select");
+        Serial.println("---------------------");
       }
     } else if (pin == 32) { //Menu button
       //state = 1;
@@ -273,6 +322,9 @@ void event1(int pin) {
       if (state == 1 || state == 7 || state == 8) {
         loopScreen();
         settings_pointer = 0;
+      } else if (state == 9) {
+        settings_pointer = previousSettingsPointer;
+        showSettings();
       } else {
         if (state > 0) {
           settings_pointer = previousSettingsPointer;
@@ -280,10 +332,12 @@ void event1(int pin) {
         }
       }
       if (verboseOutput != 0) {
+        Serial.println("---------------------");
         Serial.println("Back");
         Serial.println("State is :" + String(state));
         Serial.println("Settings pointer: " + String(settings_pointer));
         Serial.println("Previous settings pointer: " + String(previousSettingsPointer));
+        Serial.println("---------------------");
       }
     } else if (verboseOutput != 0) {
       Serial.println("button 1 (" + String(pin) + ")");

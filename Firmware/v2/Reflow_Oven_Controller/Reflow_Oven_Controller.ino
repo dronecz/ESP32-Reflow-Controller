@@ -206,18 +206,17 @@ void setup() {
   if (!SD.begin(SD_CS_pin)) { // see if the card is present and can be initialised. Wemos SD-Card CS uses D8
     Serial.println(F("Card failed or not present, no SD Card data logging possible..."));
     SD_present = false;
-  }
-  else
-  {
+  } else {
     Serial.println(F("Card initialised... file access enabled..."));
     SD_present = true;
 
     listDir(SD, "/profiles", 0);
   }
-  for (int i = 0; i < numOfProfiles; i++) {
-    parseJsonProfile(jsonName[i]);
+  if (SD_present == true) {
+    for (int i = 0; i < profileNum; i++) {
+      parseJsonProfile(jsonName[i]);
+    }
   }
-
   Serial.println("Number of profiles: " + profileNum);
 }
 
@@ -232,10 +231,11 @@ void updatePreferences() {
 
   if (verboseOutput != 0) {
     Serial.println();
-    Serial.println("Buttons: " + String(buttons));
+    Serial.println("Buttons is: " + String(buttons));
     Serial.println("Fan is: " + String(fan));
-    Serial.println("Horizontal: " + String(horizontal));
-    Serial.println("OTA: " + String(useOTA));
+    Serial.println("Horizontal is: " + String(horizontal));
+    Serial.println("OTA is : " + String(useOTA));
+    Serial.println("Buzzer is: " + String(buzzer));
     Serial.println();
   }
 }
@@ -249,7 +249,7 @@ void processButtons() {
 
 void loop() {
   wm.process();
-  if (state != 9) {
+  if (state != 9) { // if we are in test menu, disable LED & SSR control in loop
     reflow_main();
   }
   processButtons();
@@ -279,20 +279,12 @@ void listDir(fs::FS & fs, const char * dirname, uint8_t levels) {
         listDir(fs, file.name(), levels - 1);
       }
     } else {
-<<<<<<< Updated upstream
       tempFileName = file.name();
       if (tempFileName.endsWith("json")) {
         Serial.println("Find this JSON file: "  + tempFileName);
         jsonName[profileNum] = tempFileName;
         profileNum++;
       }
-=======
-      jsonName = file.name();
-      if (jsonName.endsWith("json")) {
-        Serial.println("Find this JSON file: "  + jsonName);
-      }
-
->>>>>>> Stashed changes
     }
     file = root.openNextFile();
   }

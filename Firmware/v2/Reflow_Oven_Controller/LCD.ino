@@ -105,26 +105,9 @@ void ShowMenuOptions( bool clearAll )
   display.setTextColor( ILI9341_WHITE, ILI9341_BLACK );
   display.setTextSize(2);
 
-  //  if ( clearAll )
-  //  {
-  //    // Clear All
-  //    for ( int i = 0; i < 4; i++ )
-  //      display.fillRect( display.width() - 95,  buttonPosY[i] - 2, 95, buttonHeight + 4, ILI9341_BLACK );
-  //  }
-
   if ( state == 1 || state == 5)
   {
-    // button 0
-    //display.fillRect( display.width() - 5,  buttonPosY[0], buttonWidth, buttonHeight, ILI9341_GREEN );
-    //println_Right( display, "START", display.width() - 27, buttonPosY[0] + 8 );
 
-    // button 1
-    //display.fillRect( display.width() - 5,  buttonPosY[1], buttonWidth, buttonHeight, ILI9341_RED );
-    //println_Right( display, "SETTINGS", display.width() - 27, buttonPosY[1] + 8 );
-
-    // button 3
-    //display.fillRect( display.width() - 5,  buttonPosY[3], buttonWidth, buttonHeight, ILI9341_YELLOW );
-    //println_Right( display, "OVEN CHECK", display.width() - 27, buttonPosY[3] + 8 );
     UpdateSettingsPointer();
   }
   else if ( state == 11 )
@@ -300,9 +283,15 @@ void UpdateSettingsPointer() {
       case 4:
         if (buttons != 0) {
           centeredText("Set Yes to use fan.", ILI9341_GREEN, 300);
+        } else {
+          centeredText("Enter Test menu.", ILI9341_GREEN, 300);
         }
         break;
-        //
+      case 5:
+        if (buttons != 0) {
+          centeredText("Enter Test menu.", ILI9341_GREEN, 300);
+        }
+        break;
         //      case 4:
         //        centeredText("Show info menu", ILI9341_GREEN, 300);
         //        break;
@@ -412,30 +401,53 @@ void loopScreen() {
 #endif
   display.fillScreen(ILI9341_BLACK);
 
-  int tempTextPos = 240;
-  int infoText = 50;
   display.setFont(&FreeSans9pt7b);
   display.setTextSize(1);
   if (updataAvailable != 0) {
     centeredText("!UPDATE AVAILABLE!", ILI9341_GREEN, 10);
   }
-  centeredText("Status:", ILI9341_WHITE, infoText);
-  display.setTextSize(2);
-  centeredText(activeStatus, ILI9341_WHITE, infoText + 32);
+  if (horizontal != 0) {
+    int tempTextPos = 200;
+    int infoText = 30;
+    centeredText("Status:", ILI9341_WHITE, infoText);
+    display.setTextSize(2);
+    centeredText(activeStatus, ILI9341_WHITE, infoText + 32);
+    String temp = ("Temp : " + String(inputInt));
 
-  String temp = ("Temp : " + String(inputInt));
+    if (isFault != 0) {
+      display.setTextSize(1);
+      centeredText("Thermocouple error", ILI9341_RED, tempTextPos);
+    } else if (inputInt < 50) {
+      centeredText(temp, ILI9341_GREEN, tempTextPos);
+    } else if ((inputInt > 50) && (inputInt < 100)) {
+      centeredText(temp, ILI9341_ORANGE, tempTextPos);
+    } else if (inputInt > 100) {
+      centeredText(temp, ILI9341_RED, tempTextPos);
+    }
 #ifdef DEBUG
-  Serial.println(temp);
+    Serial.println(temp);
 #endif
-  if (isFault != 0) {
-    display.setTextSize(1);
-    centeredText("Thermocouple error", ILI9341_RED, tempTextPos);
-  } else if (inputInt < 50) {
-    centeredText(temp, ILI9341_GREEN, tempTextPos);
-  } else if ((inputInt > 50) && (inputInt < 100)) {
-    centeredText(temp, ILI9341_ORANGE, tempTextPos);
-  } else if (inputInt > 100) {
-    centeredText(temp, ILI9341_RED, tempTextPos);
+  } else {
+    int tempTextPos = 240;
+    int infoText = 50;
+    centeredText("Status:", ILI9341_WHITE, infoText);
+    display.setTextSize(2);
+    centeredText(activeStatus, ILI9341_WHITE, infoText + 32);
+    String temp = ("Temp : " + String(inputInt));
+
+    if (isFault != 0) {
+      display.setTextSize(1);
+      centeredText("Thermocouple error", ILI9341_RED, tempTextPos);
+    } else if (inputInt < 50) {
+      centeredText(temp, ILI9341_GREEN, tempTextPos);
+    } else if ((inputInt > 50) && (inputInt < 100)) {
+      centeredText(temp, ILI9341_ORANGE, tempTextPos);
+    } else if (inputInt > 100) {
+      centeredText(temp, ILI9341_RED, tempTextPos);
+    }
+#ifdef DEBUG
+    Serial.println(temp);
+#endif
   }
 }
 
@@ -488,7 +500,11 @@ void mainMenuScreen() {
   display.setTextSize(1);
   display.setCursor(0, 4);
   centeredText("Main menu", ILI9341_WHITE, 10);
-  display.fillRect(0, 28, 240, 3, ILI9341_WHITE );
+  if (horizontal != 0) {
+    display.fillRect(0, 28, 320, 3, ILI9341_WHITE );
+  } else {
+    display.fillRect(0, 28, 240, 3, ILI9341_WHITE );
+  }
   display.setCursor(10, y);
   if (disableMenu != 1) {
     leftText("Select profile", ILI9341_WHITE, y); rightText("->", ILI9341_WHITE, y);
@@ -530,13 +546,17 @@ void showSelectProfile() {
   display.setTextSize(1);
   display.setCursor(0, 4);
   centeredText("Select profile menu", ILI9341_WHITE, 10);
-  display.fillRect(0, 28, 240, 3, ILI9341_WHITE );
+  if (horizontal != 0) {
+    display.fillRect(0, 28, 320, 3, ILI9341_WHITE );
+  } else {
+    display.fillRect(0, 28, 240, 3, ILI9341_WHITE );
+  }
 
-  String tempName = array[0];
-  leftText(tempName, ILI9341_WHITE, y);
-  String tempAlloy = array[1];
-  y += h;
-  leftText(tempAlloy, ILI9341_BLUE, y, +15);
+  //  String tempName = array[0];
+  //  leftText(tempName, ILI9341_WHITE, y);
+  //  String tempAlloy = array[1];
+  //  y += h;
+  //  leftText(tempAlloy, ILI9341_BLUE, y, +15);
 }
 
 void showChangeProfile() {
@@ -553,7 +573,11 @@ void showChangeProfile() {
   display.setTextSize(1);
   display.setCursor(0, 4);
   centeredText("Change profile menu", ILI9341_WHITE, 10);
-  display.fillRect(0, 28, 240, 3, ILI9341_WHITE );
+  if (horizontal != 0) {
+    display.fillRect(0, 28, 320, 3, ILI9341_WHITE );
+  } else {
+    display.fillRect(0, 28, 240, 3, ILI9341_WHITE );
+  }
 }
 
 void showAddProfile() {
@@ -570,7 +594,11 @@ void showAddProfile() {
   display.setTextSize(1);
   display.setCursor(0, 4);
   centeredText("Add profile menu", ILI9341_WHITE, 10);
-  display.fillRect(0, 28, 240, 3, ILI9341_WHITE );
+  if (horizontal != 0) {
+    display.fillRect(0, 28, 320, 3, ILI9341_WHITE );
+  } else {
+    display.fillRect(0, 28, 240, 3, ILI9341_WHITE );
+  }
 }
 
 void showSettings() {
@@ -589,7 +617,11 @@ void showSettings() {
   display.setTextSize(1);
   display.setCursor(0, 4);
   centeredText("Settings menu", ILI9341_WHITE, 10);
-  display.fillRect(0, 28, 240, 3, ILI9341_WHITE );
+  if (horizontal != 0) {
+    display.fillRect(0, 28, 320, 3, ILI9341_WHITE );
+  } else {
+    display.fillRect(0, 28, 240, 3, ILI9341_WHITE );
+  }
   display.setCursor(30, y);
 
   setBuzzer(y); //y == 55;
@@ -615,8 +647,8 @@ void showSettings() {
   }
 
   leftText("Test outputs", ILI9341_WHITE, y); rightText("->", ILI9341_WHITE, y);
-  y += h;
-  numOfPointers++;
+  //y += h;
+  //numOfPointers++;
 
   ShowMenuOptions(true);
 }
@@ -635,7 +667,11 @@ void showInfo() {
   display.setTextSize(1);
   display.setCursor(0, 4);
   centeredText("Info menu", ILI9341_WHITE, 10);
-  display.fillRect(0, 28, 240, 3, ILI9341_WHITE );
+  if (horizontal != 0) {
+    display.fillRect(0, 28, 320, 3, ILI9341_WHITE );
+  } else {
+    display.fillRect(0, 28, 240, 3, ILI9341_WHITE );
+  }
   leftText("- FW version: " + fwVersion, ILI9341_WHITE, y, -15);
   if (connected != 0) {
     String ipAddress = WiFi.localIP().toString();
@@ -766,7 +802,11 @@ void testOutputs() {
   display.setTextSize(1);
   display.setCursor(0, 4);
   centeredText("Test outputs menu", ILI9341_WHITE, 10);
-  display.fillRect(0, 28, 240, 3, ILI9341_WHITE );
+  if (horizontal != 0) {
+    display.fillRect(0, 28, 320, 3, ILI9341_WHITE );
+  } else {
+    display.fillRect(0, 28, 240, 3, ILI9341_WHITE );
+  }
   display.setCursor(30, y);
 
   testBuzzer(y); //y == 55;
@@ -782,8 +822,8 @@ void testOutputs() {
   numOfPointers++;
 
   testLED(y);
-  y += h;
-  numOfPointers++;
+  //  y += h;
+  //  numOfPointers++;
 }
 
 void testBuzzer(int y) {
@@ -803,7 +843,6 @@ void testBuzzer(int y) {
 }
 
 void testFan (int y) {
-  //testState = LOW;
   display.fillRect( 30, y - 18, 200, 20, ILI9341_BLACK );
   display.setTextColor(ILI9341_WHITE);
   display.setTextSize(1);
@@ -819,7 +858,6 @@ void testFan (int y) {
 }
 
 void testSSR(int y) {
-  //testState = LOW;
   display.fillRect( 30, y - 18, 200, 20, ILI9341_BLACK );
   display.setTextColor(ILI9341_WHITE);
   display.setTextSize(1);
@@ -835,7 +873,6 @@ void testSSR(int y) {
 }
 
 void testLED(int y) {
-  //testState = LOW;
   display.fillRect( 30, y - 18, 200, 20, ILI9341_BLACK );
   display.setTextColor(ILI9341_WHITE);
   display.setTextSize(1);

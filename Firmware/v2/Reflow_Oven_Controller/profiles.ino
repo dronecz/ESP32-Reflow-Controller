@@ -1,9 +1,10 @@
 
-StaticJsonDocument<1280> newDoc[numOfProfiles];
-
-JsonArray array = newDoc[numOfProfiles].to<JsonArray>();
-
 void parseJsonProfile(String someName) {
+
+  StaticJsonDocument<500> newDoc;
+
+  JsonArray array = newDoc.to<JsonArray>();
+
   Serial.println();
   Serial.println("Starting to parse " + someName + " file.");
   // Open file for reading
@@ -50,7 +51,10 @@ void parseJsonProfile(String someName) {
   int stages_cool_0 = stages["cool"][0]; // 240
   int stages_cool_1 = stages["cool"][1]; // 183
 
+
   file.close();
+
+  Serial.println("Profile data: " + String(title) + "," + String(alloy) + "," + String(melting_point) + "," + String(temp_range_0) + "," + String(temp_range_1) + "," + String(time_range_0) + "," + String(time_range_1) + "," + String(reference) + "," + String(stages_preheat_0) + "," + String(stages_preheat_1) + "," + String(stages_soak_0) + "," + String(stages_soak_1) + "," + String(stages_reflow_0) + "," + String(stages_reflow_1) + "," + String(stages_cool_0) + "," + String(stages_cool_1));
 
   array.add(title);
   array.add(alloy);
@@ -60,7 +64,6 @@ void parseJsonProfile(String someName) {
   array.add(time_range_0);
   array.add(time_range_1);
   array.add(reference);
-  array.add(time_range_0);
   array.add(stages_preheat_0);
   array.add(stages_preheat_1);
   array.add(stages_soak_0);
@@ -71,8 +74,11 @@ void parseJsonProfile(String someName) {
   array.add(stages_cool_1);
 
   // serialize the array and send the result to Serial
-  serializeJson(newDoc[numOfProfiles], Serial);
-//  doc.clear();
-//  newDoc.clear();
+  serializeJson(newDoc, Serial);
   Serial.println();
+  size_t len = measureJson(newDoc); //get length of the array
+  Serial.println("Length of the array is: " + String(len));
+//  copyArray(array, profile, len);
+  //memset(newDoc, 0, sizeof(newDoc));
+    Serial.println();
 }
