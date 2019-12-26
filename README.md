@@ -37,7 +37,7 @@ This board include 2 more buttons (Menu & Back button), fan connetor, Reset butt
 Basic functionality. One working profile which can be start/stoped.
 **Not developed anymore.**
 
-- **V2**
+- **V2** (**recommended**)
 
 #### This firmware include following:
 
