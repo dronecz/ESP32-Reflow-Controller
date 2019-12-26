@@ -1,4 +1,4 @@
-# ESP32 Reflow Controller   <a href="https://www.tindie.com/stores/dronecz/?ref=offsite_badges&utm_source=sellers_dronecz83&utm_medium=badges&utm_campaign=badge_small"><img src="https://d2ss6ovg47m0r5.cloudfront.net/badges/tindie-smalls.png" alt="I sell on Tindie" width="200" height="55"></a>
+# ESP32 Reflow Controller   <a href="https://www.tindie.com/stores/dronecz/esp32-reflow-controller/?ref=offsite_badges&utm_source=sellers_dronecz83&utm_medium=badges&utm_campaign=badge_small"><img src="https://d2ss6ovg47m0r5.cloudfront.net/badges/tindie-smalls.png" alt="I sell on Tindie" width="200" height="55"></a>
 
 You can read more about my project [here](https://hackaday.io/project/162946-esp32-reflow-oven) at Hackaday.io . :slightly_smiling_face:
 
