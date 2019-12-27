@@ -41,6 +41,16 @@ Basic functionality. One working profile which can be start/stoped.
 
 - **V2** (**recommended**)
 
+You will need these libraries to compile FW from source code: 
+
+ - Adafruit_ILI9341 (v. 1.5.1 in Library Manager) 
+ - Adafruit_MAX31856 (v. 1.0.3 in Library Manager)
+ - Adafruit_GFX (v. 1.7.2 in Library Manager)
+ - ArduinoJson (v. 6.13.0 in Library Manager)
+ - PID (v. 1.2.0 in Library Manager)
+ - WiFiManager (https://github.com/tzapu/WiFiManager (development branch))
+ 
+
 #### This firmware include following:
 
 - [x] OTA update.
