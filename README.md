@@ -28,7 +28,7 @@ Second version of the board. Reworked buzzer and changed for SMD version.
 
 - **rev. C**
 
-This board include 2 more buttons (Menu & Back button), fan connetor, Reset button and USB-C connector.
+This board include 2 more buttons (Menu & Back button), fan connector, Reset button and USB-C connector.
 
 ***
 
@@ -48,7 +48,7 @@ You will need these libraries to compile FW from source code:
  - Adafruit_GFX (v. 1.7.2 in Library Manager)
  - ArduinoJson (v. 6.13.0 in Library Manager)
  - PID (v. 1.2.0 in Library Manager)
- - WiFiManager (https://github.com/tzapu/WiFiManager (development branch))
+ - WiFiManager (https://github.com/tzapu/WiFiManager/tree/development)- install it in IDE from ZIP file
  
 
 #### This firmware include following:
@@ -62,7 +62,7 @@ Planned features:
 - [ ] Reflow profiles (via JSON file)
 - [ ] Web server for remote change of the settings 
 
-This firmware include Menu, which can be open by pressing **Menu** button (**Left** button on rev. **A&B**). Here you can change items in **Settings**.
+This firmware include Menu, which can be open by pressing **Menu** button (**Left** button on rev. **A&B**). Here you can change items in **Settings**. This firmware still contain one hardcoded profile. 
 
 *** 
 
@@ -75,3 +75,5 @@ Front panel asssembly (rev A&B): <a href="https://a360.co/2S37lPS" target="_blan
 Firmware is based on Rocket Scream Electronics firmware for [Reflow Oven Shield](https://www.rocketscream.com/blog/2012/11/28/updated-back-in-stock-reflow-oven-shield-controller/)
 
 Some parts of the V2 firmware are inspired by parts of <a href="https://github.com/UnexpectedMaker/ReflowMaster" target="_blank">Reflow Master</a> firmware by @UnexpectedMaker
+
+In case that you will have any question, you can contact me at info@czechmaker.com
