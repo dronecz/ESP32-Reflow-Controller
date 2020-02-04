@@ -144,6 +144,24 @@ void setup() {
   Serial.println("OTA: " + String(useOTA));
   Serial.println();
 
+  // Extract "profiles" from memory
+  preferences.begin("profiles");
+  // Extract the size of saved array
+  size_t schLen = preferences.getBytes("profiles", NULL, NULL);
+  // Get array to buffer and check the size
+  char buffer[schLen];
+  preferences.getBytes("profiles", buffer, schLen);
+  if (schLen % sizeof(profile_t)) {
+    log_e("Data is not correct size!");
+    return;
+  }
+  // Save the extracted data into variable
+  profile_t *profiles = (profile_t *) buffer;
+  byte ext_num_of_prof = schLen / sizeof(profile_t);
+  //
+  // paste_profile = buffer; TODO
+  preferences.end();
+
   display.begin();
   startScreen();
 
@@ -241,19 +259,58 @@ void setup() {
     listDir(SD, "/profiles", 0);
   }
   if (SD_present == true) {
+    // Scan all profiles possible
     for (int i = 0; i < profileNum; i++) {
       parseJsonProfile(jsonName[i], i);
     }
+    // Put all profiles into Preferences
+    preferences.begin("profiles");
+    // Get the possible length of saved array
+    size_t schLen = profileNum*sizeof(profile_t);
+    // Put all bytes into "profiles"
+    preferences.putBytes("profiles", paste_profile, schLen);
+    // Test read the data back and test their correct number
+    char buffer[schLen];
+    preferences.getBytes("profiles", buffer, schLen);
+    if (schLen % sizeof(profile_t)) {
+      log_e("Data is not correct size!");
+      return;
+    }
+    // Check of Saved profiles
+    Serial.print("Saved profile titles: ");
+    for (int i = 0; i < profileNum; i++) {
+      Serial.print(paste_profile[i].title);
+      Serial.print(", ");
+    }
+    Serial.println();
+    preferences.end();
   }
 
   Serial.println();
   Serial.println("Number of profiles: " + profileNum);
+  uint8_t content[numOfProfiles*sizeof(profile_t)];
   Serial.println("Titles: ");
   for (int i = 0; i < profileNum; i++) {
     Serial.print((String)i + ". ");
     Serial.println(paste_profile[i].title);
+    convert_to_byte(paste_profile[i], content, i);    
   }
+  Serial.print("Size of profile_t: ");
+  Serial.println(sizeof(profile_t));
+  for(int i=0; i< (profileNum*sizeof(profile_t)); i++) {
+    Serial.print(content[i]);
+    Serial.print(",");
+  }
+  Serial.println();
 }
+
+template <typename T> unsigned int convert_to_byte (const T& value, uint8_t output [numOfProfiles*sizeof(profile_t)], int multiplier) {
+  const byte * p = (const byte*) &value;
+  unsigned int i;
+  for (i = 0; i < sizeof value; i++)
+    output[multiplier*i] = (*p++);
+  return i;
+}  // end of convert_to_byte
 
 void updatePreferences() {
   preferences.begin("store", false);
