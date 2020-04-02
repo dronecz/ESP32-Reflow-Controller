@@ -83,10 +83,13 @@ byte settings_pointer = 0;
 byte previousSettingsPointer = 0;
 bool   SD_present = false;
 //char* json = "";
-int profileNum = 0;
+int profileNum = -1;
 #define numOfProfiles 10
 String jsonName[numOfProfiles];
 char json;
+int profileUsed = 0;
+char spaceName[] = "profile";
+
 // Structure for paste profiles
 typedef struct {
   char      title[20];         // "Lead 183"
@@ -114,7 +117,7 @@ typedef struct {
   uint16_t  stages_cool_1;     // 183
 } profile_t;
 
-profile_t paste_profile[numOfProfiles];
+profile_t paste_profile[numOfProfiles]; //declaration of struct type array
 
 WiFiManager wm;
 
@@ -133,7 +136,7 @@ void setup() {
   horizontal = preferences.getBool("horizontal", 0);
   buzzer = preferences.getBool("buzzer", 0);
   useOTA = preferences.getBool("useOTA", 0);
-
+  profileUsed = preferences.getInt("profileUsed", 0);
   preferences.end();
 
   Serial.println();
@@ -142,41 +145,12 @@ void setup() {
   Serial.println("Horizontal: " + String(horizontal));
   Serial.println("Buzzer: " + String(buzzer));
   Serial.println("OTA: " + String(useOTA));
+  Serial.println("Used profile: " + String(profileUsed));
   Serial.println();
-
-  // Extract "profiles" from memory
-  preferences.begin("profiles");
-  // Extract the size of saved array
-  size_t schLen = preferences.getBytes("profiles", NULL, NULL);
-  // Get array to buffer and check the size
-  char buffer[schLen];
-  preferences.getBytes("profiles", buffer, schLen);
-  // Check, that Preferences are not empty
-  if (schLen > 0) {
-    if (schLen % sizeof(profile_t)) {
-      log_e("Data is not correct size!");
-      return;
-    }
-    // Save the extracted data into variable
-    profile_t *profiles = (profile_t *) buffer;
-    profileNum = schLen / sizeof(profile_t);
-    // Load profiles from memory to array for program usage
-    for (int i=0; i < profileNum; i++) {
-      paste_profile[i] = profiles[i];
-    }
-    // Print of Title names loaded from Preferences
-    Serial.println("Titles from Preferences: ");
-    for (int i = 0; i < profileNum; i++) {
-      Serial.print((String)i + ". ");
-      Serial.println(paste_profile[i].title);
-    }
-    Serial.println();
+  // load profiles from ESP32 memory
+  for (int i = 0; i < profileNum; i++) {
+    loadProfiles(profileNum);
   }
-  else {
-    Serial.println("No data found in Preferences memory.");
-  }
-  preferences.end();
-
   display.begin();
   startScreen();
 
@@ -276,31 +250,15 @@ void setup() {
   }
   // Load data from SD card, if available
   if (SD_present == true) {
-    // Scan all profiles possible
+    profile_t paste_profile_load[numOfProfiles];
+    // Scan all profiles from source
     for (int i = 0; i < profileNum; i++) {
-      parseJsonProfile(jsonName[i], i);
+      parseJsonProfile(jsonName[i], i, paste_profile_load);
     }
-    // Put all profiles into Preferences
-    preferences.begin("profiles");
-    // Get the possible length of saved array
-    size_t schLen = profileNum*sizeof(profile_t);
-    // Put all bytes into "profiles"
-    preferences.putBytes("profiles", paste_profile, schLen);
-    // Test read the data back and test their correct number
-    char buffer[schLen];
-    preferences.getBytes("profiles", buffer, schLen);
-    if (schLen % sizeof(profile_t)) {
-      log_e("Data is not correct size!");
-      return;
-    }
-    // Check of Saved profiles
-    Serial.print("Saved profile titles: ");
+    //Compare profiles, if they are already in memory
     for (int i = 0; i < profileNum; i++) {
-      Serial.print(paste_profile[i].title);
-      Serial.print(", ");
+      compareProfiles(paste_profile_load[i], paste_profile[i], i);
     }
-    Serial.println();
-    preferences.end();
   }
   Serial.println();
   Serial.print("Number of profiles: ");
@@ -314,7 +272,7 @@ void setup() {
     Serial.println(paste_profile[i].alloy);
   }
   Serial.println();
-  
+
 }
 
 void updatePreferences() {
