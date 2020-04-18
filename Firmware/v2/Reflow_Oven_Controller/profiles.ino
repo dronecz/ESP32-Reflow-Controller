@@ -1,4 +1,12 @@
 
+template <typename T> unsigned int convert_to_byte (const T& value, uint8_t output [sizeof(profile_t)], int multiplier) {
+  const byte * p = (const byte*) &value;
+  unsigned int i;
+  for (i = 0; i < sizeof value; i++)
+    output[multiplier*i] = (*p++);
+  return i;
+}  // end of convert_to_byte
+
 void parseJsonProfile(String someName, int num, profile_t* profile) {
 
   StaticJsonDocument<500> newDoc;
@@ -139,16 +147,17 @@ void loadProfiles(int num) {
     profile_t *profiles = (profile_t *) buffer;
     profileNum = schLen / sizeof(profile_t);
     // Load profiles from memory to array for program usage
-    for (int i = 0; i < profileNum; i++) {
-      paste_profile[i] = profiles[i];
+    if (profileNum == 1) {
+      paste_profile[num] = profiles[0];
+      // Print of Title names loaded from Preferences
+      Serial.println("Title from loaded profile: ");
+      Serial.print((String)num + ". ");
+      Serial.println(paste_profile[num].title);
+      Serial.println();
     }
-    // Print of Title names loaded from Preferences
-    Serial.println("Titles from Preferences: ");
-    for (int i = 0; i < profileNum; i++) {
-      Serial.print((String)i + ". ");
-      Serial.println(paste_profile[i].title);
+    else {
+      Serial.println("Error during load of data in loadProfiles.");
     }
-    Serial.println();
   }
   else {
     Serial.println("No data found in Preferences memory.");
@@ -156,14 +165,19 @@ void loadProfiles(int num) {
   preferences.end();
 }
 
-void saveProfiles(int num, profile_t* profile) {
+void saveProfiles(int num, profile_t profile) {
   sprintf(spaceName, "profile%d", num);
   // Put all profiles into Preferences
   preferences.begin(spaceName);
+
+  uint8_t content[sizeof(profile_t)];
+  convert_to_byte(profile, content, 0);
+
+
   // Get the possible length of saved array
   size_t schLen = sizeof(profile_t);
   // Put all bytes into "profiles"
-  preferences.putBytes(spaceName, profile, schLen);
+  preferences.putBytes(spaceName, content, schLen);
   // Test read the data back and test their correct number
   char buffer[schLen];
   preferences.getBytes(spaceName, buffer, schLen);
@@ -171,24 +185,24 @@ void saveProfiles(int num, profile_t* profile) {
     log_e("Data is not correct size!");
     return;
   }
+
+  profile_t *profiles = (profile_t *) buffer;
   // Check of Saved profiles
-  Serial.print("Saved profile title: ");
-  //  for (int i = 0; i < profileNum; i++) {
-  Serial.println(profile->title);
-  //    Serial.print(", ");
-  //  }
+  Serial.println("Title from saved profile: ");
+  Serial.print((String)num + ". ");
+  Serial.println(paste_profile[num].title);
   Serial.println();
   preferences.end();
 }
 
-void compareProfiles(profile_t _profile, profile_t profile_, int number) {
-  if (_profile.title[number] == profile_.title[number])
+void compareProfiles(profile_t profile_new, profile_t profile_saved, int number) {
+  if (profile_new.title[number] == profile_saved.title[number])
   {
     Serial.println("Profile " + String(number) + " match");
   }
   else
   {
     Serial.println("Profile " + String(number) + " do not match");
-    //saveProfiles(profileNum, profile_(number));
+    saveProfiles(number, profile_new); //////////
   }
 }
