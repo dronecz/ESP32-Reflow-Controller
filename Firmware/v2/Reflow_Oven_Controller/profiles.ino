@@ -185,6 +185,8 @@ void saveProfiles(int num, profile_t profile) {
     log_e("Data is not correct size!");
     return;
   }
+  // Save new profile also to paste_profile used in program
+  paste_profile[num] = profile;
 
   profile_t *profiles = (profile_t *) buffer;
   // Check of Saved profiles
