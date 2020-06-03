@@ -7,19 +7,24 @@
 #include <HTTPClient.h>
 #include <Preferences.h>
 #include <WiFi.h>
-#include <WebServer.h>
+//#include <WebServer.h>
+#include <ESPAsyncWebServer.h>
+#include <WebSocketsServer.h>
 #include <ESPmDNS.h>
 #include <Update.h>
 #include "FS.h"
 #include <SD.h>
+#ifdef WMManager
 #include <WiFiManager.h>          //https://github.com/tzapu/WiFiManager (development branch) -> download ZIP file -> Arduino IDE -> Project -> Add library -> Add library from ZIP file -> select downloaded file
+#endif
 #include "SPI.h"
 #include "config.h"
 //#include "LCD.h"
 #include "Button.h"
 #include "reflow_logic.h"
 //#include "OTA.h"
-#include "webserver.h"
+//#include "webserver.h"
+#include <SPIFFS.h>
 
 HTTPClient http;
 
@@ -32,8 +37,14 @@ Adafruit_MAX31856 max31856 = Adafruit_MAX31856(max_cs);
 Adafruit_ILI9341 display = Adafruit_ILI9341(display_cs, display_dc, display_rst);
 //Adafruit_ILI9341 display = Adafruit_ILI9341(display_cs, display_dc, display_mosi, display_sclk, display_rst);
 
+const char* ssid     = "PICHNET";
+const char* password = "439DDC6a5b";
+
 Preferences preferences;
-WebServer server(80);
+//WebServer server(80);
+AsyncWebServer server(80);
+WebSocketsServer webSocket = WebSocketsServer(1337);
+char msg_buf[10];
 
 #define DEBOUNCE_MS 100
 Button AXIS_Y = Button(BUTTON_AXIS_Y, true, DEBOUNCE_MS);
@@ -118,8 +129,9 @@ typedef struct {
 } profile_t;
 
 profile_t paste_profile[numOfProfiles]; //declaration of struct type array
-
+#ifdef WMManager
 WiFiManager wm;
+#endif
 
 void setup() {
   WiFi.mode(WIFI_STA); // explicitly set mode, esp defaults to STA+AP
@@ -156,7 +168,7 @@ void setup() {
 
   //reset settings - wipe credentials for testing
   //wm.resetSettings();
-
+#ifdef WMManager
   wm.setConfigPortalBlocking(false);
   if (wm.autoConnect("ReflowOvenAP")) {
     Serial.println("connected...yeey :)");
@@ -164,6 +176,15 @@ void setup() {
   else {
     Serial.println("Configportal running");
   }
+#endif
+
+#ifndef WMManager
+  if ( !SPIFFS.begin()) {
+    Serial.println("Error mounting SPIFFS");
+    while (1);
+  }
+  WiFi.begin(ssid, password);
+#endif
 
   // SSR pin initialization to ensure reflow oven is off
 
@@ -200,8 +221,11 @@ void setup() {
   }
 
   Serial.println("Connecting ...");
+
+  while (WiFi.status() != WL_CONNECTED) {
+    delay(250); Serial.print('.');
+  }
   if (WiFi.status() == WL_CONNECTED) { // Wait for the Wi-Fi to connect: scan for Wi-Fi networks, and connect to the strongest of the networks above
-    //delay(250); Serial.print('.');
     Serial.println("\nConnected to " + WiFi.SSID() + "; IP address: " + WiFi.localIP().toString()); // Report which SSID and IP is in use
     connected = 1;
 
@@ -215,16 +239,37 @@ void setup() {
     Serial.println(F("Error setting up MDNS responder!"));
     ESP.restart();
   }
+  /*
+    ///////////////////////////// Server Commands
+    server.on("/",         HomePage);
+    server.on("/download", File_Download);
+    server.on("/upload",   File_Upload);
+    server.on("/fupload",  HTTP_POST, []() {
+      server.send(200);
+    }, handleFileUpload);
+    ///////////////////////////// End of Request commands
+    server.begin();
+  */
 
-  ///////////////////////////// Server Commands
-  server.on("/",         HomePage);
-  server.on("/download", File_Download);
-  server.on("/upload",   File_Upload);
-  server.on("/fupload",  HTTP_POST, []() {
-    server.send(200);
-  }, handleFileUpload);
-  ///////////////////////////// End of Request commands
+  // On HTTP request for root, provide index.html file
+  server.on("/", HTTP_GET, onIndexRequest);
+
+  // On HTTP request for style sheet, provide style.css
+  server.on("/style.css", HTTP_GET, onCSSRequest);
+
+  // Handle requests for pages that do not exist
+  server.onNotFound(onPageNotFound);
+
+  // Start web server
   server.begin();
+  Serial.println("TCP server started");
+
+  // Add service to MDNS-SD
+  MDNS.addService("ws", "tcp", 1337);
+
+  // Start WebSocket server and assign callback
+  webSocket.begin();
+  webSocket.onEvent(onWebSocketEvent);
   Serial.println("HTTP server started");
 
   max31856.begin();
@@ -303,12 +348,16 @@ void processButtons() {
 }
 
 void loop() {
+#ifdef WMManager
   wm.process();
+#endif
   if (state != 9) { // if we are in test menu, disable LED & SSR control in loop
     reflow_main();
   }
   processButtons();
-  server.handleClient(); // Listen for client connections
+  //server.handleClient(); // Listen for client connections
+  // Look for and handle WebSocket data
+  webSocket.loop();
 }
 
 void listDir(fs::FS & fs, const char * dirname, uint8_t levels) {
