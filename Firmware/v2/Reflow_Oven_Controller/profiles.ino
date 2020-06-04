@@ -129,6 +129,7 @@ void saveSelectedProfile(int profile) {
 //}
 
 void loadProfiles(int num) {
+  int profileSize;
   sprintf(spaceName, "profile%d", num);
   // Extract "profiles" from memory
   preferences.begin(spaceName);
@@ -143,30 +144,36 @@ void loadProfiles(int num) {
       log_e("Data is not correct size!");
       return;
     }
+    else {
+      Serial.print("Buffer: ");
+      Serial.println(buffer);
+    }
     // Save the extracted data into variable
     profile_t *profiles = (profile_t *) buffer;
-    profileNum = schLen / sizeof(profile_t);
+    profileSize = schLen / sizeof(profile_t);
     // Load profiles from memory to array for program usage
-    if (profileNum == 1) {
+    if (profileSize == 1) {
       paste_profile[num] = profiles[0];
       // Print of Title names loaded from Preferences
       Serial.println("Title from loaded profile: ");
       Serial.print((String)num + ". ");
       Serial.println(paste_profile[num].title);
       Serial.println();
+      profileNum++;
     }
     else {
       Serial.println("Error during load of data in loadProfiles.");
     }
   }
   else {
-    Serial.println("No data found in Preferences memory.");
+    Serial.print("No data found in Preferences memory n");
+    Serial.println(num);
   }
   preferences.end();
 }
 
 void saveProfiles(int num, profile_t profile) {
-  sprintf(spaceName, "profile%d", num);
+  sprintf(spaceName, "profile%0d", num);
   // Put all profiles into Preferences
   preferences.begin(spaceName);
 
@@ -192,7 +199,7 @@ void saveProfiles(int num, profile_t profile) {
   // Check of Saved profiles
   Serial.println("Title from saved profile: ");
   Serial.print((String)num + ". ");
-  Serial.println(paste_profile[num].title);
+  Serial.println(profiles[0].title);
   Serial.println();
   preferences.end();
 }

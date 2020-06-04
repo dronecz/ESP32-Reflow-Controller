@@ -94,12 +94,12 @@ byte settings_pointer = 0;
 byte previousSettingsPointer = 0;
 bool   SD_present = false;
 //char* json = "";
-int profileNum = -1;
+int profileNum = 0;
 #define numOfProfiles 10
 String jsonName[numOfProfiles];
 char json;
 int profileUsed = 0;
-char spaceName[] = "profile";
+char spaceName[] = "profile00";
 
 // Structure for paste profiles
 typedef struct {
@@ -160,8 +160,8 @@ void setup() {
   Serial.println("Used profile: " + String(profileUsed));
   Serial.println();
   // load profiles from ESP32 memory
-  for (int i = 0; i < profileNum; i++) {
-    loadProfiles(profileNum);
+  for (int i = 0; i < numOfProfiles; i++) {
+    loadProfiles(i);
   }
   display.begin();
   startScreen();
@@ -222,9 +222,9 @@ void setup() {
 
   Serial.println("Connecting ...");
 
-  while (WiFi.status() != WL_CONNECTED) {
-    delay(250); Serial.print('.');
-  }
+  // while (WiFi.status() != WL_CONNECTED) {
+  //   delay(250); Serial.print('.');
+  // }
   if (WiFi.status() == WL_CONNECTED) { // Wait for the Wi-Fi to connect: scan for Wi-Fi networks, and connect to the strongest of the networks above
     Serial.println("\nConnected to " + WiFi.SSID() + "; IP address: " + WiFi.localIP().toString()); // Report which SSID and IP is in use
     connected = 1;
