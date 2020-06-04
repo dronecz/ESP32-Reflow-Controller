@@ -43,7 +43,7 @@ int fanPin = 12 ; // pin 25 -> pin is still high (need to solve this)
 const String fwVersion = "0.2.32";
 #define ServerVersion "1.0"
 #define projectName "ESP32 Reflow Oven Controller"
-//#define WMManager
+#define WMManager
 String version_url  = "http://czechmaker.com/roc_version.txt";
 
 

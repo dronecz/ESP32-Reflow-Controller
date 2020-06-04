@@ -10,13 +10,13 @@
 //#include <WebServer.h>
 #include <ESPAsyncWebServer.h>
 #include <WebSocketsServer.h>
+#include <DNSServer.h>
 #include <ESPmDNS.h>
 #include <Update.h>
 #include "FS.h"
 #include <SD.h>
-#ifdef WMManager
-#include <WiFiManager.h>          //https://github.com/tzapu/WiFiManager (development branch) -> download ZIP file -> Arduino IDE -> Project -> Add library -> Add library from ZIP file -> select downloaded file
-#endif
+//#include <WiFiManager.h>          //https://github.com/tzapu/WiFiManager (development branch) -> download ZIP file -> Arduino IDE -> Project -> Add library -> Add library from ZIP file -> select downloaded file
+#include <ESPAsyncWiFiManager.h>  //https://github.com/alanswx/ESPAsyncWiFiManager
 #include "SPI.h"
 #include "config.h"
 //#include "LCD.h"
@@ -37,13 +37,17 @@ Adafruit_MAX31856 max31856 = Adafruit_MAX31856(max_cs);
 Adafruit_ILI9341 display = Adafruit_ILI9341(display_cs, display_dc, display_rst);
 //Adafruit_ILI9341 display = Adafruit_ILI9341(display_cs, display_dc, display_mosi, display_sclk, display_rst);
 
-const char* ssid     = "PICHNET";
-const char* password = "439DDC6a5b";
+const char* ssid     = "ssid";
+const char* password = "password";
+
+#define FORMAT_SPIFFS_IF_FAILED true
 
 Preferences preferences;
-//WebServer server(80);
 AsyncWebServer server(80);
+DNSServer dns;
 WebSocketsServer webSocket = WebSocketsServer(1337);
+AsyncWiFiManager wm(&server, &dns);
+
 char msg_buf[10];
 
 #define DEBOUNCE_MS 100
@@ -129,9 +133,6 @@ typedef struct {
 } profile_t;
 
 profile_t paste_profile[numOfProfiles]; //declaration of struct type array
-#ifdef WMManager
-WiFiManager wm;
-#endif
 
 void setup() {
   WiFi.mode(WIFI_STA); // explicitly set mode, esp defaults to STA+AP
@@ -168,8 +169,8 @@ void setup() {
 
   //reset settings - wipe credentials for testing
   //wm.resetSettings();
-#ifdef WMManager
-  wm.setConfigPortalBlocking(false);
+#ifdef WMManager  
+  //wm.setConfigPortalBlocking(false);
   if (wm.autoConnect("ReflowOvenAP")) {
     Serial.println("connected...yeey :)");
   }
@@ -179,9 +180,9 @@ void setup() {
 #endif
 
 #ifndef WMManager
-  if ( !SPIFFS.begin()) {
+  if ( !SPIFFS.begin(FORMAT_SPIFFS_IF_FAILED)) {
     Serial.println("Error mounting SPIFFS");
-    while (1);
+    return;
   }
   WiFi.begin(ssid, password);
 #endif
@@ -349,7 +350,7 @@ void processButtons() {
 
 void loop() {
 #ifdef WMManager
-  wm.process();
+//    wm.process();
 #endif
   if (state != 9) { // if we are in test menu, disable LED & SSR control in loop
     reflow_main();
