@@ -299,7 +299,7 @@ void UpdateSettingsPointer() {
         if (buttons != 0) {
           centeredText("Set Yes to use fan.", ILI9341_GREEN, 300);
         } else {
-          centeredText("Enter Test menu.", ILI9341_GREEN, 300);
+          centeredText("WiFi Setup", ILI9341_GREEN, 300);
         }
         break;
       case 5:
@@ -308,6 +308,7 @@ void UpdateSettingsPointer() {
         } else {
           centeredText("Enter Test menu.", ILI9341_GREEN, 300);
         }
+        break;
       case 6:
         if (buttons != 0) {
           centeredText("Enter Test menu.", ILI9341_GREEN, 300);
