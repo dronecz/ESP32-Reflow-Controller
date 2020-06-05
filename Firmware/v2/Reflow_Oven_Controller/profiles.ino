@@ -109,6 +109,7 @@ void parseJsonProfile(String someName, int num, profile_t* profile) {
 void saveSelectedProfile(int profile) {
   preferences.begin("store");
   preferences.putInt("profileUsed", profile);
+  profileUsed = preferences.getInt("profileUsed", 0);
   preferences.end();
   Serial.println("Saved profile # " + String(profile));
 }

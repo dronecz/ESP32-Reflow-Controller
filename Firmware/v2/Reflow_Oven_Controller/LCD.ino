@@ -555,7 +555,6 @@ void showSelectProfile() {
   int y = 55; //from left side of the LCD
   int h = 20;
   numOfPointers = profileNum;
-  settings_pointer = 0; // clear pointer
 #ifdef DEBUG
   Serial.println("State is :" + String(state));
 #endif
@@ -572,7 +571,11 @@ void showSelectProfile() {
     display.fillRect(0, 28, 240, 3, ILI9341_WHITE );
   }
   for (int i = 0; i < profileNum; i++) {
-    leftText(paste_profile[i].title, ILI9341_WHITE, y);
+    if (i == profileUsed) {
+      leftText(paste_profile[i].title, ILI9341_YELLOW, y);
+    } else {
+      leftText(paste_profile[i].title, ILI9341_WHITE, y);
+    }
     y += h;
     leftText(paste_profile[i].alloy, ILI9341_BLUE, y, +15);
     y += h;
@@ -675,7 +678,7 @@ void showSettings() {
     y += h;
     numOfPointers++;
   }
-  
+
   wifiSetupShow(y);
   y += h;
   numOfPointers++;

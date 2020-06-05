@@ -189,6 +189,7 @@ void event1(int pin) {
         //previousSettingsPointer = settings_pointer;
       } else if (state == 2) { // select profile
         saveSelectedProfile(settings_pointer);
+        showSelectProfile();
       } else if (state == 5) { // settings
         //settings_pointer = 0; // clear pointer
         if (settings_pointer == 0) {
