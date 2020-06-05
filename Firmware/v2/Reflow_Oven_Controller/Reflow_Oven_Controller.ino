@@ -7,7 +7,6 @@
 #include <HTTPClient.h>
 #include <Preferences.h>
 #include <WiFi.h>
-//#include <WebServer.h>
 #include <ESPAsyncWebServer.h>
 #include <WebSocketsServer.h>
 #include <DNSServer.h>
@@ -15,15 +14,11 @@
 #include <Update.h>
 #include "FS.h"
 #include <SD.h>
-//#include <WiFiManager.h>          //https://github.com/tzapu/WiFiManager (development branch) -> download ZIP file -> Arduino IDE -> Project -> Add library -> Add library from ZIP file -> select downloaded file
 #include <ESPAsyncWiFiManager.h>  //https://github.com/alanswx/ESPAsyncWiFiManager
 #include "SPI.h"
 #include "config.h"
-//#include "LCD.h"
 #include "Button.h"
 #include "reflow_logic.h"
-//#include "OTA.h"
-//#include "webserver.h"
 #include <SPIFFS.h>
 
 HTTPClient http;
@@ -46,8 +41,6 @@ Preferences preferences;
 AsyncWebServer server(80);
 DNSServer dns;
 WebSocketsServer webSocket = WebSocketsServer(1337);
-AsyncWiFiManager wm(&server, &dns);
-
 char msg_buf[10];
 
 #define DEBOUNCE_MS 100
@@ -167,24 +160,12 @@ void setup() {
   display.begin();
   startScreen();
 
-  //reset settings - wipe credentials for testing
-  //wm.resetSettings();
-#ifdef WMManager  
-  //wm.setConfigPortalBlocking(false);
-  if (wm.autoConnect("ReflowOvenAP")) {
-    Serial.println("connected...yeey :)");
-  }
-  else {
-    Serial.println("Configportal running");
-  }
-#endif
-
 #ifndef WMManager
   if ( !SPIFFS.begin(FORMAT_SPIFFS_IF_FAILED)) {
     Serial.println("Error mounting SPIFFS");
     return;
   }
-  WiFi.begin(ssid, password);
+
 #endif
 
   // SSR pin initialization to ensure reflow oven is off
@@ -220,7 +201,7 @@ void setup() {
       Serial.println(digitalButtonPins[i]);
     }
   }
-
+  WiFi.begin(ssid, password);
   Serial.println("Connecting ...");
 
   // while (WiFi.status() != WL_CONNECTED) {
@@ -240,18 +221,6 @@ void setup() {
     Serial.println(F("Error setting up MDNS responder!"));
     ESP.restart();
   }
-  /*
-    ///////////////////////////// Server Commands
-    server.on("/",         HomePage);
-    server.on("/download", File_Download);
-    server.on("/upload",   File_Upload);
-    server.on("/fupload",  HTTP_POST, []() {
-      server.send(200);
-    }, handleFileUpload);
-    ///////////////////////////// End of Request commands
-    server.begin();
-  */
-
   // On HTTP request for root, provide index.html file
   server.on("/", HTTP_GET, onIndexRequest);
 
@@ -318,7 +287,6 @@ void setup() {
     Serial.println(paste_profile[i].alloy);
   }
   Serial.println();
-
 }
 
 void updatePreferences() {
@@ -349,9 +317,6 @@ void processButtons() {
 }
 
 void loop() {
-#ifdef WMManager
-//    wm.process();
-#endif
   if (state != 9) { // if we are in test menu, disable LED & SSR control in loop
     reflow_main();
   }
@@ -408,4 +373,12 @@ void readFile(fs::FS & fs, String path, const char * type) {
     Serial.write(file.read());
   }
   file.close();
+}
+
+void wifiSetup() {
+  AsyncWiFiManager wm(&server, &dns);
+  wm.setTimeout(180);
+  if (!wm.startConfigPortal("ReflowOvenAP")) {
+    Serial.println("failed to connect and hit timeout");
+  }
 }

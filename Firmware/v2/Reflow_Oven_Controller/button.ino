@@ -168,7 +168,7 @@ void event1(int pin) {
           disableMenu = 1;
         }
       }
-      else if (state == 1) {
+      else if (state == 1) { // main menu
         if (settings_pointer == 0) {
           if (disableMenu != 0) {
             showInfo();
@@ -187,9 +187,9 @@ void event1(int pin) {
           updateFirmware();
         }
         //previousSettingsPointer = settings_pointer;
-      } else if (state == 2) {
+      } else if (state == 2) { // select profile
         saveSelectedProfile(settings_pointer);
-      } else if (state == 5) {
+      } else if (state == 5) { // settings
         //settings_pointer = 0; // clear pointer
         if (settings_pointer == 0) {
           buzzer = !buzzer;
@@ -235,6 +235,15 @@ void event1(int pin) {
             testOutputs();
           }
         } else if  (settings_pointer == 5) {
+          if (buttons != 0) {
+            if (verboseOutput != 0) {
+              Serial.println("Calling WiFi setup function");
+            }
+            wifiSetup();
+          } else {
+            testOutputs();
+          }
+        } else if  (settings_pointer == 6) {
           testOutputs();
         }
         //previousSettingsPointer = settings_pointer; //store previous position in menu
