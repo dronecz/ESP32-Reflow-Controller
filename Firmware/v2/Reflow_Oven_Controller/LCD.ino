@@ -425,7 +425,7 @@ void loopScreen() {
     centeredText("!UPDATE AVAILABLE!", ILI9341_GREEN, 10);
   }
   if (horizontal != 0) {
-    int tempTextPos = 200;
+    int tempTextPos = 180;
     int infoText = 30;
     centeredText("Status:", ILI9341_WHITE, infoText);
     display.setTextSize(2);
@@ -442,6 +442,8 @@ void loopScreen() {
     } else if (inputInt > 100) {
       centeredText(temp, ILI9341_RED, tempTextPos);
     }
+    display.setTextSize(1);
+    centeredText("Profile in use:" + String(paste_profile[profileUsed].title), ILI9341_WHITE, tempTextPos + 50);
 #ifdef DEBUG
     Serial.println(temp);
 #endif
@@ -463,6 +465,8 @@ void loopScreen() {
     } else if (inputInt > 100) {
       centeredText(temp, ILI9341_RED, tempTextPos);
     }
+    display.setTextSize(1);
+    centeredText("Profile in use:" + String(paste_profile[profileUsed].title), ILI9341_WHITE, tempTextPos + 50);
 #ifdef DEBUG
     Serial.println(temp);
 #endif
