@@ -18,7 +18,6 @@
 #include "SPI.h"
 #include "config.h"
 #include "Button.h"
-#include "reflow_logic.h"
 #include <SPIFFS.h>
 
 HTTPClient http;
@@ -126,6 +125,8 @@ typedef struct {
 } profile_t;
 
 profile_t paste_profile[numOfProfiles]; //declaration of struct type array
+
+#include "reflow_logic.h"
 
 void setup() {
   WiFi.mode(WIFI_STA); // explicitly set mode, esp defaults to STA+AP

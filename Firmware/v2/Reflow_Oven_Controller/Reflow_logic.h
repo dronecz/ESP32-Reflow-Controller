@@ -12,6 +12,9 @@ extern byte state;
 extern bool disableMenu;
 extern bool profileIsOn;
 
+extern profile_t paste_profile[numOfProfiles];
+extern int profileUsed;
+
 /*******************************************************************************
   Title: Reflow Oven Controller
   Version: 1.20
