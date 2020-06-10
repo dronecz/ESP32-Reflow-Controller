@@ -169,26 +169,6 @@ typedef enum DEBOUNCE_STATE
 #define PID_KI_REFLOW 0.05
 #define PID_KD_REFLOW 350
 #define PID_SAMPLE_TIME 1000
-// This is for testing on different board
-#define LCD_PIN 14
-#define ODROID
-
-// ***** LCD MESSAGES *****
-const char* lcdMessagesReflowStatus[] = {
-  "Pripraven",
-  "Predehrati",
-  "Mekceni",
-  "Rozteceni",
-  "Chlazeni",
-  "Hotovo",
-  "Pockej,horky",
-  "Chyba"
-};
-
-// ***** DEGREE SYMBOL FOR LCD *****
-unsigned char degree[8]  = {
-  140, 146, 146, 140, 128, 128, 128, 128
-};
 
 // ***** PID CONTROL VARIABLES *****
 double setpoint;
@@ -245,14 +225,6 @@ void reflow_main() {
                   if (fault & MAX31856_FAULT_OVUV)    //Serial.println("Over/Under Voltage Fault");
                     if (fault & MAX31856_FAULT_OPEN)    //Serial.println("Thermocouple Open Fault");
                       isFault = 1;
-    }
-
-    //    inputInt = (int) input;
-    //    if ((input <= inputInt) || (input >= inputInt))  {
-    //      loopScreen();
-    //    }
-    if ((((int) input) < inputInt) || (((int) input) > inputInt))  {
-      //loopScreen();
     }
     inputInt = input / 1;
 
@@ -324,7 +296,6 @@ void reflow_main() {
       else
       {
         // If switch is pressed to start reflow process
-        //if (switchStatus == SWITCH_1)
         if (profileIsOn != 0)
         {
           // Send header for CSV file
@@ -334,7 +305,7 @@ void reflow_main() {
           // Initialize PID control window starting time
           windowStartTime = millis();
           // Ramp up to minimum soaking temperature
-          setpoint = TEMPERATURE_SOAK_MIN;
+          setpoint = paste_profile[profileUsed].stages_preheat_1;
           // Tell the PID to range between 0 and the full window size
           reflowOvenPID.SetOutputLimits(0, windowSize);
           reflowOvenPID.SetSampleTime(PID_SAMPLE_TIME);
@@ -350,14 +321,14 @@ void reflow_main() {
       activeStatus = "Preheat";
       reflowStatus = REFLOW_STATUS_ON;
       // If minimum soak temperature is achieve
-      if (input >= TEMPERATURE_SOAK_MIN)
+      if (input >= paste_profile[profileUsed].stages_preheat_1)
       {
         // Chop soaking period into smaller sub-period
         timerSoak = millis() + SOAK_MICRO_PERIOD;
         // Set less agressive PID parameters for soaking ramp
         reflowOvenPID.SetTunings(PID_KP_SOAK, PID_KI_SOAK, PID_KD_SOAK);
         // Ramp up to first section of soaking temperature
-        setpoint = TEMPERATURE_SOAK_MIN + SOAK_TEMPERATURE_STEP;
+        setpoint = paste_profile[profileUsed].stages_preheat_1 + SOAK_TEMPERATURE_STEP;
         // Proceed to soaking state
         reflowState = REFLOW_STATE_SOAK;
       }
@@ -371,12 +342,12 @@ void reflow_main() {
         timerSoak = millis() + SOAK_MICRO_PERIOD;
         // Increment micro setpoint
         setpoint += SOAK_TEMPERATURE_STEP;
-        if (setpoint > TEMPERATURE_SOAK_MAX)
+        if (setpoint > paste_profile[profileUsed].stages_soak_1)
         {
           // Set agressive PID parameters for reflow ramp
           reflowOvenPID.SetTunings(PID_KP_REFLOW, PID_KI_REFLOW, PID_KD_REFLOW);
           // Ramp up to first section of soaking temperature
-          setpoint = TEMPERATURE_REFLOW_MAX;
+          setpoint = paste_profile[profileUsed].stages_reflow_1;
           // Proceed to reflowing state
           reflowState = REFLOW_STATE_REFLOW;
         }
@@ -387,7 +358,7 @@ void reflow_main() {
       activeStatus = "Reflow";
       // We need to avoid hovering at peak temperature for too long
       // Crude method that works like a charm and safe for the components
-      if (input >= (TEMPERATURE_REFLOW_MAX - 5))
+      if (input >= (paste_profile[profileUsed].stages_reflow_1 - 5))
       {
         // Set PID parameters for cooling ramp
         reflowOvenPID.SetTunings(PID_KP_REFLOW, PID_KI_REFLOW, PID_KD_REFLOW);
@@ -534,5 +505,4 @@ void reflow_main() {
   {
     digitalWrite(ssrPin, LOW);
   }
-
 }
