@@ -3,11 +3,11 @@ template <typename T> unsigned int convert_to_byte (const T& value, uint8_t outp
   const byte * p = (const byte*) &value;
   unsigned int i;
   for (i = 0; i < sizeof value; i++)
-    output[multiplier*i] = (*p++);
+    output[multiplier * i] = (*p++);
   return i;
 }  // end of convert_to_byte
 
-void parseJsonProfile(String someName, int num, profile_t* profile) {
+void parseJsonProfile(fs::FS &fs, String someName, int num, profile_t* profile) {
 
   StaticJsonDocument<500> newDoc;
 
@@ -15,8 +15,9 @@ void parseJsonProfile(String someName, int num, profile_t* profile) {
 
   Serial.println();
   Serial.println("Starting to parse " + someName + " file.");
+
   // Open file for reading
-  File file = SD.open(someName);
+  File file = fs.open(someName);
 
   // Allocate a temporary JsonDocument
   // Don't forget to change the capacity to match your requirements.
@@ -27,6 +28,7 @@ void parseJsonProfile(String someName, int num, profile_t* profile) {
   DeserializationError error = deserializeJson(doc, file);
 
   // Test if parsing succeeds.
+
   if (error) {
     Serial.print(F("deserializeJson() failed: "));
     Serial.println(error.c_str());
@@ -58,6 +60,7 @@ void parseJsonProfile(String someName, int num, profile_t* profile) {
 
   profile[num].stages_cool_0    = stages["cool"][0];    // 240
   profile[num].stages_cool_1    = stages["cool"][1];    // 183
+
 
   file.close();
 
@@ -113,21 +116,6 @@ void saveSelectedProfile(int profile) {
   preferences.end();
   Serial.println("Saved profile # " + String(profile));
 }
-
-//void compareProfiles(profile_t _profile, profile_t profile_, int number) {
-//  int check ;
-//
-//  check = memcmp(_profile, profile_, sizeof(_profile));
-//
-//  if (check == 0)
-//  {
-//    Serial.print("Profile match" + String(number));
-//  }
-//  else
-//  {
-//    Serial.print("Profile do not match" + String(number));
-//  }
-//}
 
 void loadProfiles(int num) {
   int profileSize;

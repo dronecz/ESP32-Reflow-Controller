@@ -70,6 +70,7 @@ bool disableMenu = 0;
 bool profileIsOn = 0;
 bool updataAvailable = 0;
 bool testState = 0;
+bool useSPIFFS = 0 ;
 
 // Button variables
 int buttonVal[numDigButtons] = {0};                            // value read from button
@@ -144,6 +145,7 @@ void setup() {
   buzzer = preferences.getBool("buzzer", 0);
   useOTA = preferences.getBool("useOTA", 0);
   profileUsed = preferences.getInt("profileUsed", 0);
+  useSPIFFS = preferences.getBool("useSPIFFS", 0);
   preferences.end();
 
   Serial.println();
@@ -161,13 +163,10 @@ void setup() {
   display.begin();
   startScreen();
 
-#ifndef WMManager
   if ( !SPIFFS.begin(FORMAT_SPIFFS_IF_FAILED)) {
     Serial.println("Error mounting SPIFFS");
     return;
   }
-
-#endif
 
   // SSR pin initialization to ensure reflow oven is off
 
@@ -202,12 +201,14 @@ void setup() {
       Serial.println(digitalButtonPins[i]);
     }
   }
-  WiFi.begin(ssid, password);
-  Serial.println("Connecting ...");
 
-  // while (WiFi.status() != WL_CONNECTED) {
-  //   delay(250); Serial.print('.');
-  // }
+  if (ssid != "ssid") {
+    WiFi.begin(ssid, password);
+    Serial.println("Connecting ...");
+    while (WiFi.status() != WL_CONNECTED) {
+      delay(250); Serial.print('.');
+    }
+  }
   if (WiFi.status() == WL_CONNECTED) { // Wait for the Wi-Fi to connect: scan for Wi-Fi networks, and connect to the strongest of the networks above
     Serial.println("\nConnected to " + WiFi.SSID() + "; IP address: " + WiFi.localIP().toString()); // Report which SSID and IP is in use
     connected = 1;
@@ -227,6 +228,13 @@ void setup() {
 
   // On HTTP request for style sheet, provide style.css
   server.on("/style.css", HTTP_GET, onCSSRequest);
+
+  // upload a file to /upload
+  server.on("/upload", HTTP_POST, [](AsyncWebServerRequest * request) {
+    request->send(200);
+  }, onUpload);
+
+  server.onFileUpload(onUpload);
 
   // Handle requests for pages that do not exist
   server.onNotFound(onPageNotFound);
@@ -253,29 +261,40 @@ void setup() {
   // Initialize thermocouple reading variable
   nextRead = millis();
 
-  Serial.print(F("Initializing SD card..."));
-  if (!SD.begin(SD_CS_pin)) { // see if the card is present and can be initialised. Wemos SD-Card CS uses D8
-    Serial.println(F("Card failed or not present, no SD Card data logging possible..."));
-    SD_present = false;
-  } else {
-    Serial.println(F("Card initialised... file access enabled..."));
-    SD_present = true;
-    // Reset number of profiles for fresh load from SD card
+  if (useSPIFFS != 0) {
     profileNum = 0;
-    listDir(SD, "/profiles", 0);
+    listDir(SPIFFS, "/profiles", 0);
+  } else {
+    Serial.print(F("Initializing SD card..."));
+    if (!SD.begin(SD_CS_pin)) { // see if the card is present and can be initialised. Wemos SD-Card CS uses D8
+      Serial.println(F("Card failed or not present, no SD Card data logging possible..."));
+      SD_present = false;
+    } else {
+      Serial.println(F("Card initialised... file access enabled..."));
+      SD_present = true;
+      // Reset number of profiles for fresh load from SD card
+      profileNum = 0;
+      listDir(SD, "/profiles", 0);
+    }
   }
-  // Load data from SD card, if available
-  if (SD_present == true) {
+  // Load data from selected storage
+  if ((SD_present == true) || (useSPIFFS != 0)) {
     profile_t paste_profile_load[numOfProfiles];
     // Scan all profiles from source
+
     for (int i = 0; i < profileNum; i++) {
-      parseJsonProfile(jsonName[i], i, paste_profile_load);
+      if (useSPIFFS != 0) {
+        parseJsonProfile(SPIFFS, jsonName[i], i, paste_profile_load);
+      } else {
+        parseJsonProfile(SD, jsonName[i], i, paste_profile_load);
+      }
     }
     //Compare profiles, if they are already in memory
     for (int i = 0; i < profileNum; i++) {
       compareProfiles(paste_profile_load[i], paste_profile[i], i);
     }
   }
+
   Serial.println();
   Serial.print("Number of profiles: ");
   Serial.println(profileNum);
@@ -297,6 +316,7 @@ void updatePreferences() {
   preferences.putBool("horizontal", horizontal);
   preferences.putBool("buzzer", buzzer);
   preferences.putBool("useOTA", useOTA);
+  preferences.putBool("useSPIFFS", useSPIFFS);
   preferences.end();
 
   if (verboseOutput != 0) {
@@ -305,6 +325,7 @@ void updatePreferences() {
     Serial.println("Fan is: " + String(fan));
     Serial.println("Horizontal is: " + String(horizontal));
     Serial.println("OTA is : " + String(useOTA));
+    Serial.println("Use SPIFFS is : " + String(useSPIFFS));
     Serial.println("Buzzer is: " + String(buzzer));
     Serial.println();
   }
@@ -327,8 +348,8 @@ void loop() {
   webSocket.loop();
 }
 
-void listDir(fs::FS & fs, const char * dirname, uint8_t levels) {
-  Serial.printf("Listing directory: %s\n", dirname);
+void listDir(fs::FS &fs, const char * dirname, uint8_t levels) {
+  Serial.printf("Listing directory: %s\r\n", dirname);
 
   File root = fs.open(dirname);
   if (!root) {

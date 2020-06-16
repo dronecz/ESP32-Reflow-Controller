@@ -161,11 +161,9 @@ void event1(int pin) {
       if (state == 0) {
         if (profileIsOn != 0) {
           stopReflowScreen();
-          disableMenu = 0;
           activeStatus = "Idle";
         } else {
-          startReflowScreen();
-          disableMenu = 1;
+          startReflowScreen();       
         }
       }
       else if (state == 1) { // main menu
@@ -224,18 +222,25 @@ void event1(int pin) {
           setButtons(115);
           updatePreferences();
           showSettings();
-        } else if  (settings_pointer == 4) {
+        } else if (settings_pointer == 4) {
+          useSPIFFS = !useSPIFFS;
+          if (verboseOutput != 0) {
+            Serial.println("Use SPIFFS: " + String(useSPIFFS));
+          }
+          setStorage(135);
+          updatePreferences();
+        } else if  (settings_pointer == 5) {
           if (buttons != 0) {
             fan = !fan;
             if (verboseOutput != 0) {
               Serial.println("Fan value is: " + String(fan));
             }
-            setFan(135);
+            setFan(155);
             updatePreferences();
           } else {
             testOutputs();
           }
-        } else if  (settings_pointer == 5) {
+        } else if  (settings_pointer == 6) {
           if (buttons != 0) {
             if (verboseOutput != 0) {
               Serial.println("Calling WiFi setup function");
@@ -244,7 +249,7 @@ void event1(int pin) {
           } else {
             testOutputs();
           }
-        } else if  (settings_pointer == 6) {
+        } else if  (settings_pointer == 7) {
           testOutputs();
         }
         //previousSettingsPointer = settings_pointer; //store previous position in menu
@@ -252,9 +257,11 @@ void event1(int pin) {
         //reflowStatus = REFLOW_STATUS_ON;
         profileIsOn = 1;
         Serial.println("Profile is ON");
+        disableMenu = 1;
         loopScreen();
       } else if (state == 8) {
         profileIsOn = 0;
+        disableMenu = 0;
         Serial.println("Profile is OFF");
         // Button press is for cancelling
         // Turn off reflow process

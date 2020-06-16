@@ -296,20 +296,24 @@ void UpdateSettingsPointer() {
         centeredText("Set Yes if you have them.", ILI9341_GREEN, 300);
         break;
       case 4:
+        centeredText("Set Yes to use SPIFFS", ILI9341_GREEN, 280);
+        centeredText("for profiles.", ILI9341_GREEN, 300);
+        break;
+      case 5:
         if (buttons != 0) {
           centeredText("Set Yes to use fan.", ILI9341_GREEN, 300);
         } else {
           centeredText("WiFi Setup", ILI9341_GREEN, 300);
         }
         break;
-      case 5:
+      case 6:
         if (buttons != 0) {
           centeredText("WiFi Setup", ILI9341_GREEN, 300);
         } else {
           centeredText("Enter Test menu.", ILI9341_GREEN, 300);
         }
         break;
-      case 6:
+      case 7:
         if (buttons != 0) {
           centeredText("Enter Test menu.", ILI9341_GREEN, 300);
         }
@@ -349,20 +353,12 @@ void UpdateSettingsPointer() {
 
 void infoScreen() {
   display.fillScreen(ILI9341_BLACK);
-  //display.setRotation(2);
   display.setFont(&FreeSans9pt7b);
-  //display.setFont(&FreeSans9pt7b);
   display.setTextColor(ILI9341_WHITE);
   display.setTextSize(1);
-  //  display.setCursor(0, 15);
-  //  display.print("WIFI: ");
-  //  display.print(WiFi.SSID());
   display.setCursor(5, 15);
   display.print("IP: ");
   display.println(WiFi.localIP());
-  //  display.setCursor(80, 275);
-  //  display.print("Temp: ");
-  //  display.println(input);
   display.setCursor(5, 315);
   display.print("FW: ");
   display.println(fwVersion);
@@ -435,6 +431,10 @@ void loopScreen() {
     if (isFault != 0) {
       display.setTextSize(1);
       centeredText("Thermocouple error", ILI9341_RED, tempTextPos);
+    } else if (inputInt == 1372) {
+      display.setTextSize(1);
+      centeredText("Thermocouple not", ILI9341_RED, tempTextPos);
+      centeredText("connected", ILI9341_RED, tempTextPos + 20);
     } else if (inputInt < 50) {
       centeredText(temp, ILI9341_GREEN, tempTextPos);
     } else if ((inputInt > 50) && (inputInt < 100)) {
@@ -458,6 +458,10 @@ void loopScreen() {
     if (isFault != 0) {
       display.setTextSize(1);
       centeredText("Thermocouple error", ILI9341_RED, tempTextPos);
+    } else if (inputInt == 1372) {
+      display.setTextSize(1);
+      centeredText("Thermocouple not", ILI9341_RED, tempTextPos);
+      centeredText("connected", ILI9341_RED, tempTextPos + 20);
     } else if (inputInt < 50) {
       centeredText(temp, ILI9341_GREEN, tempTextPos);
     } else if ((inputInt > 50) && (inputInt < 100)) {
@@ -638,7 +642,7 @@ void wifiSetupShow(int y) {
   display.print("Setup WiFi");
 }
 
-void showSettings() {
+void showSettings(byte pointer = 0) {
   previousState = state;
   state = 5;
   numOfPointers = 0;
@@ -674,6 +678,10 @@ void showSettings() {
   numOfPointers++;
 
   setButtons(y);
+  y += h;
+  numOfPointers++;
+
+  setStorage(y);
   y += h;
   numOfPointers++;
 
@@ -780,6 +788,19 @@ void setOTA (int y) {
   display.setCursor(30, y);
   display.print("Update FW by OTA: ");
   if (useOTA != 0) {
+    display.println("Yes");
+  } else {
+    display.println("No");
+  }
+}
+
+void setStorage (int y) {
+  display.fillRect( 30, y - 18, 200, 20, ILI9341_BLACK );
+  display.setTextColor(ILI9341_WHITE);
+  display.setTextSize(1);
+  display.setCursor(30, y);
+  display.print("Use SPIFFS: ");
+  if (useSPIFFS != 0) {
     display.println("Yes");
   } else {
     display.println("No");

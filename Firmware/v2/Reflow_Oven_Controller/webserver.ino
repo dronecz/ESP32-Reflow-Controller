@@ -82,3 +82,15 @@ void onPageNotFound(AsyncWebServerRequest *request) {
                   "] HTTP GET request of " + request->url());
   request->send(404, "text/plain", "Not found");
 }
+
+void onUpload(AsyncWebServerRequest *request, String filename, size_t index, uint8_t *data, size_t len, bool final){
+  if(!index){
+    Serial.printf("UploadStart: %s\n", filename.c_str());
+  }
+  for(size_t i=0; i<len; i++){
+    Serial.write(data[i]);
+  }
+  if(final){
+    Serial.printf("UploadEnd: %s, %u B\n", filename.c_str(), index+len);
+  }
+}

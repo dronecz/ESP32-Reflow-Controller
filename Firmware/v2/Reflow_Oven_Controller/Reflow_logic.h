@@ -394,6 +394,7 @@ void reflow_main() {
         // Reflow process ended
         reflowState = REFLOW_STATE_IDLE;
         profileIsOn = 0;
+        disableMenu = 0;
         Serial.println("Profile is OFF");
       }
       break;
