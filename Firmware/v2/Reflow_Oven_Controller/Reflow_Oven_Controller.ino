@@ -14,7 +14,7 @@
 #include <Update.h>
 #include "FS.h"
 #include <SD.h>
-#include <ESPAsyncWiFiManager.h>  //https://github.com/alanswx/ESPAsyncWiFiManager
+#include <wifiTool.h> //https://github.com/oferzv/wifiTool
 #include "SPI.h"
 #include "config.h"
 #include "Button.h"
@@ -31,15 +31,13 @@ Adafruit_MAX31856 max31856 = Adafruit_MAX31856(max_cs);
 Adafruit_ILI9341 display = Adafruit_ILI9341(display_cs, display_dc, display_rst);
 //Adafruit_ILI9341 display = Adafruit_ILI9341(display_cs, display_dc, display_mosi, display_sclk, display_rst);
 
-const char* ssid     = "ssid";
-const char* password = "password";
-
 #define FORMAT_SPIFFS_IF_FAILED true
 
 Preferences preferences;
 AsyncWebServer server(80);
 DNSServer dns;
 WebSocketsServer webSocket = WebSocketsServer(1337);
+WifiTool wifiTool;
 char msg_buf[10];
 
 #define DEBOUNCE_MS 100
@@ -202,13 +200,8 @@ void setup() {
     }
   }
 
-  if (ssid != "ssid") {
-    WiFi.begin(ssid, password);
-    Serial.println("Connecting ...");
-    while (WiFi.status() != WL_CONNECTED) {
-      delay(250); Serial.print('.');
-    }
-  }
+  wifiTool.begin();
+
   if (WiFi.status() == WL_CONNECTED) { // Wait for the Wi-Fi to connect: scan for Wi-Fi networks, and connect to the strongest of the networks above
     Serial.println("\nConnected to " + WiFi.SSID() + "; IP address: " + WiFi.localIP().toString()); // Report which SSID and IP is in use
     connected = 1;
@@ -223,25 +216,29 @@ void setup() {
     Serial.println(F("Error setting up MDNS responder!"));
     ESP.restart();
   }
+
+  /** webserver start**/
+
   // On HTTP request for root, provide index.html file
-  server.on("/", HTTP_GET, onIndexRequest);
+  //server.on("/", HTTP_GET, onIndexRequest);
 
   // On HTTP request for style sheet, provide style.css
-  server.on("/style.css", HTTP_GET, onCSSRequest);
+  //server.on("/style.css", HTTP_GET, onCSSRequest);
 
   // upload a file to /upload
-  server.on("/upload", HTTP_POST, [](AsyncWebServerRequest * request) {
-    request->send(200);
-  }, onUpload);
-
-  server.onFileUpload(onUpload);
+  //  server.on("/upload", HTTP_POST, [](AsyncWebServerRequest * request) {
+  //    request->send(200);
+  //  }, onUpload);
+  //
+  //  server.onFileUpload(onUpload);
 
   // Handle requests for pages that do not exist
-  server.onNotFound(onPageNotFound);
+  //server.onNotFound(onPageNotFound);
 
   // Start web server
-  server.begin();
-  Serial.println("TCP server started");
+  //server.begin();
+  //Serial.println("TCP server started");
+  /** webserver end**/
 
   // Add service to MDNS-SD
   MDNS.addService("ws", "tcp", 1337);
@@ -398,9 +395,9 @@ void readFile(fs::FS & fs, String path, const char * type) {
 }
 
 void wifiSetup() {
-  AsyncWiFiManager wm(&server, &dns);
-  wm.setTimeout(180);
-  if (!wm.startConfigPortal("ReflowOvenAP")) {
-    Serial.println("failed to connect and hit timeout");
+  if (!wifiTool.wifiAutoConnect())
+  {
+    Serial.println("fail to connect to wifi!!!!");
+    wifiTool.runApPortal();
   }
 }

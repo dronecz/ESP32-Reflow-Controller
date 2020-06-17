@@ -1,6 +1,7 @@
 // https://learn.sparkfun.com/tutorials/iot-power-relay/all
 
 // Callback: receiving any WebSocket message
+
 void onWebSocketEvent(uint8_t client_num,
                       WStype_t type,
                       uint8_t * payload,
@@ -58,7 +59,7 @@ void onWebSocketEvent(uint8_t client_num,
       break;
   }
 }
-
+/*
 // Callback: send homepage
 void onIndexRequest(AsyncWebServerRequest *request) {
   IPAddress remote_ip = request->client()->remoteIP();
@@ -94,3 +95,4 @@ void onUpload(AsyncWebServerRequest *request, String filename, size_t index, uin
     Serial.printf("UploadEnd: %s, %u B\n", filename.c_str(), index+len);
   }
 }
+*/
