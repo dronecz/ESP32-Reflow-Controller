@@ -219,33 +219,41 @@ void setup() {
 
   /** webserver start**/
 
-  // On HTTP request for root, provide index.html file
-  //server.on("/", HTTP_GET, onIndexRequest);
+  // Route for root / web page
+  server.on("/", HTTP_GET, [](AsyncWebServerRequest * request) {
+    request->send(SPIFFS, "/index.html", "text/html");
+  });
 
-  // On HTTP request for style sheet, provide style.css
-  //server.on("/style.css", HTTP_GET, onCSSRequest);
+  server.on("/src/jquery.min.js", HTTP_GET, [](AsyncWebServerRequest * request) {
+    request->send(SPIFFS, "/src/jquery.min.js", "text/javascript");
+  });
 
-  // upload a file to /upload
-  //  server.on("/upload", HTTP_POST, [](AsyncWebServerRequest * request) {
-  //    request->send(200);
-  //  }, onUpload);
-  //
-  //  server.onFileUpload(onUpload);
+  server.on("/src/bootstrap.bundle.min.js", HTTP_GET, [](AsyncWebServerRequest * request) {
+    request->send(SPIFFS, "/src/bootstrap.bundle.min.js", "text/javascript");
+  });
 
-  // Handle requests for pages that do not exist
-  //server.onNotFound(onPageNotFound);
 
-  // Start web server
-  //server.begin();
-  //Serial.println("TCP server started");
+  server.on("/src/bootstrap.min.css", HTTP_GET, [](AsyncWebServerRequest * request) {
+    request->send(SPIFFS, "/src/bootstrap.min.css", "text/css");
+  });
+
+  //    server.on("/src/bootstrap.min.css.map", HTTP_GET, [](AsyncWebServerRequest *request){
+  //    request->send(SPIFFS, "/src/bootstrap.min.css.map", "text/css");
+  //  });
+
+  server.on("/src/simple-sidebar.css", HTTP_GET, [](AsyncWebServerRequest * request) {
+    request->send(SPIFFS, "/src/simple-sidebar.css", "text/css");
+  });
+  
+  server.on("/temperature", HTTP_GET, [](AsyncWebServerRequest * request) {
+    request->send_P(200, "text/plain", webTemp().c_str());
+  });
+
+
+  // Start server
+  server.begin();
   /** webserver end**/
 
-  // Add service to MDNS-SD
-  MDNS.addService("ws", "tcp", 1337);
-
-  // Start WebSocket server and assign callback
-  webSocket.begin();
-  webSocket.onEvent(onWebSocketEvent);
   Serial.println("HTTP server started");
 
   max31856.begin();

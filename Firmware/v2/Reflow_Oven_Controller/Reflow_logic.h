@@ -213,6 +213,7 @@ void reflow_main() {
     // Read current temperature
 
     input = max31856.readThermocoupleTemperature();
+
     // Check and print any faults
     uint8_t fault = max31856.readFault();
     if (fault) {
@@ -441,7 +442,7 @@ void reflow_main() {
 
   // Simple switch debounce state machine (for switch #1 (both analog & digital
   // switch supported))
-  switch (debounceState)  
+  switch (debounceState)
   {
     case DEBOUNCE_STATE_IDLE:
       // No valid switch press
@@ -506,4 +507,9 @@ void reflow_main() {
   {
     digitalWrite(ssrPin, LOW);
   }
+}
+
+String webTemp() {
+  float tempC = input;
+  return String(tempC);
 }
