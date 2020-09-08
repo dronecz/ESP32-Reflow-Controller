@@ -232,6 +232,7 @@ void reflow_main() {
     if (oldTemp != inputInt) {
       if (state == 0) {
         loopScreen();
+        events.send(String(inputInt).c_str(),"temperature");
       }
 #ifdef Serial
       if ((input > 0) && (input <= 500)) {

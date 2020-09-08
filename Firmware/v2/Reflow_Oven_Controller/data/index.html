@@ -21,19 +21,6 @@
   <link href="src/simple-sidebar.css" type="text/css" rel="stylesheet">
   
    <script src="https://code.highcharts.com/highcharts.js"></script>
-  <style>
-    body {
-      min-width: 310px;
-    	max-width: 800px;
-    	height: 400px;
-      margin: 0 auto;
-    }
-    h2 {
-      font-family: Arial;
-      font-size: 2.5rem;
-      text-align: center;
-    }
-  </style>
 
 </head>
 
@@ -44,13 +31,12 @@
     <!-- Sidebar -->
     <div class="bg-light border-right" id="sidebar-wrapper">
       <div class="list-group list-group-flush">
-        <a href="#" class="list-group-item list-group-item-action bg-light">Dashboard</a>
-        <a href="#" class="list-group-item list-group-item-action bg-light">Shortcuts</a>
-        <a href="#" class="list-group-item list-group-item-action bg-light">Overview</a>
-        <a href="#" class="list-group-item list-group-item-action bg-light">Events</a>
-        <a href="#" class="list-group-item list-group-item-action bg-light">Profile</a>
-        <a href="#" class="list-group-item list-group-item-action bg-light">Status</a>
-      </div>
+        <a href="#" class="list-group-item list-group-item-action bg-light">Home</a>
+        <a href="#" class="list-group-item list-group-item-action bg-light">Add profile</a>
+        <a href="#" class="list-group-item list-group-item-action bg-light">Change profile</a>
+        <a href="#" class="list-group-item list-group-item-action bg-light">Settings</a>
+        <a href="#" class="list-group-item list-group-item-action bg-light">Info</a>
+        </div>
     </div>
     <!-- /#sidebar-wrapper -->
 
@@ -69,21 +55,7 @@
             <li class="nav-item active">
               <a class="nav-link" href="#">Home <span class="sr-only">(current)</span></a>
             </li>
-            <li class="nav-item">
-              <a class="nav-link" href="#">Link</a>
-            </li>
-            <li class="nav-item dropdown">
-              <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                Dropdown
-              </a>
-              <div class="dropdown-menu dropdown-menu-right" aria-labelledby="navbarDropdown">
-                <a class="dropdown-item" href="#">Action</a>
-                <a class="dropdown-item" href="#">Another action</a>
-                <div class="dropdown-divider"></div>
-                <a class="dropdown-item" href="#">Something else here</a>
-              </div>
-            </li>
-          </ul>
+            </ul>
         </div>
       </nav>
 <div id="chart-temperature" class="container"></div>
@@ -92,6 +64,8 @@
         <p>This is simple sidebar webpage running on ESP32 with ESP32 Async webserver library. </p>
         
       </div>
+	  <button onclick="hideChart()">Hide chart</button>
+
     </div>
     <!-- /#page-content-wrapper -->
 
@@ -131,23 +105,65 @@ var chartT = new Highcharts.Chart({
   },
   credits: { enabled: false }
 });
-setInterval(function ( ) {
-  var xhttp = new XMLHttpRequest();
-  xhttp.onreadystatechange = function() {
-    if (this.readyState == 4 && this.status == 200) {
-      var x = (new Date()).getTime(),
-          y = parseFloat(this.responseText);
-      console.log(this.responseText);
+<!-- setInterval(function ( ) { -->
+  <!-- var xhttp = new XMLHttpRequest(); -->
+  <!-- xhttp.onreadystatechange = function() { -->
+    <!-- if (this.readyState == 4 && this.status == 200) { -->
+      <!-- var x = (new Date()).getTime(), -->
+          <!-- y = parseFloat(this.responseText); -->
+      <!-- //console.log(this.responseText); -->
+      <!-- if(chartT.series[0].data.length > 40) { -->
+        <!-- chartT.series[0].addPoint([x, y], true, true, true); -->
+      <!-- } else { -->
+        <!-- chartT.series[0].addPoint([x, y], true, false, true); -->
+      <!-- } -->
+    <!-- } -->
+  <!-- }; -->
+  <!-- xhttp.open("GET", "/temperature", true); -->
+  <!-- xhttp.send(); -->
+<!-- }, 5000 ) ; -->
+if (!!window.EventSource) {
+ var source = new EventSource('/events');
+ 
+ source.addEventListener('open', function(e) {
+  console.log("Events Connected");
+ }, false);
+ source.addEventListener('error', function(e) {
+  if (e.target.readyState != EventSource.OPEN) {
+    console.log("Events Disconnected");
+  }
+ }, false);
+ 
+ source.addEventListener('message', function(e) {
+  console.log("message", e.data);
+ }, false);
+ 
+ source.addEventListener('temperature', function(e) {
+  console.log("temperature", e.data);
+  //document.getElementById("temp").innerHTML = e.data;
+        var x = (new Date()).getTime(),
+          //y = parseFloat(this.responseText);
+		  y = parseFloat(e.data);
+      //console.log(this.responseText);
       if(chartT.series[0].data.length > 40) {
         chartT.series[0].addPoint([x, y], true, true, true);
       } else {
         chartT.series[0].addPoint([x, y], true, false, true);
       }
-    }
-  };
-  xhttp.open("GET", "/temperature", true);
-  xhttp.send();
-}, 1000 ) ;
+    
+ }, false);
+ }
+
+</script>
+<script>
+function hideChart() {
+  var x = document.getElementById("chart-temperature");
+  if (x.style.display === "none") {
+    x.style.display = "block";
+  } else {
+    x.style.display = "none";
+  }
+}
 </script>
 </body>
 

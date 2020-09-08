@@ -35,6 +35,7 @@ Adafruit_ILI9341 display = Adafruit_ILI9341(display_cs, display_dc, display_rst)
 
 Preferences preferences;
 AsyncWebServer server(80);
+AsyncEventSource events("/events");
 DNSServer dns;
 WebSocketsServer webSocket = WebSocketsServer(1337);
 WifiTool wifiTool;
@@ -249,7 +250,20 @@ void setup() {
     request->send_P(200, "text/plain", webTemp().c_str());
   });
 
+  server.on("/showchart", HTTP_GET, [](AsyncWebServerRequest * request) {
+    request->send_P(200, "text/plain", webTemp().c_str());
+  });
 
+  // Handle Web Server Events
+  events.onConnect([](AsyncEventSourceClient *client){
+    if(client->lastId()){
+      Serial.printf("Client reconnected! Last message ID that it got is: %u\n", client->lastId());
+    }
+    // send event with message "hello!", id current millis
+    // and set reconnect delay to 1 second
+    client->send("hello!", NULL, millis(), 10000);
+  });
+  server.addHandler(&events);
   // Start server
   server.begin();
   /** webserver end**/
