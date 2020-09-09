@@ -31,11 +31,11 @@
     <!-- Sidebar -->
     <div class="bg-light border-right" id="sidebar-wrapper">
       <div class="list-group list-group-flush">
-        <a href="#" class="list-group-item list-group-item-action bg-light">Home</a>
-        <a href="#" class="list-group-item list-group-item-action bg-light">Add profile</a>
-        <a href="#" class="list-group-item list-group-item-action bg-light">Change profile</a>
-        <a href="#" class="list-group-item list-group-item-action bg-light">Settings</a>
-        <a href="#" class="list-group-item list-group-item-action bg-light">Info</a>
+        <a href="#home" class="list-group-item list-group-item-action bg-light">Home</a>
+        <a href="#add-profile" class="list-group-item list-group-item-action bg-light">Add profile</a>
+        <a href="#change-profile" class="list-group-item list-group-item-action bg-light">Change profile</a>
+        <a href="#settings" class="list-group-item list-group-item-action bg-light">Settings</a>
+        <a href="#info" class="list-group-item list-group-item-action bg-light">Info</a>
         </div>
     </div>
     <!-- /#sidebar-wrapper -->
@@ -58,15 +58,46 @@
             </ul>
         </div>
       </nav>
-<div id="chart-temperature" class="container"></div>
-      <div class="container-fluid">
+		<div id="chart-temperature" class="container"></div>
+		<button onclick="hideChart()">Hide chart</button>
+      <hr/>
+	  <section id="home">
+	  <div class="container">
         <h1 class="mt-4">Bootstrap 4 webpage running on ESP32</h1>
         <p>This is simple sidebar webpage running on ESP32 with ESP32 Async webserver library. </p>
-        
-      </div>
-	  <button onclick="hideChart()">Hide chart</button>
-
+              </div>
+	  </section>
+	  <hr/>
+	   <div class="container-fluid align-items-center">
+	  <form class="form-inline">
+    <div class="form-group mr-2">
+        <label class="sr-only" for="inputEmail">Email</label>
+        <input type="email" class="form-control" id="inputEmail" placeholder="Email">
     </div>
+    <div class="form-group mr-2">
+        <label class="sr-only" for="inputPassword">Password</label>
+        <input type="password" class="form-control" id="inputPassword" placeholder="Password">
+    </div>
+    <button type="submit" class="btn btn-primary">Submit</button>
+</form>
+    </div>
+		  <hr/>
+		  	  <section id="settings">
+	  <div class="container-fluid">
+	  <div class="custom-file">
+    <input type="file" class="custom-file-input" id="customFile">
+    <label class="custom-file-label" for="customFile">Choose file</label>
+</div>
+<div class="custom-control custom-switch">
+    <input type="checkbox" class="custom-control-input" id="customSwitch1">
+    <label class="custom-control-label" for="customSwitch1">Toggle switch</label>
+</div>
+<div class="custom-control custom-switch mt-2">
+    <input type="checkbox" class="custom-control-input" disabled id="customSwitch2">
+    <label class="custom-control-label" for="customSwitch2">Disabled switch element</label>
+</div>
+    </div>
+		  </section>
     <!-- /#page-content-wrapper -->
 
   </div>
@@ -136,6 +167,16 @@ if (!!window.EventSource) {
  
  source.addEventListener('message', function(e) {
   console.log("message", e.data);
+ }, false);
+ 
+  source.addEventListener('showchart', function(e) {
+  console.log("Oven state change", e.data);
+    <!-- var x = document.getElementById("chart-temperature"); -->
+  <!-- if (x.style.display === "none") { -->
+    <!-- x.style.display = "block"; -->
+  <!-- } else { -->
+    <!-- x.style.display = "none"; -->
+  <!-- } -->
  }, false);
  
  source.addEventListener('temperature', function(e) {

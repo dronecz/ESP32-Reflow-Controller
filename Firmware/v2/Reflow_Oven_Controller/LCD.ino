@@ -376,6 +376,7 @@ void infoScreen() {
   //    display.print("Offline");
   //  }
 }
+
 void startScreen() {
   display.fillScreen(ILI9341_BLACK);
   int y;
@@ -435,8 +436,10 @@ void loopScreen() {
       display.setTextSize(1);
       centeredText("Thermocouple not", ILI9341_RED, tempTextPos);
       centeredText("connected", ILI9341_RED, tempTextPos + 20);
+      noThermocouple = 1;
     } else if (inputInt < 50) {
       centeredText(temp, ILI9341_GREEN, tempTextPos);
+      noThermocouple = 0;
     } else if ((inputInt > 50) && (inputInt < 100)) {
       centeredText(temp, ILI9341_ORANGE, tempTextPos);
     } else if (inputInt > 100) {
@@ -462,8 +465,10 @@ void loopScreen() {
       display.setTextSize(1);
       centeredText("Thermocouple not", ILI9341_RED, tempTextPos);
       centeredText("connected", ILI9341_RED, tempTextPos + 20);
+      noThermocouple = 1;
     } else if (inputInt < 50) {
       centeredText(temp, ILI9341_GREEN, tempTextPos);
+      noThermocouple = 0;
     } else if ((inputInt > 50) && (inputInt < 100)) {
       centeredText(temp, ILI9341_ORANGE, tempTextPos);
     } else if (inputInt > 100) {
@@ -478,20 +483,24 @@ void loopScreen() {
 }
 
 void startReflowScreen() {
-  previousState = state;
-  state = 7;
+  if (noThermocouple != 1) {
+    previousState = state;
+    state = 7;
 #ifdef DEBUG
-  Serial.println("State is :" + String(state));
+    Serial.println("State is :" + String(state));
 #endif
-  display.fillScreen(ILI9341_BLACK);
-  int tempTextPos = 240;
-  int infoText = 50;
-  display.setFont(&FreeSans9pt7b);
-  display.setTextSize(2);
-  centeredText("Start reflow?", ILI9341_RED, infoText);
-  display.setTextSize(1);
-  centeredText("Yes = Select", ILI9341_WHITE, infoText + 32);
-  centeredText("No = Back", ILI9341_WHITE, infoText + 64);
+    display.fillScreen(ILI9341_BLACK);
+    int tempTextPos = 240;
+    int infoText = 50;
+    display.setFont(&FreeSans9pt7b);
+    display.setTextSize(2);
+    centeredText("Start reflow?", ILI9341_RED, infoText);
+    display.setTextSize(1);
+    centeredText("Yes = Select", ILI9341_WHITE, infoText + 32);
+    centeredText("No = Back", ILI9341_WHITE, infoText + 64);
+  } else {
+    noThermocoupleScreen();
+  }
 }
 
 void stopReflowScreen() {
@@ -509,6 +518,21 @@ void stopReflowScreen() {
   display.setTextSize(1);
   centeredText("Yes = Select", ILI9341_WHITE, infoText + 32);
   centeredText("No = Back", ILI9341_WHITE, infoText + 64);
+}
+
+void noThermocoupleScreen() {
+#ifdef DEBUG
+  Serial.println("Can not start reflow profile as here is no thermocouple connnected!");
+#endif
+  display.fillScreen(ILI9341_BLACK);
+  int infoText = 100;
+  display.setFont(&FreeSans9pt7b);
+  display.setTextSize(1);
+  centeredText("Can not start reflow", ILI9341_RED, infoText);
+  centeredText("profile as there is no", ILI9341_RED, infoText + 20);
+  centeredText("thermocouple connnected!", ILI9341_RED, infoText + 40);
+  delay(5000);
+  loopScreen();
 }
 
 void mainMenuScreen() {

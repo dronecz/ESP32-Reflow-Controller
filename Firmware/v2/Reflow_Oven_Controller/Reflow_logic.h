@@ -203,7 +203,6 @@ PID reflowOvenPID(&input, &output, &setpoint, kp, ki, kd, DIRECT);
 void reflow_main() {
   // Current time
   unsigned long now;
-  //loopScreen();
 
   // Time to read thermocouple?
   if (millis() > nextRead) {
@@ -232,7 +231,7 @@ void reflow_main() {
     if (oldTemp != inputInt) {
       if (state == 0) {
         loopScreen();
-        events.send(String(inputInt).c_str(),"temperature");
+        events.send(String(inputInt).c_str(), "temperature");
       }
 #ifdef Serial
       if ((input > 0) && (input <= 500)) {
@@ -300,6 +299,7 @@ void reflow_main() {
         // If switch is pressed to start reflow process
         if (profileIsOn != 0)
         {
+//          events.send(String(profileIsOn).c_str(), "showchart");
           // Send header for CSV file
           Serial.println("Time Setpoint Input Output");
           // Intialize seconds timer for serial debug information
@@ -398,6 +398,7 @@ void reflow_main() {
         profileIsOn = 0;
         disableMenu = 0;
         Serial.println("Profile is OFF");
+        //        events.send(String(profileIsOn).c_str(),"showchart");
       }
       break;
 
@@ -513,4 +514,9 @@ void reflow_main() {
 String webTemp() {
   float tempC = input;
   return String(tempC);
+}
+
+String profileInt() {
+  int temp = profileIsOn;
+  return String(temp);
 }

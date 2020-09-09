@@ -67,6 +67,7 @@ bool debug = 0;
 bool verboseOutput = 1;
 bool disableMenu = 0;
 bool profileIsOn = 0;
+bool noThermocouple = 0;
 bool updataAvailable = 0;
 bool testState = 0;
 bool useSPIFFS = 0 ;
@@ -251,7 +252,7 @@ void setup() {
   });
 
   server.on("/showchart", HTTP_GET, [](AsyncWebServerRequest * request) {
-    request->send_P(200, "text/plain", webTemp().c_str());
+//    request->send_P(200, "text/plain", profileInt().c_str());
   });
 
   // Handle Web Server Events

@@ -159,7 +159,7 @@ void event1(int pin) {
         Serial.println("Previous settings pointer: " + String(previousSettingsPointer));
       }
       if (state == 0) {
-        if (profileIsOn != 0) {
+        if (profileIsOn != 0)  {
           stopReflowScreen();
           activeStatus = "Idle";
         } else {
