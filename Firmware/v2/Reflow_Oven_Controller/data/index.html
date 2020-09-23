@@ -9,34 +9,33 @@
   <meta name="author" content="">
 
   <title>ESP32 Reflow Controller</title>
-  
-    <!-- Bootstrap core JavaScript -->
+
+  <!-- Bootstrap core JavaScript -->
   <script src="src/jquery.min.js"></script>
   <script src="src/bootstrap.bundle.min.js"></script>
 
   <!-- Bootstrap core CSS -->
-  <link rel="stylesheet" type="text/css" href="src/bootstrap.min.css" >
+  <link rel="stylesheet" type="text/css" href="src/bootstrap.min.css">
 
   <!-- Custom styles for this template -->
   <link href="src/simple-sidebar.css" type="text/css" rel="stylesheet">
-  
-   <script src="https://code.highcharts.com/highcharts.js"></script>
+
+  <script src="https://code.highcharts.com/highcharts.js"></script>
 
 </head>
 
-<body>
+<body onload="loadDoc()">
 
   <div class="d-flex" id="wrapper">
-
     <!-- Sidebar -->
-    <div class="bg-light border-right" id="sidebar-wrapper">
+    <div class="border-right" id="sidebar-wrapper">
       <div class="list-group list-group-flush">
         <a href="#home" class="list-group-item list-group-item-action bg-light">Home</a>
-        <a href="#add-profile" class="list-group-item list-group-item-action bg-light">Add profile</a>
-        <a href="#change-profile" class="list-group-item list-group-item-action bg-light">Change profile</a>
+        <a href="#add_profile" class="list-group-item list-group-item-action bg-light">Add profile</a>
+        <a href="#change_profile" class="list-group-item list-group-item-action bg-light">Change profile</a>
         <a href="#settings" class="list-group-item list-group-item-action bg-light">Settings</a>
         <a href="#info" class="list-group-item list-group-item-action bg-light">Info</a>
-        </div>
+      </div>
     </div>
     <!-- /#sidebar-wrapper -->
 
@@ -44,9 +43,12 @@
     <div id="page-content-wrapper">
 
       <nav class="navbar navbar-expand-lg navbar-light bg-light border-bottom">
-        <button class="btn btn-primary" id="menu-toggle">Hide Sidebar</button>
+        <button type="button" class="btn btn-primary" id="menu-toggle">
+          <span class="glyphicon glyphicon-chevron-right"></span>Hide
+        </button>
 
-        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent"
+          aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
           <span class="navbar-toggler-icon"></span>
         </button>
 
@@ -55,49 +57,162 @@
             <li class="nav-item active">
               <a class="nav-link" href="#">Home <span class="sr-only">(current)</span></a>
             </li>
-            </ul>
+          </ul>
         </div>
       </nav>
-		<div id="chart-temperature" class="container"></div>
-		<button onclick="hideChart()">Hide chart</button>
-      <hr/>
-	  <section id="home">
-	  <div class="container">
-        <h1 class="mt-4">Bootstrap 4 webpage running on ESP32</h1>
-        <p>This is simple sidebar webpage running on ESP32 with ESP32 Async webserver library. </p>
-              </div>
-	  </section>
-	  <hr/>
-	   <div class="container-fluid align-items-center">
-	  <form class="form-inline">
-    <div class="form-group mr-2">
-        <label class="sr-only" for="inputEmail">Email</label>
-        <input type="email" class="form-control" id="inputEmail" placeholder="Email">
+      <hr />
+      <section id="home">
+        <div id="chart-temperature" class="chart-container" style="display: none;">
+          <button onclick="hideChart()">Hide chart</button>
+        </div>
+        <div class="container">
+          <h1 class="mt-4">Bootstrap 4 webpage running on ESP32</h1>
+          <p>This is simple sidebar webpage running on ESP32 with ESP32 Async webserver library. </p>
+        </div>
+      </section>
+      <hr />
+      <section id="add_profile">
+        <div class="container-fluid align-items-center">
+          <h3 class="section-header">Add profile</h3>
+          <div class="form-group mr-2">
+            <label class="sr-only" for="inputEmail">Name of the profile</label>
+            <input type="number" class="form-control" id="profile_name_new" placeholder="Name of the profile ">
+          </div>
+          <form class="form-inline">
+            <div class="form-group mr-2">
+              <label class="sr-only" for="inputEmail">Email</label>
+              <input type="number" class="form-control" id="preheat_min_new" placeholder="Preheat temp min">
+            </div>
+            <div class="form-group mr-2">
+              <label class="sr-only" for="inputPassword">Password</label>
+              <input type="number" class="form-control" id="preheat_max_new" placeholder="Preheat temp max">
+            </div>
+          </form>
+          <form class="form-inline">
+            <div class="form-group mr-2">
+              <label class="sr-only" for="inputEmail">Email</label>
+              <input type="number" class="form-control" id="soak_min_new" placeholder="Soak temp min">
+            </div>
+            <div class="form-group mr-2">
+              <label class="sr-only" for="inputPassword">Password</label>
+              <input type="number" class="form-control" id="soak_max_new" placeholder="Soak temp max">
+            </div>
+          </form>
+          <form class="form-inline">
+            <div class="form-group mr-2">
+              <label class="sr-only" for="inputEmail">Email</label>
+              <input type="number" class="form-control" id="reflow_min_new" placeholder="Reflow temp min">
+            </div>
+            <div class="form-group mr-2">
+              <label class="sr-only" for="inputPassword">Password</label>
+              <input type="number" class="form-control" id="reflow_max_new" placeholder="Reflow temp max">
+            </div>
+          </form>
+          <form class="form-inline">
+            <div class="form-group mr-2">
+              <label class="sr-only" for="inputEmail">Email</label>
+              <input type="number" class="form-control" id="cool_max_new" placeholder="Cool temp max">
+            </div>
+            <div class="form-group mr-2">
+              <label class="sr-only" for="inputPassword">Password</label>
+              <input type="number" class="form-control" id="cool_min_new" placeholder="Cool temp min">
+            </div>
+          </form>
+          <button type="submit" class="btn btn-primary">Submit</button>
+        </div>
+      </section>
+      <hr />
+      <section id="change_profile">
+        <div class="container-fluid align-items-center">
+          <h3 class="section-header">Change profile</h3>
+          <div class="dropdown">
+            <button class="btn btn-secondary dropdown-toggle" type="button" id="dropdownMenuButton"
+              data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+              Select profile
+            </button>
+            <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+              <a class="dropdown-item" id="first_item" href="#"></a>
+              <a class="dropdown-item" id="second_item" href="#"></a>
+              <a class="dropdown-item" id="third_item" href="#"></a>
+            </div>
+          </div>
+          <div class="form-group mr-2">
+            <label class="sr-only" for="inputEmail">Name of the profile</label>
+            <input type="number" class="form-control" id="profile_name" placeholder="Name of the profile ">
+          </div>
+          <form class="form-inline">
+            <div class="form-group mr-2">
+              <label class="sr-only" for="inputEmail">Email</label>
+              <input type="number" class="form-control" id="preheat_min" placeholder="Preheat temp min">
+            </div>
+            <div class="form-group mr-2">
+              <label class="sr-only" for="inputPassword">Password</label>
+              <input type="number" class="form-control" id="preheat_max" placeholder="Preheat temp max">
+            </div>
+          </form>
+          <form class="form-inline">
+            <div class="form-group mr-2">
+              <label class="sr-only" for="inputEmail">Email</label>
+              <input type="number" class="form-control" id="soak_min" placeholder="Soak temp min">
+            </div>
+            <div class="form-group mr-2">
+              <label class="sr-only" for="inputPassword">Password</label>
+              <input type="number" class="form-control" id="soak_max" placeholder="Soak temp max">
+            </div>
+          </form>
+          <form class="form-inline">
+            <div class="form-group mr-2">
+              <label class="sr-only" for="inputEmail">Email</label>
+              <input type="number" class="form-control" id="reflow_min" placeholder="Reflow temp min">
+            </div>
+            <div class="form-group mr-2">
+              <label class="sr-only" for="inputPassword">Password</label>
+              <input type="number" class="form-control" id="reflow_max" placeholder="Reflow temp max">
+            </div>
+          </form>
+          <form class="form-inline">
+            <div class="form-group mr-2">
+              <label class="sr-only" for="inputEmail">Email</label>
+              <input type="number" class="form-control" id="cool_max" placeholder="Cool temp max">
+            </div>
+            <div class="form-group mr-2">
+              <label class="sr-only" for="inputPassword">Password</label>
+              <input type="number" class="form-control" id="cool_min" placeholder="Cool temp min">
+            </div>
+          </form>
+          <button type="submit" class="btn btn-primary">Change</button>
+        </div>
+      </section>
+      <hr />
+      <section id="settings">
+        <h3 class="section-header">Settings</h3>
+        <div class="container-fluid">
+          <div class="custom-file">
+            <input type="file" class="custom-file-input" id="customFile">
+            <label class="custom-file-label" for="customFile">Choose file</label>
+          </div>
+          <div class="custom-control custom-switch">
+            <input type="checkbox" class="custom-control-input" id="customSwitch1">
+            <label class="custom-control-label" for="customSwitch1">Toggle switch</label>
+          </div>
+          <div class="custom-control custom-switch mt-2">
+            <input type="checkbox" class="custom-control-input" disabled id="customSwitch2">
+            <label class="custom-control-label" for="customSwitch2">Disabled switch element</label>
+          </div>
+          <div>
+            <button onClick="GFG_Fun()">
+              click here
+            </button>
+            <p id="GFG_DOWN"></p>
+          </div> 
+        </div>
+      </section>
+      <hr />
+      <section id="info">
+        <h3 class="section-header">Info</h3>
+      </section>
     </div>
-    <div class="form-group mr-2">
-        <label class="sr-only" for="inputPassword">Password</label>
-        <input type="password" class="form-control" id="inputPassword" placeholder="Password">
-    </div>
-    <button type="submit" class="btn btn-primary">Submit</button>
-</form>
-    </div>
-		  <hr/>
-		  	  <section id="settings">
-	  <div class="container-fluid">
-	  <div class="custom-file">
-    <input type="file" class="custom-file-input" id="customFile">
-    <label class="custom-file-label" for="customFile">Choose file</label>
-</div>
-<div class="custom-control custom-switch">
-    <input type="checkbox" class="custom-control-input" id="customSwitch1">
-    <label class="custom-control-label" for="customSwitch1">Toggle switch</label>
-</div>
-<div class="custom-control custom-switch mt-2">
-    <input type="checkbox" class="custom-control-input" disabled id="customSwitch2">
-    <label class="custom-control-label" for="customSwitch2">Disabled switch element</label>
-</div>
-    </div>
-		  </section>
+
     <!-- /#page-content-wrapper -->
 
   </div>
@@ -107,105 +222,207 @@
 
   <!-- Menu Toggle Script -->
   <script>
-    $("#menu-toggle").click(function(e) {
+    $("#menu-toggle").click(function (e) {
       e.preventDefault();
       $("#wrapper").toggleClass("toggled");
+      var icon = $(this).parent().find(".glyphicon")
+      if (icon.hasClass('glyphicon-chevron-right'))
+        icon.removeClass('glyphicon-chevron-right').addClass("glyphicon-chevron-left");
+      else
+        icon.removeClass('glyphicon-chevron-left').addClass("glyphicon-chevron-right");
     });
   </script>
-  
+
   <script>
-var chartT = new Highcharts.Chart({
-  chart:{ renderTo : 'chart-temperature' },
-  title: { text: 'Thermocouple temperature' },
-  series: [{
-    showInLegend: false,
-    data: []
-  }],
-  plotOptions: {
-    line: { animation: false,
-      dataLabels: { enabled: true }
-    },
-    series: { color: '#059e8a' }
-  },
-  xAxis: { type: 'datetime',
-    dateTimeLabelFormats: { second: '%H:%M:%S' }
-  },
-  yAxis: {
-    title: { text: 'Temperature (Celsius)' }
-    //title: { text: 'Temperature (Fahrenheit)' }
-  },
-  credits: { enabled: false }
-});
-<!-- setInterval(function ( ) { -->
-  <!-- var xhttp = new XMLHttpRequest(); -->
-  <!-- xhttp.onreadystatechange = function() { -->
-    <!-- if (this.readyState == 4 && this.status == 200) { -->
-      <!-- var x = (new Date()).getTime(), -->
-          <!-- y = parseFloat(this.responseText); -->
-      <!-- //console.log(this.responseText); -->
-      <!-- if(chartT.series[0].data.length > 40) { -->
-        <!-- chartT.series[0].addPoint([x, y], true, true, true); -->
-      <!-- } else { -->
-        <!-- chartT.series[0].addPoint([x, y], true, false, true); -->
-      <!-- } -->
-    <!-- } -->
-  <!-- }; -->
-  <!-- xhttp.open("GET", "/temperature", true); -->
-  <!-- xhttp.send(); -->
-<!-- }, 5000 ) ; -->
-if (!!window.EventSource) {
- var source = new EventSource('/events');
- 
- source.addEventListener('open', function(e) {
-  console.log("Events Connected");
- }, false);
- source.addEventListener('error', function(e) {
-  if (e.target.readyState != EventSource.OPEN) {
-    console.log("Events Disconnected");
-  }
- }, false);
- 
- source.addEventListener('message', function(e) {
-  console.log("message", e.data);
- }, false);
- 
-  source.addEventListener('showchart', function(e) {
-  console.log("Oven state change", e.data);
-    <!-- var x = document.getElementById("chart-temperature"); -->
-  <!-- if (x.style.display === "none") { -->
-    <!-- x.style.display = "block"; -->
-  <!-- } else { -->
-    <!-- x.style.display = "none"; -->
-  <!-- } -->
- }, false);
- 
- source.addEventListener('temperature', function(e) {
-  console.log("temperature", e.data);
-  //document.getElementById("temp").innerHTML = e.data;
+    var chartT = new Highcharts.Chart({
+      chart: { renderTo: 'chart-temperature' },
+      title: { text: 'Thermocouple temperature' },
+      series: [{
+        showInLegend: false,
+        data: []
+      }],
+      plotOptions: {
+        line: {
+          animation: false,
+          dataLabels: { enabled: true }
+        },
+        series: { color: '#059e8a' }
+      },
+      xAxis: {
+        type: 'datetime',
+        dateTimeLabelFormats: { second: '%H:%M:%S' }
+      },
+      yAxis: {
+        title: { text: 'Temperature (Celsius)' }
+        //title: { text: 'Temperature (Fahrenheit)' }
+      },
+      credits: { enabled: false }
+    });
+
+
+    // setInterval(function () {
+    //       var xhttp = new XMLHttpRequest(); 
+    //   xhttp.onreadystatechange = function() {
+    //     if (this.readyState == 4 && this.status == 200) {
+    //       var x = (new Date()).getTime(),
+    //           < !--y = parseFloat(this.responseText);
+    //       <!-- console.log(this.responseText); -->
+    //       if (chartT.series[0].data.length > 40) {
+    //         chartT.series[0].addPoint([x, y], true, true, true);
+    //       } else {
+
+    //         chartT.series[0].addPoint([x, y], true, false, true);
+    //       }
+    //     }
+    //   };
+    //   xhttp.open("GET", "/temperature", true);
+    //   xhttp.send();
+    // }, 5000);
+
+    if (!!window.EventSource) {
+      var source = new EventSource('/events');
+
+      source.addEventListener('open', function (e) {
+        console.log("Events Connected");
+      }, false);
+      source.addEventListener('error', function (e) {
+        if (e.target.readyState != EventSource.OPEN) {
+          console.log("Events Disconnected");
+        }
+      }, false);
+
+      source.addEventListener('message', function (e) {
+        console.log("message", e.data);
+      }, false);
+
+      source.addEventListener('showchart', function (e) {
+        var y = 0;
+        y = parseInt(e.data);
+        console.log("Oven state change", y);
+        var x = document.getElementById("chart-temperature");
+        console.log("Display value is:", x);
+        if (y != 0) {
+          x.style.display = "block";
+        } else {
+          x.style.display = "none";
+        }
+      }, false);
+
+      source.addEventListener('temperature', function (e) {
+        console.log("temperature", e.data);
+        //document.getElementById("temp").innerHTML = e.data;
         var x = (new Date()).getTime(),
           //y = parseFloat(this.responseText);
-		  y = parseFloat(e.data);
-      //console.log(this.responseText);
-      if(chartT.series[0].data.length > 40) {
-        chartT.series[0].addPoint([x, y], true, true, true);
-      } else {
-        chartT.series[0].addPoint([x, y], true, false, true);
-      }
-    
- }, false);
- }
+          y = parseInt(e.data);
+        //console.log(this.responseText);
+        if (chartT.series[0].data.length > 40) {
+          chartT.series[0].addPoint([x, y], true, true, true);
+        } else {
+          chartT.series[0].addPoint([x, y], true, false, true);
+        }
+      }, false);
 
-</script>
-<script>
-function hideChart() {
-  var x = document.getElementById("chart-temperature");
-  if (x.style.display === "none") {
-    x.style.display = "block";
-  } else {
-    x.style.display = "none";
-  }
-}
-</script>
+      // source.addEventListener('profileNames', function (e) {
+      //   console.log("profileNames are:", e.data);
+      // }, false);
+    }
+  </script>
+
+  <script>
+    function loadDoc() {
+      var xhttp = new XMLHttpRequest();
+      xhttp.onreadystatechange = function () {
+        if (this.readyState == 4 && this.status == 200) {
+          console.log(this.responseText);
+          var response = this.responseText;
+          var ar = response.split(', ');
+          console.log(ar);
+          document.getElementById("first_item").innerHTML = ar[0];
+          document.getElementById("second_item").innerHTML = ar[1];
+          document.getElementById("third_item").innerHTML = ar[2];
+        }
+      };
+      xhttp.open("GET", "profileNames", true);
+      xhttp.send();
+    }
+  </script>
+
+  <script>
+    var down = document.getElementById("GFG_DOWN");
+
+    // Create a break line element 
+    var br = document.createElement("br");
+    function GFG_Fun() {
+
+      // Create a form synamically 
+      var form = document.createElement("form");
+      form.setAttribute("method", "post");
+      form.setAttribute("action", "submit.php");
+
+      // Create an input element for Full Name 
+      var FN = document.createElement("input");
+      FN.setAttribute("type", "text");
+      FN.setAttribute("name", "FullName");
+      FN.setAttribute("placeholder", "Full Name");
+
+      // Create an input element for date of birth 
+      var DOB = document.createElement("input");
+      DOB.setAttribute("type", "text");
+      DOB.setAttribute("name", "dob");
+      DOB.setAttribute("placeholder", "DOB");
+
+      // Create an input element for emailID 
+      var EID = document.createElement("input");
+      EID.setAttribute("type", "text");
+      EID.setAttribute("name", "emailID");
+      EID.setAttribute("placeholder", "E-Mail ID");
+
+      // Create an input element for password 
+      var PWD = document.createElement("input");
+      PWD.setAttribute("type", "password");
+      PWD.setAttribute("name", "password");
+      PWD.setAttribute("placeholder", "Password");
+
+      // Create an input element for retype-password 
+      var RPWD = document.createElement("input");
+      RPWD.setAttribute("type", "password");
+      RPWD.setAttribute("name", "reTypePassword");
+      RPWD.setAttribute("placeholder", "ReEnter Password");
+
+      // create a submit button 
+      var s = document.createElement("input");
+      s.setAttribute("type", "submit");
+      s.setAttribute("value", "Submit");
+
+      // Append the full name input to the form 
+      form.appendChild(FN);
+
+      // Inserting a line break 
+      form.appendChild(br.cloneNode());
+
+      // Append the DOB to the form 
+      form.appendChild(DOB);
+      form.appendChild(br.cloneNode());
+
+      // Append the emailID to the form 
+      form.appendChild(EID);
+      form.appendChild(br.cloneNode());
+
+      // Append the Password to the form 
+      form.appendChild(PWD);
+      form.appendChild(br.cloneNode());
+
+      // Append the ReEnterPassword to the form 
+      form.appendChild(RPWD);
+      form.appendChild(br.cloneNode());
+
+      // Append the submit button to the form 
+      form.appendChild(s);
+
+      document.getElementsByTagName("body")[0]
+        .appendChild(form);
+    } 
+  </script>
 </body>
 
 </html>

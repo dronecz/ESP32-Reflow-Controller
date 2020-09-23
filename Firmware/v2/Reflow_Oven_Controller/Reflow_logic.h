@@ -1,4 +1,4 @@
-#include <PID_v1.h>
+  #include <PID_v1.h>
 
 extern Adafruit_MAX31856 max31856;
 extern Button AXIS_X;
@@ -299,7 +299,8 @@ void reflow_main() {
         // If switch is pressed to start reflow process
         if (profileIsOn != 0)
         {
-//          events.send(String(profileIsOn).c_str(), "showchart");
+          events.send(String(profileIsOn).c_str(), "showchart");
+          Serial.println("Sending start of the profile to the webserver!");
           // Send header for CSV file
           Serial.println("Time Setpoint Input Output");
           // Intialize seconds timer for serial debug information
@@ -398,7 +399,6 @@ void reflow_main() {
         profileIsOn = 0;
         disableMenu = 0;
         Serial.println("Profile is OFF");
-        //        events.send(String(profileIsOn).c_str(),"showchart");
       }
       break;
 

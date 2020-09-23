@@ -163,7 +163,7 @@ void event1(int pin) {
           stopReflowScreen();
           activeStatus = "Idle";
         } else {
-          startReflowScreen();       
+          startReflowScreen();
         }
       }
       else if (state == 1) { // main menu
@@ -263,6 +263,8 @@ void event1(int pin) {
         profileIsOn = 0;
         disableMenu = 0;
         Serial.println("Profile is OFF");
+        events.send(String(profileIsOn).c_str(), "showchart");
+        Serial.println("Sending end of the profile to the webserver!");
         // Button press is for cancelling
         // Turn off reflow process
         reflowStatus = REFLOW_STATUS_OFF;

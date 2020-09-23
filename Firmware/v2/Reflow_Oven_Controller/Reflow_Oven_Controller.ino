@@ -54,7 +54,7 @@ int lastButtonState = LOW;
 unsigned long lastDebounceTime_ = 0;  // the last time the output pin was toggled
 unsigned long debounceDelay = 200;    // the debounce time; increase if the output flicker
 
-String activeStatus = "";
+String activeStatus = "Idle";
 bool menu = 0;
 bool isFault = 0;
 bool connected = 0;
@@ -97,6 +97,7 @@ String jsonName[numOfProfiles];
 char json;
 int profileUsed = 0;
 char spaceName[] = "profile00";
+String profileNames = "";
 
 // Structure for paste profiles
 typedef struct {
@@ -246,23 +247,28 @@ void setup() {
   server.on("/src/simple-sidebar.css", HTTP_GET, [](AsyncWebServerRequest * request) {
     request->send(SPIFFS, "/src/simple-sidebar.css", "text/css");
   });
-  
+
   server.on("/temperature", HTTP_GET, [](AsyncWebServerRequest * request) {
     request->send_P(200, "text/plain", webTemp().c_str());
   });
 
   server.on("/showchart", HTTP_GET, [](AsyncWebServerRequest * request) {
-//    request->send_P(200, "text/plain", profileInt().c_str());
+    request->send_P(200, "text/plain", profileInt().c_str());
+  });
+
+  server.on("/profileNames", HTTP_GET, [](AsyncWebServerRequest * request) {
+    request->send_P(200, "text/plain", profileNames.c_str());
   });
 
   // Handle Web Server Events
-  events.onConnect([](AsyncEventSourceClient *client){
-    if(client->lastId()){
+  events.onConnect([](AsyncEventSourceClient * client) {
+    if (client->lastId()) {
       Serial.printf("Client reconnected! Last message ID that it got is: %u\n", client->lastId());
     }
     // send event with message "hello!", id current millis
     // and set reconnect delay to 1 second
     client->send("hello!", NULL, millis(), 10000);
+//    client->send(profileNames, NULL, NULL, NULL);
   });
   server.addHandler(&events);
   // Start server
@@ -326,6 +332,13 @@ void setup() {
     Serial.print(", ");
     Serial.println(paste_profile[i].alloy);
   }
+
+  for (int i = 0; i < profileNum; i++) {
+    profileNames += (paste_profile[i].title);
+    profileNames += (", ");
+  }
+  Serial.println("Names of all profiles: " + profileNames);
+  events.send(profileNames.c_str(), "profileNames");
   Serial.println();
 }
 
