@@ -126,15 +126,9 @@
         <div class="container-fluid align-items-center">
           <h3 class="section-header">Change profile</h3>
           <div class="dropdown">
-            <button class="btn btn-secondary dropdown-toggle" type="button" id="dropdownMenuButton"
-              data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-              Select profile
-            </button>
-            <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
-              <a class="dropdown-item" id="first_item" href="#"></a>
-              <a class="dropdown-item" id="second_item" href="#"></a>
-              <a class="dropdown-item" id="third_item" href="#"></a>
-            </div>
+            <select id="selectProfile" onchange="getSelectedProfileID()">
+              <option>Choose a profile</option>
+            </select>
           </div>
           <div class="form-group mr-2">
             <label class="sr-only" for="inputEmail">Name of the profile</label>
@@ -204,7 +198,7 @@
               click here
             </button>
             <p id="GFG_DOWN"></p>
-          </div> 
+          </div>
         </div>
       </section>
       <hr />
@@ -258,26 +252,6 @@
       },
       credits: { enabled: false }
     });
-
-
-    // setInterval(function () {
-    //       var xhttp = new XMLHttpRequest(); 
-    //   xhttp.onreadystatechange = function() {
-    //     if (this.readyState == 4 && this.status == 200) {
-    //       var x = (new Date()).getTime(),
-    //           < !--y = parseFloat(this.responseText);
-    //       <!-- console.log(this.responseText); -->
-    //       if (chartT.series[0].data.length > 40) {
-    //         chartT.series[0].addPoint([x, y], true, true, true);
-    //       } else {
-
-    //         chartT.series[0].addPoint([x, y], true, false, true);
-    //       }
-    //     }
-    //   };
-    //   xhttp.open("GET", "/temperature", true);
-    //   xhttp.send();
-    // }, 5000);
 
     if (!!window.EventSource) {
       var source = new EventSource('/events');
@@ -336,13 +310,44 @@
           console.log(this.responseText);
           var response = this.responseText;
           var ar = response.split(', ');
+          var numItemsArray;
           console.log(ar);
-          document.getElementById("first_item").innerHTML = ar[0];
-          document.getElementById("second_item").innerHTML = ar[1];
-          document.getElementById("third_item").innerHTML = ar[2];
+          var select = document.getElementById("selectProfile");
+          for (var i = 0; i < ar.length -1; i++) {
+            var opt = ar[i];
+            var el = document.createElement("option");
+            el.textContent = opt;
+            el.value = opt;
+            select.appendChild(el);
+          }
         }
       };
       xhttp.open("GET", "profileNames", true);
+      xhttp.send();
+    }
+  </script>
+  <script>
+    function getSelectedProfileID() {
+        //Getting Value
+        var selObj = document.getElementById("selectProfile");
+        var selValue = selObj.selectedIndex;
+        console.log(selValue);
+        //add callback for profile retrieve with parametr of selValue -> call for GFG_DOWN to create right editable form
+        getProfileById(selValue);
+    }
+  </script>
+
+  <script>
+    function getProfileById(Id){  
+      var xhttp = new XMLHttpRequest();
+      xhttp.onreadystatechange = function () {
+        if (this.readyState == 4 && this.status == 200) {
+          console.log(this.responseText);
+          // var response = this.responseText;
+          // var ar = response.split(', ');
+        }
+      };
+      xhttp.open("GET", "getProfile?id=" + Id, true);
       xhttp.send();
     }
   </script>

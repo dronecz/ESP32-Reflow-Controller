@@ -70,7 +70,7 @@ bool profileIsOn = 0;
 bool noThermocouple = 0;
 bool updataAvailable = 0;
 bool testState = 0;
-bool useSPIFFS = 0 ;
+bool useSPIFFS = 0;
 
 // Button variables
 int buttonVal[numDigButtons] = {0};                            // value read from button
@@ -260,6 +260,19 @@ void setup() {
     request->send_P(200, "text/plain", profileNames.c_str());
   });
 
+  server.on("/getProfile", HTTP_GET, [](AsyncWebServerRequest * request) {
+    String inputId;
+    // GET input1 value on <ESP_IP>/update?output=<inputMessage1>&state=<inputMessage2>
+    if (request->hasParam("id")) {
+      inputId = request->getParam("id")->value();
+    }
+    else {
+      inputId = "No message sent";
+    }
+    int id = inputId.toInt();
+    request->send_P(200, "text/plain", getProfile(id).c_str());
+  });
+
   // Handle Web Server Events
   events.onConnect([](AsyncEventSourceClient * client) {
     if (client->lastId()) {
@@ -268,7 +281,7 @@ void setup() {
     // send event with message "hello!", id current millis
     // and set reconnect delay to 1 second
     client->send("hello!", NULL, millis(), 10000);
-//    client->send(profileNames, NULL, NULL, NULL);
+    //    client->send(profileNames, NULL, NULL, NULL);
   });
   server.addHandler(&events);
   // Start server
@@ -436,4 +449,10 @@ void wifiSetup() {
     Serial.println("fail to connect to wifi!!!!");
     wifiTool.runApPortal();
   }
+}
+
+String getProfile(int Id) {
+  Serial.println("Get request for profile with ID of:" + String(Id));
+  String returnString = "Get request for profile with ID of:" + String(Id);
+  return returnString;
 }
