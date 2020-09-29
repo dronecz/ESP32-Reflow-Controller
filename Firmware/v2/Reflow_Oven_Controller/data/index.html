@@ -130,9 +130,10 @@
               <option>Choose a profile</option>
             </select>
           </div>
+          <!-- 
           <div class="form-group mr-2">
             <label class="sr-only" for="inputEmail">Name of the profile</label>
-            <input type="number" class="form-control" id="profile_name" placeholder="Name of the profile ">
+            <input type="text" class="form-control" id="profile_name" placeholder="Name of the profile" value="Test">
           </div>
           <form class="form-inline">
             <div class="form-group mr-2">
@@ -173,9 +174,14 @@
               <label class="sr-only" for="inputPassword">Password</label>
               <input type="number" class="form-control" id="cool_min" placeholder="Cool temp min">
             </div>
+            <div>
+              <p id="test"></p>
+            </div>
           </form>
           <button type="submit" class="btn btn-primary">Change</button>
-        </div>
+     
+</div> -->
+          <div id="changeProfile"></div>
       </section>
       <hr />
       <section id="settings">
@@ -192,12 +198,6 @@
           <div class="custom-control custom-switch mt-2">
             <input type="checkbox" class="custom-control-input" disabled id="customSwitch2">
             <label class="custom-control-label" for="customSwitch2">Disabled switch element</label>
-          </div>
-          <div>
-            <button onClick="GFG_Fun()">
-              click here
-            </button>
-            <p id="GFG_DOWN"></p>
           </div>
         </div>
       </section>
@@ -313,7 +313,7 @@
           var numItemsArray;
           console.log(ar);
           var select = document.getElementById("selectProfile");
-          for (var i = 0; i < ar.length -1; i++) {
+          for (var i = 0; i < ar.length - 1; i++) {
             var opt = ar[i];
             var el = document.createElement("option");
             el.textContent = opt;
@@ -328,104 +328,98 @@
   </script>
   <script>
     function getSelectedProfileID() {
-        //Getting Value
-        var selObj = document.getElementById("selectProfile");
-        var selValue = selObj.selectedIndex;
-        console.log(selValue);
-        //add callback for profile retrieve with parametr of selValue -> call for GFG_DOWN to create right editable form
+      //Getting Value
+      var selObj = document.getElementById("selectProfile");
+      var selValue = selObj.selectedIndex - 1;
+      console.log(selValue);
+      //add callback for profile retrieve with parametr of selValue -> call for GFG_DOWN to create right editable form
         getProfileById(selValue);
     }
   </script>
 
   <script>
-    function getProfileById(Id){  
+    function getProfileById(Id) {
       var xhttp = new XMLHttpRequest();
+      var profileArray;
       xhttp.onreadystatechange = function () {
         if (this.readyState == 4 && this.status == 200) {
           console.log(this.responseText);
-          // var response = this.responseText;
-          // var ar = response.split(', ');
+          var profileResponse = this.responseText;
+          profileArray = profileResponse.split(',');
+          console.log(profileArray);
+          createForm(profileArray);
         }
       };
       xhttp.open("GET", "getProfile?id=" + Id, true);
       xhttp.send();
+
     }
   </script>
 
   <script>
-    var down = document.getElementById("GFG_DOWN");
-
     // Create a break line element 
-    var br = document.createElement("br");
-    function GFG_Fun() {
-
+    //var br = document.createElement("br");
+    function createForm(profileArray) {
+      //test.remove();
+      var variable = document.getElementById("changeProfile");
+      while (variable.firstChild) {
+        variable.removeChild(variable.firstChild);
+      }
       // Create a form synamically 
       var form = document.createElement("form");
       form.setAttribute("method", "post");
-      form.setAttribute("action", "submit.php");
+      form.setAttribute("action", "");
+      variable.appendChild(form);
+
+      var namelabel = document.createElement('label'); // Create Label for Name Field
+      namelabel.innerHTML = "Profile name:"; // Set Field Labels
+      form.appendChild(namelabel);
 
       // Create an input element for Full Name 
       var FN = document.createElement("input");
       FN.setAttribute("type", "text");
-      FN.setAttribute("name", "FullName");
-      FN.setAttribute("placeholder", "Full Name");
+      FN.setAttribute("name", "profileName");
+      //FN.setAttribute("placeholder", "Name of the profile");
+      FN.setAttribute("value", profileArray[0]);
+      form.appendChild(FN);
+
+      var alloylabel = document.createElement('label'); // Create Label for Name Field
+      alloylabel.innerHTML = "Alloy:"; // Set Field Labels
+      form.appendChild(alloylabel);
 
       // Create an input element for date of birth 
       var DOB = document.createElement("input");
       DOB.setAttribute("type", "text");
       DOB.setAttribute("name", "dob");
-      DOB.setAttribute("placeholder", "DOB");
+      DOB.setAttribute("value", profileArray[1]);
+      form.appendChild(DOB);
 
       // Create an input element for emailID 
       var EID = document.createElement("input");
-      EID.setAttribute("type", "text");
+      EID.setAttribute("type", "number");
       EID.setAttribute("name", "emailID");
-      EID.setAttribute("placeholder", "E-Mail ID");
+      EID.setAttribute("value", profileArray[2]);
+      form.appendChild(EID);
 
       // Create an input element for password 
       var PWD = document.createElement("input");
-      PWD.setAttribute("type", "password");
+      PWD.setAttribute("type", "number");
       PWD.setAttribute("name", "password");
-      PWD.setAttribute("placeholder", "Password");
+      PWD.setAttribute("value", profileArray[3]);
+      form.appendChild(PWD);
 
       // Create an input element for retype-password 
       var RPWD = document.createElement("input");
-      RPWD.setAttribute("type", "password");
+      RPWD.setAttribute("type", "number");
       RPWD.setAttribute("name", "reTypePassword");
-      RPWD.setAttribute("placeholder", "ReEnter Password");
+      RPWD.setAttribute("value", profileArray[4]);
+      form.appendChild(RPWD);
 
       // create a submit button 
-      var s = document.createElement("input");
-      s.setAttribute("type", "submit");
-      s.setAttribute("value", "Submit");
-
-      // Append the full name input to the form 
-      form.appendChild(FN);
-
-      // Inserting a line break 
-      form.appendChild(br.cloneNode());
-
-      // Append the DOB to the form 
-      form.appendChild(DOB);
-      form.appendChild(br.cloneNode());
-
-      // Append the emailID to the form 
-      form.appendChild(EID);
-      form.appendChild(br.cloneNode());
-
-      // Append the Password to the form 
-      form.appendChild(PWD);
-      form.appendChild(br.cloneNode());
-
-      // Append the ReEnterPassword to the form 
-      form.appendChild(RPWD);
-      form.appendChild(br.cloneNode());
-
-      // Append the submit button to the form 
-      form.appendChild(s);
-
-      document.getElementsByTagName("body")[0]
-        .appendChild(form);
+      //var s = document.createElement("input");
+      //s.setAttribute("type", "submit");
+      //s.setAttribute("value", "Submit");
+      //form.appendChild(s);
     } 
   </script>
 </body>

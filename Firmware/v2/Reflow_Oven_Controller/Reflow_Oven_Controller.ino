@@ -270,7 +270,11 @@ void setup() {
       inputId = "No message sent";
     }
     int id = inputId.toInt();
-    request->send_P(200, "text/plain", getProfile(id).c_str());
+    if (id != -1) {
+      request->send_P(200, "text/plain", getProfile(id).c_str());
+    }else{
+      Serial.println("Requested profile ID is -1 (\"Select profile\"), nothing to send.");
+    }
   });
 
   // Handle Web Server Events
@@ -453,6 +457,25 @@ void wifiSetup() {
 
 String getProfile(int Id) {
   Serial.println("Get request for profile with ID of:" + String(Id));
-  String returnString = "Get request for profile with ID of:" + String(Id);
+  //String returnString = "Get request for profile with ID of:" + String(Id);
+  String returnString;
+
+  returnString += String(paste_profile[Id].title) + ",";
+  returnString += String(paste_profile[Id].alloy) + ",";
+  returnString += String(paste_profile[Id].melting_point) + ",";
+  returnString += String(paste_profile[Id].temp_range_0) + ",";
+  returnString += String(paste_profile[Id].temp_range_1) + ",";
+  returnString += String(paste_profile[Id].time_range_0) + ",";
+  returnString += String(paste_profile[Id].time_range_1) + ",";
+  returnString += String(paste_profile[Id].reference) + ",";
+  returnString += String(paste_profile[Id].stages_preheat_0) + ",";
+  returnString += String(paste_profile[Id].stages_preheat_1) + ",";
+  returnString += String(paste_profile[Id].stages_soak_0) + ",";
+  returnString += String(paste_profile[Id].stages_soak_1) + ",";
+  returnString += String(paste_profile[Id].stages_reflow_0) + ",";
+  returnString += String(paste_profile[Id].stages_reflow_1) + ",";
+  returnString += String(paste_profile[Id].stages_cool_0) + ",";
+  returnString += String(paste_profile[Id].stages_cool_1);
+  Serial.println("Profile as String is: " + returnString);
   return returnString;
 }
