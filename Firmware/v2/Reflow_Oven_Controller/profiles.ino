@@ -1,4 +1,41 @@
+/*
+  temp_range: temperature range of the profile, used to define the minimum and maximum y axis of the graph
+  time_range: time range of the profile, used to define the minimum and maximum x axis of the graph
+  stages: start points for the stages preheat, soak, reflow and cool. The format of the point is [x, y], where x is the time value and y is the temperature value of the starting point of the stage
+  profile: data points that make up the solder profile. The format of each point is [x, y], where x is the time value and y is the temperature value value of a point on the solder profile graph
 
+  Example of the profile JSON file (https://github.com/adafruit/Adafruit_Learning_System_Guides/blob/master/PyPortal_EZ_Make_Oven/profiles/sn63pb37.json): 
+
+  {
+  "title": "Lead 183",
+  "alloy": "Sn63/Pb37",
+  "melting_point": 183,
+  "temp_range": [30,235],
+  "time_range": [0,340],
+  "reference": "https://www.chipquik.com/datasheets/TS391AX50.pdf",
+  "stages": {
+    "preheat": [30,100],
+    "soak": [120,150],
+    "reflow": [150,183],
+    "cool": [240,183]
+    },
+  "profile": [
+    [0,30],
+    [20,90],
+    [30,100],
+    [40,110],
+    [110,140],
+    [120,150],
+    [130,160]
+    [150,183],
+    [200,230],
+    [210,235],
+    [220,230],
+    [240,183],
+    [340,50]
+  ]
+}
+*/
 template <typename T> unsigned int convert_to_byte (const T& value, uint8_t output [sizeof(profile_t)], int multiplier) {
   const byte * p = (const byte*) &value;
   unsigned int i;

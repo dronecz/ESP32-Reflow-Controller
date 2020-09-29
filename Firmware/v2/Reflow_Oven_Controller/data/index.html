@@ -78,6 +78,10 @@
             <label class="sr-only" for="inputEmail">Name of the profile</label>
             <input type="number" class="form-control" id="profile_name_new" placeholder="Name of the profile ">
           </div>
+          <div class="form-group mr-2">
+            <label class="sr-only" for="inputEmail">Alloy</label>
+            <input type="number" class="form-control" id="alloy_new" placeholder="Alloy">
+          </div>
           <form class="form-inline">
             <div class="form-group mr-2">
               <label class="sr-only" for="inputEmail">Email</label>
@@ -130,57 +134,6 @@
               <option>Choose a profile</option>
             </select>
           </div>
-          <!-- 
-          <div class="form-group mr-2">
-            <label class="sr-only" for="inputEmail">Name of the profile</label>
-            <input type="text" class="form-control" id="profile_name" placeholder="Name of the profile" value="Test">
-          </div>
-          <form class="form-inline">
-            <div class="form-group mr-2">
-              <label class="sr-only" for="inputEmail">Email</label>
-              <input type="number" class="form-control" id="preheat_min" placeholder="Preheat temp min">
-            </div>
-            <div class="form-group mr-2">
-              <label class="sr-only" for="inputPassword">Password</label>
-              <input type="number" class="form-control" id="preheat_max" placeholder="Preheat temp max">
-            </div>
-          </form>
-          <form class="form-inline">
-            <div class="form-group mr-2">
-              <label class="sr-only" for="inputEmail">Email</label>
-              <input type="number" class="form-control" id="soak_min" placeholder="Soak temp min">
-            </div>
-            <div class="form-group mr-2">
-              <label class="sr-only" for="inputPassword">Password</label>
-              <input type="number" class="form-control" id="soak_max" placeholder="Soak temp max">
-            </div>
-          </form>
-          <form class="form-inline">
-            <div class="form-group mr-2">
-              <label class="sr-only" for="inputEmail">Email</label>
-              <input type="number" class="form-control" id="reflow_min" placeholder="Reflow temp min">
-            </div>
-            <div class="form-group mr-2">
-              <label class="sr-only" for="inputPassword">Password</label>
-              <input type="number" class="form-control" id="reflow_max" placeholder="Reflow temp max">
-            </div>
-          </form>
-          <form class="form-inline">
-            <div class="form-group mr-2">
-              <label class="sr-only" for="inputEmail">Email</label>
-              <input type="number" class="form-control" id="cool_max" placeholder="Cool temp max">
-            </div>
-            <div class="form-group mr-2">
-              <label class="sr-only" for="inputPassword">Password</label>
-              <input type="number" class="form-control" id="cool_min" placeholder="Cool temp min">
-            </div>
-            <div>
-              <p id="test"></p>
-            </div>
-          </form>
-          <button type="submit" class="btn btn-primary">Change</button>
-     
-</div> -->
           <div id="changeProfile"></div>
       </section>
       <hr />
@@ -333,7 +286,7 @@
       var selValue = selObj.selectedIndex - 1;
       console.log(selValue);
       //add callback for profile retrieve with parametr of selValue -> call for GFG_DOWN to create right editable form
-        getProfileById(selValue);
+      getProfileById(selValue);
     }
   </script>
 
@@ -371,55 +324,132 @@
       form.setAttribute("action", "");
       variable.appendChild(form);
 
+      // Create an label element for profile name
       var namelabel = document.createElement('label'); // Create Label for Name Field
-      namelabel.innerHTML = "Profile name:"; // Set Field Labels
+      namelabel.innerHTML = "Name of the profile:"; // Set Field Labels
       form.appendChild(namelabel);
 
-      // Create an input element for Full Name 
-      var FN = document.createElement("input");
-      FN.setAttribute("type", "text");
-      FN.setAttribute("name", "profileName");
-      //FN.setAttribute("placeholder", "Name of the profile");
-      FN.setAttribute("value", profileArray[0]);
-      form.appendChild(FN);
+      // Create an input element for profile name
+      var PN = document.createElement("input");
+      PN.setAttribute("type", "text");
+      PN.setAttribute("name", "profileName");
+      PN.setAttribute("value", profileArray[0]);
+      form.appendChild(PN);
 
+      // Create an label element for alloy
       var alloylabel = document.createElement('label'); // Create Label for Name Field
       alloylabel.innerHTML = "Alloy:"; // Set Field Labels
       form.appendChild(alloylabel);
 
-      // Create an input element for date of birth 
-      var DOB = document.createElement("input");
-      DOB.setAttribute("type", "text");
-      DOB.setAttribute("name", "dob");
-      DOB.setAttribute("value", profileArray[1]);
-      form.appendChild(DOB);
+      // Create an input element for alloy
+      var AL = document.createElement("input");
+      AL.setAttribute("type", "text");
+      AL.setAttribute("name", "alloy");
+      AL.setAttribute("value", profileArray[1]);
+      form.appendChild(AL);
 
-      // Create an input element for emailID 
-      var EID = document.createElement("input");
-      EID.setAttribute("type", "number");
-      EID.setAttribute("name", "emailID");
-      EID.setAttribute("value", profileArray[2]);
-      form.appendChild(EID);
+      // Create an label element for preheat min temp
+      var pmintlabel = document.createElement('label'); // Create Label for Name Field
+      pmintlabel.innerHTML = "Preheat min temp:"; // Set Field Labels
+      form.appendChild(pmintlabel);
 
-      // Create an input element for password 
-      var PWD = document.createElement("input");
-      PWD.setAttribute("type", "number");
-      PWD.setAttribute("name", "password");
-      PWD.setAttribute("value", profileArray[3]);
-      form.appendChild(PWD);
+      // Create an input element for preheat minimum temp
+      var PMINT = document.createElement("input");
+      PMINT.setAttribute("type", "number");
+      PMINT.setAttribute("name", "pmint");
+      PMINT.setAttribute("value", profileArray[8]);
+      form.appendChild(PMINT);
 
-      // Create an input element for retype-password 
-      var RPWD = document.createElement("input");
-      RPWD.setAttribute("type", "number");
-      RPWD.setAttribute("name", "reTypePassword");
-      RPWD.setAttribute("value", profileArray[4]);
-      form.appendChild(RPWD);
+      // Create an label element for preheat max temp
+      var pmaxtlabel = document.createElement('label'); // Create Label for Name Field
+      pmaxtlabel.innerHTML = "Preheat max temp:"; // Set Field Labels
+      form.appendChild(pmaxtlabel);
 
-      // create a submit button 
-      //var s = document.createElement("input");
-      //s.setAttribute("type", "submit");
-      //s.setAttribute("value", "Submit");
-      //form.appendChild(s);
+      // Create an input element for preheat max temp
+      var PMAXT = document.createElement("input");
+      PMAXT.setAttribute("type", "number");
+      PMAXT.setAttribute("name", "pmaxt");
+      PMAXT.setAttribute("value", profileArray[2]);
+      form.appendChild(PMAXT);
+
+
+      // Create an label element for soak min temp
+      var smintlabel = document.createElement('label'); // Create Label for Name Field
+      smintlabel.innerHTML = "Soak min temp:"; // Set Field Labels
+      form.appendChild(smintlabel);
+
+      // Create an input element for soak min temp
+      var SMINT = document.createElement("input");
+      SMINT.setAttribute("type", "number");
+      SMINT.setAttribute("name", "smint");
+      SMINT.setAttribute("value", profileArray[11]);
+      form.appendChild(SMINT);
+
+      // Create an label element for soak max temp
+      var smaxtlabel = document.createElement('label'); // Create Label for Name Field
+      smaxtlabel.innerHTML = "Soak max temp:"; // Set Field Labels
+      form.appendChild(smaxtlabel); 
+
+      // Create an input element for soak max temp
+      var SMAXT = document.createElement("input");
+      SMAXT.setAttribute("type", "number");
+      SMAXT.setAttribute("name", "smaxt");
+      SMAXT.setAttribute("value", profileArray[4]);
+      form.appendChild(SMAXT);
+
+      // Create an label element for reflox min temp
+      var rmintlabel = document.createElement('label'); // Create Label for Name Field
+      rmintlabel.innerHTML = "Reflow min temp:"; // Set Field Labels
+      form.appendChild(rmintlabel);
+
+      // Create an input element for reflow min temp
+      var RMINT = document.createElement("input");
+      RMINT.setAttribute("type", "number");
+      RMINT.setAttribute("name", "rmint");
+      RMINT.setAttribute("value", profileArray[13]);
+      form.appendChild(RMINT);
+
+      // Create an label element for reflow max temp
+      var rmaxtlabel = document.createElement('label'); // Create Label for Name Field
+      rmaxtlabel.innerHTML = "Reflow max temp:"; // Set Field Labels
+      form.appendChild(rmaxtlabel);
+
+      // Create an input element for reflow max temp
+      var RMAXT = document.createElement("input");
+      RMAXT.setAttribute("type", "number");
+      RMAXT.setAttribute("name", "rmaxt");
+      RMAXT.setAttribute("value", profileArray[4]);
+      form.appendChild(RMAXT);
+
+      // Create an label element for cool max temp
+      var cmaxtlabel = document.createElement('label'); // Create Label for Name Field
+      cmaxtlabel.innerHTML = "Cool start temp:"; // Set Field Labels
+      form.appendChild(cmaxtlabel);
+
+      // Create an input element for reflow min temp
+      var CMAXT = document.createElement("input");
+      CMAXT.setAttribute("type", "number");
+      CMAXT.setAttribute("name", "cmaxt");
+      CMAXT.setAttribute("value", profileArray[15]);
+      form.appendChild(CMAXT);
+
+      // Create an label element for cool min temp
+      var cmintlabel = document.createElement('label'); // Create Label for Name Field
+      cmintlabel.innerHTML = "Cool end temp:"; // Set Field Labels
+      form.appendChild(cmintlabel);
+
+      // Create an input element for cool min temp
+      var CMINT = document.createElement("input");
+      CMINT.setAttribute("type", "number");
+      CMINT.setAttribute("name", "cmint");
+      CMINT.setAttribute("value", profileArray[8]);
+      form.appendChild(CMINT);
+
+      //create a submit button 
+      var chb = document.createElement("input");
+      chb.setAttribute("type", "submit");
+      chb.setAttribute("value", "Change");
+      form.appendChild(chb);
     } 
   </script>
 </body>
