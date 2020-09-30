@@ -124,6 +124,9 @@ typedef struct {
 
   uint16_t  stages_cool_0;     // 240
   uint16_t  stages_cool_1;     // 183
+
+  uint16_t  profile_count;     // max. 30
+  uint16_t  profile[32][2];    // {{0,30}, {20,90}, ...}, maximum -> profile_count
 } profile_t;
 
 profile_t paste_profile[numOfProfiles]; //declaration of struct type array

@@ -98,6 +98,14 @@ void parseJsonProfile(fs::FS &fs, String someName, int num, profile_t* profile) 
   profile[num].stages_cool_0    = stages["cool"][0];    // 240
   profile[num].stages_cool_1    = stages["cool"][1];    // 183
 
+  JsonArray profile_array       = doc["profile"];
+  profile[num].profile_count    = profile_array.size();
+  // TODO Check that array size is number of doublets
+  // or divide by 2 if needed
+  for (int i=0; i < profile[num].profile_count; i++) {
+    profile[num].profile[num][0] = profile_array[num][0];
+    profile[num].profile[num][1] = profile_array[num][1];
+  }
 
   file.close();
 
@@ -117,7 +125,8 @@ void parseJsonProfile(fs::FS &fs, String someName, int num, profile_t* profile) 
                  + String(profile[num].stages_reflow_0) + ","
                  + String(profile[num].stages_reflow_1) + ","
                  + String(profile[num].stages_cool_0) + ","
-                 + String(profile[num].stages_cool_1));
+                 + String(profile[num].stages_cool_1) + ","
+                 + String(profile[num].profile_count));
 
   array.add(profile[num].title);
   array.add(profile[num].alloy);
@@ -135,6 +144,11 @@ void parseJsonProfile(fs::FS &fs, String someName, int num, profile_t* profile) 
   array.add(profile[num].stages_reflow_1);
   array.add(profile[num].stages_cool_0);
   array.add(profile[num].stages_cool_1);
+  array.add(profile[num].profile_count);
+  for (int i=0; i < profile[num].profile_count; i++) {
+    array.add(profile[num].profile[num][0]);
+    array.add(profile[num].profile[num][1]);
+  }
 
   // serialize the array and send the result to Serial
   serializeJson(newDoc, Serial);
