@@ -65,6 +65,9 @@
         <div id="chart-temperature" class="chart-container" style="display: none;">
           <button onclick="hideChart()">Hide chart</button>
         </div>
+        <div id="actualTemp">
+          <p>Temperature is: <span id="showTempValue"></span></p>
+        </div>
         <div class="container">
           <h1 class="mt-4">Bootstrap 4 webpage running on ESP32</h1>
           <p>This is simple sidebar webpage running on ESP32 with ESP32 Async webserver library. </p>
@@ -208,6 +211,7 @@
 
     if (!!window.EventSource) {
       var source = new EventSource('/events');
+      var chartVar = 0;
 
       source.addEventListener('open', function (e) {
         console.log("Events Connected");
@@ -223,12 +227,11 @@
       }, false);
 
       source.addEventListener('showchart', function (e) {
-        var y = 0;
-        y = parseInt(e.data);
-        console.log("Oven state change", y);
+        chartVar = parseInt(e.data);
+        console.log("Oven state change", chartVar);
         var x = document.getElementById("chart-temperature");
         console.log("Display value is:", x);
-        if (y != 0) {
+        if (chartVar != 0) {
           x.style.display = "block";
         } else {
           x.style.display = "none";
@@ -236,22 +239,24 @@
       }, false);
 
       source.addEventListener('temperature', function (e) {
-        console.log("temperature", e.data);
-        //document.getElementById("temp").innerHTML = e.data;
-        var x = (new Date()).getTime(),
-          //y = parseFloat(this.responseText);
-          y = parseInt(e.data);
-        //console.log(this.responseText);
-        if (chartT.series[0].data.length > 40) {
-          chartT.series[0].addPoint([x, y], true, true, true);
+        var a = document.getElementById("actualTemp");
+        if (chartVar != 0) {
+          a.style.display = "none";
+          console.log("temperature", e.data);
+          var x = (new Date()).getTime(),
+            y = parseInt(e.data);
+          if (chartT.series[0].data.length > 40) {
+            chartT.series[0].addPoint([x, y], true, true, true);
+          } else {
+            chartT.series[0].addPoint([x, y], true, false, true);
+          }
         } else {
-          chartT.series[0].addPoint([x, y], true, false, true);
+          a.style.display = "block";
+          var intTemp = parseInt(e.data);
+          document.getElementById("showTempValue").innerHTML = intTemp;
+          console.log(intTemp);
         }
       }, false);
-
-      // source.addEventListener('profileNames', function (e) {
-      //   console.log("profileNames are:", e.data);
-      // }, false);
     }
   </script>
 
@@ -388,7 +393,7 @@
       // Create an label element for soak max temp
       var smaxtlabel = document.createElement('label'); // Create Label for Name Field
       smaxtlabel.innerHTML = "Soak max temp:"; // Set Field Labels
-      form.appendChild(smaxtlabel); 
+      form.appendChild(smaxtlabel);
 
       // Create an input element for soak max temp
       var SMAXT = document.createElement("input");
