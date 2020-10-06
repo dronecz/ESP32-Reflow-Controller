@@ -98,6 +98,7 @@ char json;
 int profileUsed = 0;
 char spaceName[] = "profile00";
 String profileNames = "";
+String usedProfileName = "";
 
 // Structure for paste profiles
 typedef struct {
@@ -275,9 +276,13 @@ void setup() {
     int id = inputId.toInt();
     if (id != -1) {
       request->send_P(200, "text/plain", getProfile(id).c_str());
-    }else{
+    } else {
       Serial.println("Requested profile ID is -1 (\"Select profile\"), nothing to send.");
     }
+  });
+
+  server.on("/usedProfile", HTTP_GET, [](AsyncWebServerRequest * request) {
+    request->send_P(200, "text/plain", usedProfileName.c_str());
   });
 
   // Handle Web Server Events
@@ -290,6 +295,7 @@ void setup() {
     client->send("hello!", NULL, millis(), 10000);
     //    client->send(profileNames, NULL, NULL, NULL);
   });
+
   server.addHandler(&events);
   // Start server
   server.begin();
@@ -359,6 +365,9 @@ void setup() {
   }
   Serial.println("Names of all profiles: " + profileNames);
   events.send(profileNames.c_str(), "profileNames");
+  usedProfileName = paste_profile[profileUsed].title;
+  Serial.println("Names of used profile: " + usedProfileName);
+  events.send(usedProfileName.c_str(), "usedProfile");
   Serial.println();
 }
 

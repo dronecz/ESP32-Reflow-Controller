@@ -165,6 +165,8 @@ void saveSelectedProfile(int profile) {
   preferences.putInt("profileUsed", profile);
   profileUsed = preferences.getInt("profileUsed", 0);
   preferences.end();
+  usedProfileName = paste_profile[profileUsed].title;
+  events.send(usedProfileName.c_str(), "usedProfile");
   Serial.println("Saved profile # " + String(profile));
 }
 

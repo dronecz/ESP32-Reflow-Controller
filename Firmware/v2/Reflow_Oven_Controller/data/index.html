@@ -68,6 +68,9 @@
         <div id="actualTemp">
           <p>Temperature is: <span id="showTempValue"></span></p>
         </div>
+        <div id="profileNameId">
+          <p>Used profile: <span id="usedProfileName"></span></p>
+        </div>
         <div class="container">
           <h1 class="mt-4">Bootstrap 4 webpage running on ESP32</h1>
           <p>This is simple sidebar webpage running on ESP32 with ESP32 Async webserver library. </p>
@@ -257,31 +260,73 @@
           console.log(intTemp);
         }
       }, false);
+
+      source.addEventListener('usedProfile', function (e) {
+        var usedProfile = e.data;
+        console.log("ID of used profile", usedProfile);
+        //var a = document.getElementById("profileNameId");
+        document.getElementById("usedProfileName").innerHTML = usedProfile;
+      }, false);
     }
   </script>
 
   <script>
     function loadDoc() {
-      var xhttp = new XMLHttpRequest();
-      xhttp.onreadystatechange = function () {
-        if (this.readyState == 4 && this.status == 200) {
-          console.log(this.responseText);
-          var response = this.responseText;
-          var ar = response.split(', ');
-          var numItemsArray;
-          console.log(ar);
-          var select = document.getElementById("selectProfile");
-          for (var i = 0; i < ar.length - 1; i++) {
-            var opt = ar[i];
-            var el = document.createElement("option");
-            el.textContent = opt;
-            el.value = opt;
-            select.appendChild(el);
+      /*       var xhttp = new XMLHttpRequest();
+            xhttp.onreadystatechange = function () {
+              if (this.readyState == 4 && this.status == 200) {
+                console.log(this.responseText);
+                var response = this.responseText;
+                var ar = response.split(', ');
+                var numItemsArray;
+                console.log(ar);
+                var select = document.getElementById("selectProfile");
+                for (var i = 0; i < ar.length - 1; i++) {
+                  var opt = ar[i];
+                  var el = document.createElement("option");
+                  el.textContent = opt;
+                  el.value = opt;
+                  select.appendChild(el);
+                }
+              }
+            };
+            xhttp.open("GET", "profileNames", true);
+            xhttp.send(); */
+      var index = ["usedProfile", "profileNames"];
+      var request = new XMLHttpRequest();
+      (function loop(i, length) {
+        if (i >= length) {
+          return;
+        }
+        var url = index[i];
+        console.log(url);
+        request.onreadystatechange = function () {
+          if (this.readyState == 4 && this.status == 200) {
+            if (index != 1) {
+              console.log(this.responseText);
+              var response = this.responseText;
+              var ar = response.split(', ');
+              var numItemsArray;
+              console.log(ar);
+              var select = document.getElementById("selectProfile");
+              for (var i = 0; i < ar.length - 1; i++) {
+                var opt = ar[i];
+                var el = document.createElement("option");
+                el.textContent = opt;
+                el.value = opt;
+                select.appendChild(el);
+              }
+            } else {
+              console.log(this.responseText);
+              var usedProfile = this.responseText;
+              document.createElementById("usedProfileName").innerHTML = usedProfile;
+            }
+            loop(i + 1, length);
           }
         }
-      };
-      xhttp.open("GET", "profileNames", true);
-      xhttp.send();
+        request.open("GET", url);
+        request.send();
+      })(0, index.length);
     }
   </script>
   <script>
@@ -310,9 +355,22 @@
       };
       xhttp.open("GET", "getProfile?id=" + Id, true);
       xhttp.send();
-
     }
   </script>
+
+  <!--   <script>
+    function getUsedProfile() {
+      var xhttp = new XMLHttpRequest();
+      var profileNum;
+      xhttp.onreadystatechange = function () {
+        if (this.readyState == 4 && this.status == 200) {
+          console.log(this.responseText);
+        }
+      };
+      xhttp.open("GET", "usedProfile", true);
+      xhttp.send();
+    }
+  </script> -->
 
   <script>
     // Create a break line element 
