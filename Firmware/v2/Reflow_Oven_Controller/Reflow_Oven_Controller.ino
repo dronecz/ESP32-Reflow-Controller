@@ -3,6 +3,7 @@
 #include <Adafruit_MAX31856.h>
 #include "Adafruit_GFX.h"
 #include <Fonts/FreeSans9pt7b.h>
+#include <Fonts/FreeSerif9pt7b.h>
 #include <ArduinoJson.h>
 #include <HTTPClient.h>
 #include <Preferences.h>
@@ -99,6 +100,10 @@ int profileUsed = 0;
 char spaceName[] = "profile00";
 String profileNames = "";
 String usedProfileName = "";
+const char* PARAM_INPUT_1 = "output";
+const char* PARAM_INPUT_2 = "state";
+String inputMessage1;
+String inputMessage2;
 
 // Structure for paste profiles
 typedef struct {
@@ -133,6 +138,15 @@ typedef struct {
 profile_t paste_profile[numOfProfiles]; //declaration of struct type array
 
 #include "reflow_logic.h"
+
+void changeValues(String *inputMessage1, String *inputMessage2) {
+  //  int intValue = *inputMessage2.toInt();
+  //  *inputMessage1 = intValue;
+  *inputMessage1 = *inputMessage2;
+  Serial.println(*inputMessage1 + " value changed to: " + *inputMessage2);
+  //updatePreferencesNew(variable, intValue);
+}
+
 
 void setup() {
   WiFi.mode(WIFI_STA); // explicitly set mode, esp defaults to STA+AP
@@ -244,10 +258,6 @@ void setup() {
     request->send(SPIFFS, "/src/bootstrap.min.css", "text/css");
   });
 
-  //    server.on("/src/bootstrap.min.css.map", HTTP_GET, [](AsyncWebServerRequest *request){
-  //    request->send(SPIFFS, "/src/bootstrap.min.css.map", "text/css");
-  //  });
-
   server.on("/src/simple-sidebar.css", HTTP_GET, [](AsyncWebServerRequest * request) {
     request->send(SPIFFS, "/src/simple-sidebar.css", "text/css");
   });
@@ -283,6 +293,24 @@ void setup() {
 
   server.on("/usedProfile", HTTP_GET, [](AsyncWebServerRequest * request) {
     request->send_P(200, "text/plain", usedProfileName.c_str());
+  });
+
+  // Send a GET request to <ESP_IP>/update?output=<inputMessage1>&state=<inputMessage2>
+  server.on("/update", HTTP_GET, [] (AsyncWebServerRequest * request) {
+    // GET input1 value on <ESP_IP>/update?output=<inputMessage1>&state=<inputMessage2>
+    if (request->hasParam(PARAM_INPUT_1) && request->hasParam(PARAM_INPUT_2)) {
+      inputMessage1 = request->getParam(PARAM_INPUT_1)->value();
+      inputMessage2 = request->getParam(PARAM_INPUT_2)->value();
+      changeValues(&inputMessage1, &inputMessage2);
+    }
+    else {
+      inputMessage1 = "No message sent";
+      inputMessage2 = "No message sent";
+    }
+    Serial.print(inputMessage1);
+    Serial.print(" - Set to: ");
+    Serial.println(inputMessage2);
+    request->send(200, "text/plain", "OK");
   });
 
   // Handle Web Server Events
@@ -389,6 +417,20 @@ void updatePreferences() {
     Serial.println("OTA is : " + String(useOTA));
     Serial.println("Use SPIFFS is : " + String(useSPIFFS));
     Serial.println("Buzzer is: " + String(buzzer));
+    Serial.println();
+  }
+}
+
+void updatePreferencesNew(String variable, int value) {
+  String tempVar = variable;
+  int tempInt = value;
+  //  preferences.begin("store", false);
+  //  preferences.putBool(tempVar, tempInt);
+  //  preferences.end();
+
+  if (verboseOutput != 0) {
+    Serial.println();
+    Serial.println(tempVar + " is: " + String(tempInt));
     Serial.println();
   }
 }

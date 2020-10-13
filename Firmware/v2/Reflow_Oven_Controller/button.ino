@@ -242,12 +242,15 @@ void event1(int pin) {
           }
         } else if  (settings_pointer == 6) {
           if (buttons != 0) {
-            if (verboseOutput != 0) {
-              Serial.println("Calling WiFi setup function");
+            if (connected != 1) {
+              if (verboseOutput != 0) {
+                Serial.println("Calling WiFi setup function");
+              }
+              wifiSetup();
             }
-            wifiSetup();
-          } else {
-            testOutputs();
+            else {
+              testOutputs();
+            }
           }
         } else if  (settings_pointer == 7) {
           testOutputs();

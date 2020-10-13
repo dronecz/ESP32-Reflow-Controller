@@ -151,8 +151,20 @@
             <label class="custom-file-label" for="customFile">Choose file</label>
           </div>
           <div class="custom-control custom-switch">
-            <input type="checkbox" class="custom-control-input" id="customSwitch1">
-            <label class="custom-control-label" for="customSwitch1">Toggle switch</label>
+            <input type="checkbox" class="custom-control-input" onchange="toggleCheckbox(this)" id="useOTA">
+            <label class="custom-control-label" for="useOTA">Use OTA update</label>
+          </div>
+          <div class="custom-control custom-switch">
+            <input type="checkbox" class="custom-control-input" onchange="toggleCheckbox(this)" id="buzzer">
+            <label class="custom-control-label" for="buzzer">Use buzzer</label>
+          </div>
+          <div class="custom-control custom-switch">
+            <input type="checkbox" class="custom-control-input" onchange="toggleCheckbox(this)" id="useSPIFFS">
+            <label class="custom-control-label" for="useSPIFFS">Use SPIFFS storage</label>
+          </div>
+          <div class="custom-control custom-switch">
+            <input type="checkbox" class="custom-control-input" onchange="toggleCheckbox(this)" id="fan">
+            <label class="custom-control-label" for="fan">Use fan</label>
           </div>
           <div class="custom-control custom-switch mt-2">
             <input type="checkbox" class="custom-control-input" disabled id="customSwitch2">
@@ -329,6 +341,7 @@
       })(0, index.length);
     }
   </script>
+
   <script>
     function getSelectedProfileID() {
       //Getting Value
@@ -358,19 +371,14 @@
     }
   </script>
 
-  <!--   <script>
-    function getUsedProfile() {
-      var xhttp = new XMLHttpRequest();
-      var profileNum;
-      xhttp.onreadystatechange = function () {
-        if (this.readyState == 4 && this.status == 200) {
-          console.log(this.responseText);
-        }
-      };
-      xhttp.open("GET", "usedProfile", true);
-      xhttp.send();
+  <script>
+    function toggleCheckbox(element) {
+      var xhr = new XMLHttpRequest();
+      if (element.checked) { xhr.open("GET", "/update?output=" + element.id + "&state=1", true); }
+      else { xhr.open("GET", "/update?output=" + element.id + "&state=0", true); }
+      xhr.send();
     }
-  </script> -->
+  </script>
 
   <script>
     // Create a break line element 

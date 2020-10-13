@@ -60,7 +60,7 @@ void centeredText(String text, uint16_t color, int yCord, int xCord = 0) {
   display.println(text);
 }
 
-void rightText(String text, uint16_t color, int yCord, int xCord = 0) {
+void rightText(String text, uint16_t color, int yCord, int xCord = 5) {
   int16_t x1, y1;
   uint16_t w, h;
   int offSet = 10;
@@ -74,7 +74,7 @@ void rightText(String text, uint16_t color, int yCord, int xCord = 0) {
 #endif
   display.setTextColor(color);
   //display.fillRect(((display.width() - w) / 2), (yCord - (h / 2)), (w + offSet) , (h + offSet), ILI9341_BLACK);//
-  display.setCursor(((display.width() - w) - 10), yCord/*(yCord + (h /2))*/); //
+  display.setCursor(((display.width() - w) - xCord), yCord/*(yCord + (h /2))*/); //
   display.println(text);
 }
 
@@ -259,11 +259,12 @@ void UpdateSettingsPointer() {
 
     display.setTextSize(0);
     display.setTextColor( ILI9341_GREEN, ILI9341_BLACK );
-    display.fillRect( 0, display.height() - 50, display.width(), 40, ILI9341_BLACK );
+    display.fillRect( 0, display.height() - 50, display.width(), 50, ILI9341_BLACK );
     switch ( settings_pointer )
     {
       case 0:
-        centeredText("Set buzzer on/off.", ILI9341_GREEN, 300);
+        centeredText("Select profile which", ILI9341_GREEN, 280);
+        centeredText("you want to use.", ILI9341_GREEN, 300);
         break;
     }
   }
@@ -276,7 +277,7 @@ void UpdateSettingsPointer() {
 
     display.setTextSize(0);
     display.setTextColor( ILI9341_GREEN, ILI9341_BLACK );
-    display.fillRect( 0, display.height() - 50, display.width(), 40, ILI9341_BLACK );
+    display.fillRect( 0, display.height() - 50, display.width(), 50, ILI9341_BLACK );
     switch ( settings_pointer )
     {
       case 0:
@@ -303,14 +304,21 @@ void UpdateSettingsPointer() {
         if (buttons != 0) {
           centeredText("Set Yes to use fan.", ILI9341_GREEN, 300);
         } else {
-          centeredText("WiFi Setup", ILI9341_GREEN, 300);
+          if (connected != 1) {
+            centeredText("WiFi Setup", ILI9341_GREEN, 300);
+          } else {
+            centeredText("Enter Test menu.", ILI9341_GREEN, 300);
+          }
         }
         break;
       case 6:
         if (buttons != 0) {
-          centeredText("WiFi Setup", ILI9341_GREEN, 300);
-        } else {
-          centeredText("Enter Test menu.", ILI9341_GREEN, 300);
+          if (connected != 1) {
+            centeredText("WiFi Setup", ILI9341_GREEN, 300);
+          }
+          else {
+            centeredText("Enter Test menu.", ILI9341_GREEN, 300);
+          }
         }
         break;
       case 7:
@@ -329,7 +337,7 @@ void UpdateSettingsPointer() {
 
     display.setTextSize(0);
     display.setTextColor( ILI9341_GREEN, ILI9341_BLACK );
-    display.fillRect( 0, display.height() - 50, display.width(), 40, ILI9341_BLACK );
+    display.fillRect( 0, display.height() - 50, display.width(), 50, ILI9341_BLACK );
     switch ( settings_pointer )
     {
       case 0:
@@ -362,19 +370,6 @@ void infoScreen() {
   display.setCursor(5, 315);
   display.print("FW: ");
   display.println(fwVersion);
-  //  if (online == 1) {
-  //    display.setFont(&FreeSerif9pt7b);
-  //    display.setTextColor(ILI9341_GREEN);
-  //    display.setCursor(260, 15);
-  //    display.setTextSize(1);
-  //    display.print("Online");
-  //  } else {
-  //    display.setFont(&FreeSerif9pt7b);
-  //    display.setTextColor(ILI9341_RED);
-  //    display.setCursor(260, 15);
-  //    display.setTextSize(1);
-  //    display.print("Offline");
-  //  }
 }
 
 void startScreen() {
@@ -416,6 +411,17 @@ void loopScreen() {
 #endif
   display.fillScreen(ILI9341_BLACK);
 
+  display.setFont(&FreeSerif9pt7b);
+  display.setTextSize(1);
+  if (connected != 0 && useOTA != 0) {
+    rightText("WiFi", ILI9341_GREEN, 15);
+    rightText("OTA", ILI9341_GREEN, 15, 45);
+  } else if (connected != 0 && useOTA != 1) {
+    rightText("WiFi", ILI9341_GREEN, 15);
+    rightText("OTA", ILI9341_WHITE, 15, 45);
+  }  else {
+    rightText("WiFi", ILI9341_GREEN, 15);
+  }
   display.setFont(&FreeSans9pt7b);
   display.setTextSize(1);
   if (updataAvailable != 0) {
@@ -714,10 +720,11 @@ void showSettings(byte pointer = 0) {
     y += h;
     numOfPointers++;
   }
-
-  wifiSetupShow(y);
-  y += h;
-  numOfPointers++;
+  if (connected != 1) {
+    wifiSetupShow(y);
+    y += h;
+    numOfPointers++;
+  }
 
   leftText("Test outputs", ILI9341_WHITE, y); rightText("->", ILI9341_WHITE, y);
   //y += h;
