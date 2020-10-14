@@ -192,51 +192,57 @@ void event1(int pin) {
         //settings_pointer = 0; // clear pointer
         if (settings_pointer == 0) {
           buzzer = !buzzer;
+          bool temp = buzzer;
           if (verboseOutput != 0) {
             Serial.println("Buzzer value is: " + String(buzzer));
           }
           setBuzzer(55);
-          updatePreferences();
+          changeValues("buzzer", temp, 1);
         } else if (settings_pointer == 1) {
           horizontal = !horizontal;
+          bool temp = horizontal;
           if (verboseOutput != 0) {
             Serial.println("Display value is: " + String(horizontal));
           }
           setDisplay(75);
-          updatePreferences();
+          changeValues("horizontal", temp, 1);
           previousSettingsPointer, settings_pointer = 0;
           startScreen();
         } else if  (settings_pointer == 2) {
           useOTA = !useOTA;
+          bool temp = useOTA;
           if (verboseOutput != 0) {
             Serial.println("Download FW by OTA: " + String(useOTA));
           }
           setOTA(95);
-          updatePreferences();
+          changeValues("useOTA", temp, 1);
         }
         else if (settings_pointer == 3) {
           buttons = !buttons;
+          bool temp = buttons;
           if (verboseOutput != 0) {
             Serial.println("Buttons value is: " + String(buttons));
           }
           setButtons(115);
-          updatePreferences();
+          changeValues("buttons", temp, 1);
           showSettings();
         } else if (settings_pointer == 4) {
           useSPIFFS = !useSPIFFS;
+          bool temp = useSPIFFS;
           if (verboseOutput != 0) {
             Serial.println("Use SPIFFS: " + String(useSPIFFS));
           }
           setStorage(135);
-          updatePreferences();
+          changeValues("useSPIFFS", temp, 1);
         } else if  (settings_pointer == 5) {
           if (buttons != 0) {
             fan = !fan;
+            bool temp = fan;
             if (verboseOutput != 0) {
               Serial.println("Fan value is: " + String(fan));
             }
             setFan(155);
-            updatePreferences();
+            changeValues("fan", temp, 1);
           } else {
             testOutputs();
           }
@@ -305,15 +311,6 @@ void event1(int pin) {
           }
           testLED(115);
         }
-        //        } else if  (settings_pointer == 4) {
-        //          fan = !fan;
-        //          if (verboseOutput != 0) {
-        //            Serial.println("Fan value is: " + String(fan));
-        //          }
-        //          setFan(135);
-        //          updatePreferences();
-        //        }
-        //previousSettingsPointer = settings_pointer; //store previous position in menu
       }
       if (verboseOutput != 0) {
         Serial.println("Select");

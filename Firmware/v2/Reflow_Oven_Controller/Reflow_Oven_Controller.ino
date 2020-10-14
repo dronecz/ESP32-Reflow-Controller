@@ -103,7 +103,9 @@ String usedProfileName = "";
 const char* PARAM_INPUT_1 = "output";
 const char* PARAM_INPUT_2 = "state";
 String inputMessage1;
-String inputMessage2;
+int inputMessage2;
+String settingsValues;
+String setSettingsValue;
 
 // Structure for paste profiles
 typedef struct {
@@ -132,19 +134,60 @@ typedef struct {
   uint16_t  stages_cool_1;     // 183
 
   uint16_t  profile_count;     // max. 30
-  uint16_t  profile[32][2];    // {{0,30}, {20,90}, ...}, maximum -> profile_count
+  uint16_t  profile[32][2];    // {{0,30}, {20,90}, ...}, maximum -> profile_countc
 } profile_t;
 
 profile_t paste_profile[numOfProfiles]; //declaration of struct type array
 
 #include "reflow_logic.h"
 
-void changeValues(String *inputMessage1, String *inputMessage2) {
-  //  int intValue = *inputMessage2.toInt();
-  //  *inputMessage1 = intValue;
-  *inputMessage1 = *inputMessage2;
-  Serial.println(*inputMessage1 + " value changed to: " + *inputMessage2);
-  //updatePreferencesNew(variable, intValue);
+void changeValues(String variable, bool value, bool sendUpdate = 1) {
+  preferences.begin("store", false);
+  if (variable == "useOTA") {
+    Serial.println("Current value is: " + String(useOTA));
+    preferences.putBool("useOTA", value);
+    useOTA = preferences.getBool("useOTA", 0);
+    Serial.println("useOTA value changed to: " + String(useOTA));
+    setOTA(95);
+  } else if (variable == "buzzer") {
+    Serial.println("Current value is: " + String(buzzer));
+    preferences.putBool("buzzer", value);
+    buzzer = preferences.getBool("buzzer", 0);
+    Serial.println("buzzer value changed to: " + String(buzzer));
+    setBuzzer(55);
+  } else if (variable == "useSPIFFS") {
+    Serial.println("Current value is: " + String(useSPIFFS));
+    preferences.putBool("useSPIFFS", value);
+    useSPIFFS = preferences.getBool("useSPIFFS", 0);
+    Serial.println("useSPIFFS value changed to: " + String(useSPIFFS));
+    setStorage(135);
+  } else if (variable == "buttons") {
+    Serial.println("Current value is: " + String(buttons));
+    preferences.putBool("buttons", value);
+    buttons = preferences.getBool("buttons", 0);
+    Serial.println("buttons value changed to: " + String(buttons));
+    setButtons(115);
+  } else if (variable == "horizontal") {
+    Serial.println("Current value is: " + String(horizontal));
+    preferences.putBool("horizontal", value);
+    horizontal = preferences.getBool("horizontal", 0);
+    Serial.println("horizontal value changed to: " + String(horizontal));
+    setDisplay(75);
+    startScreen();
+  } else {
+    Serial.println("Current value is: " + String(fan));
+    preferences.putBool("fan", value);
+    fan = preferences.getBool("fan", 0);
+    Serial.println("fan value changed to: " + String(fan));
+    setFan(155);
+  }
+  preferences.end();
+  if (sendUpdate != 0) {
+    String tempS = "";
+    tempS += variable + ",";
+    tempS += value;
+    events.send(tempS.c_str(), "setSettings");
+  }
 }
 
 
@@ -175,6 +218,16 @@ void setup() {
   Serial.println("OTA: " + String(useOTA));
   Serial.println("Used profile: " + String(profileUsed));
   Serial.println();
+
+  settingsValues += String(useOTA) + ",";
+  settingsValues += String(buzzer) + ",";
+  settingsValues += String(useSPIFFS) + ",";
+  settingsValues += String(fan) + ",";
+  settingsValues += String(buttons) + ",";
+  settingsValues += String(horizontal);
+
+  Serial.println("Settings Value are: " + settingsValues);
+
   // load profiles from ESP32 memory
   for (int i = 0; i < numOfProfiles; i++) {
     loadProfiles(i);
@@ -295,21 +348,30 @@ void setup() {
     request->send_P(200, "text/plain", usedProfileName.c_str());
   });
 
+  server.on("/getSettings", HTTP_GET, [](AsyncWebServerRequest * request) {
+    request->send_P(200, "text/plain", settingsValues.c_str());
+  });
+
+  server.on("/setSettings", HTTP_GET, [](AsyncWebServerRequest * request) {
+    request->send_P(200, "text/plain", setSettingsValue.c_str());
+  });
+
   // Send a GET request to <ESP_IP>/update?output=<inputMessage1>&state=<inputMessage2>
   server.on("/update", HTTP_GET, [] (AsyncWebServerRequest * request) {
     // GET input1 value on <ESP_IP>/update?output=<inputMessage1>&state=<inputMessage2>
+    String tempString;
     if (request->hasParam(PARAM_INPUT_1) && request->hasParam(PARAM_INPUT_2)) {
       inputMessage1 = request->getParam(PARAM_INPUT_1)->value();
-      inputMessage2 = request->getParam(PARAM_INPUT_2)->value();
-      changeValues(&inputMessage1, &inputMessage2);
+      tempString = request->getParam(PARAM_INPUT_2)->value();
+      inputMessage2 = tempString.toInt();
+      changeValues(inputMessage1, inputMessage2, 0);
     }
     else {
       inputMessage1 = "No message sent";
-      inputMessage2 = "No message sent";
     }
     Serial.print(inputMessage1);
     Serial.print(" - Set to: ");
-    Serial.println(inputMessage2);
+    Serial.println(String(inputMessage2));
     request->send(200, "text/plain", "OK");
   });
 
@@ -399,41 +461,6 @@ void setup() {
   Serial.println();
 }
 
-void updatePreferences() {
-  preferences.begin("store", false);
-  preferences.putBool("buttons", buttons);
-  preferences.putBool("fan", fan);
-  preferences.putBool("horizontal", horizontal);
-  preferences.putBool("buzzer", buzzer);
-  preferences.putBool("useOTA", useOTA);
-  preferences.putBool("useSPIFFS", useSPIFFS);
-  preferences.end();
-
-  if (verboseOutput != 0) {
-    Serial.println();
-    Serial.println("Buttons is: " + String(buttons));
-    Serial.println("Fan is: " + String(fan));
-    Serial.println("Horizontal is: " + String(horizontal));
-    Serial.println("OTA is : " + String(useOTA));
-    Serial.println("Use SPIFFS is : " + String(useSPIFFS));
-    Serial.println("Buzzer is: " + String(buzzer));
-    Serial.println();
-  }
-}
-
-void updatePreferencesNew(String variable, int value) {
-  String tempVar = variable;
-  int tempInt = value;
-  //  preferences.begin("store", false);
-  //  preferences.putBool(tempVar, tempInt);
-  //  preferences.end();
-
-  if (verboseOutput != 0) {
-    Serial.println();
-    Serial.println(tempVar + " is: " + String(tempInt));
-    Serial.println();
-  }
-}
 
 void processButtons() {
   for (int i = 0; i < numDigButtons; i++) {

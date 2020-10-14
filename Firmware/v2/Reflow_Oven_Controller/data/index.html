@@ -166,10 +166,18 @@
             <input type="checkbox" class="custom-control-input" onchange="toggleCheckbox(this)" id="fan">
             <label class="custom-control-label" for="fan">Use fan</label>
           </div>
-          <div class="custom-control custom-switch mt-2">
+          <div class="custom-control custom-switch">
+            <input type="checkbox" class="custom-control-input" onchange="toggleCheckbox(this)" id="buttons">
+            <label class="custom-control-label" for="buttons">Turn this ON if you have Menu & Back button</label>
+          </div>
+          <div class="custom-control custom-switch">
+            <input type="checkbox" class="custom-control-input" onchange="toggleCheckbox(this)" id="horizontal">
+            <label class="custom-control-label" for="horizontal">Vertical/Horizontal display</label>
+          </div>
+          <!--           <div class="custom-control custom-switch mt-2">
             <input type="checkbox" class="custom-control-input" disabled id="customSwitch2">
             <label class="custom-control-label" for="customSwitch2">Disabled switch element</label>
-          </div>
+          </div> -->
         </div>
       </section>
       <hr />
@@ -279,32 +287,23 @@
         //var a = document.getElementById("profileNameId");
         document.getElementById("usedProfileName").innerHTML = usedProfile;
       }, false);
+
+      source.addEventListener('setSettings', function (e) {
+        var changeValue = e.data;
+        console.log(changeValue);
+        toggleCheckboxExternal(changeValue);
+        /*         if (changeValue.checked) {
+                  document.getElementById(changeValue.id).checked = false;
+                } else {
+                  document.getElementById(changeValue.id).checked = true;
+                } */
+      }, false);
     }
   </script>
 
   <script>
     function loadDoc() {
-      /*       var xhttp = new XMLHttpRequest();
-            xhttp.onreadystatechange = function () {
-              if (this.readyState == 4 && this.status == 200) {
-                console.log(this.responseText);
-                var response = this.responseText;
-                var ar = response.split(', ');
-                var numItemsArray;
-                console.log(ar);
-                var select = document.getElementById("selectProfile");
-                for (var i = 0; i < ar.length - 1; i++) {
-                  var opt = ar[i];
-                  var el = document.createElement("option");
-                  el.textContent = opt;
-                  el.value = opt;
-                  select.appendChild(el);
-                }
-              }
-            };
-            xhttp.open("GET", "profileNames", true);
-            xhttp.send(); */
-      var index = ["usedProfile", "profileNames"];
+      var index = ["getSettings", "usedProfile", "profileNames"];
       var request = new XMLHttpRequest();
       (function loop(i, length) {
         if (i >= length) {
@@ -314,24 +313,47 @@
         console.log(url);
         request.onreadystatechange = function () {
           if (this.readyState == 4 && this.status == 200) {
-            if (index != 1) {
+            if (i == 2) {
               console.log(this.responseText);
               var response = this.responseText;
               var ar = response.split(', ');
               var numItemsArray;
               console.log(ar);
               var select = document.getElementById("selectProfile");
-              for (var i = 0; i < ar.length - 1; i++) {
-                var opt = ar[i];
+              for (var j = 0; j < ar.length - 1; j++) {
+                var opt = ar[j];
                 var el = document.createElement("option");
                 el.textContent = opt;
                 el.value = opt;
                 select.appendChild(el);
               }
-            } else {
+            } else if (i == 1) {
               console.log(this.responseText);
               var usedProfile = this.responseText;
-              document.createElementById("usedProfileName").innerHTML = usedProfile;
+              document.getElementById("usedProfileName").innerHTML = usedProfile;
+            } else {
+              console.log(this.responseText);
+              var responseSettings = this.responseText;
+              var arrraySettings = responseSettings.split(',');
+              console.log(arrraySettings);
+              if (arrraySettings[0] == 1) {
+                document.getElementById("useOTA").checked = true;
+              }
+              if (arrraySettings[1] == 1) {
+                document.getElementById("buzzer").checked = true;
+              }
+              if (arrraySettings[2] == 1) {
+                document.getElementById("useSPIFFS").checked = true;
+              }
+              if (arrraySettings[3] == 1) {
+                document.getElementById("fan").checked = true;
+              }
+              if (arrraySettings[4] == 1) {
+                document.getElementById("buttons").checked = true;
+              }
+              if (arrraySettings[5] == 1) {
+                document.getElementById("horizontal").checked = true;
+              }
             }
             loop(i + 1, length);
           }
@@ -376,7 +398,27 @@
       var xhr = new XMLHttpRequest();
       if (element.checked) { xhr.open("GET", "/update?output=" + element.id + "&state=1", true); }
       else { xhr.open("GET", "/update?output=" + element.id + "&state=0", true); }
+      console.log(xhr);
       xhr.send();
+    }
+  </script>
+
+  <script>
+    function toggleCheckboxExternal(element) {
+      //var xhr = new XMLHttpRequest();
+
+      var split = element.split(',');
+      console.log(split);
+      if (split[1] == 1) {
+        document.getElementById(split[0]).checked = true;
+        console.log("Button " + split[0]+ " should be OFF");
+      }
+      else {
+        document.getElementById(split[0]).checked = false;
+        console.log("Button " + split[0]+ " should be ON");
+      }
+      //console.log(xhr);
+      //xhr.send();
     }
   </script>
 
