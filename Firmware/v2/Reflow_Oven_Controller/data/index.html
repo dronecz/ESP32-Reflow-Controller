@@ -269,9 +269,9 @@
       title: {
         text: 'Thermocouple temperature'
       },
-      subtitle: {
+/*       subtitle: {
         text: 'Source: WorldClimate.com'
-      },
+      }, */
       xAxis: {
         //categories: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
       },
@@ -290,7 +290,19 @@
       },
       series: [{
         name: 'Profile',
-        data: [[0, 30], [60, 90], [120, 150], [180, 218], [300, 100]]
+        data: [[0, 30],
+        [20, 90],
+        [30, 100],
+        [40, 110],
+        [110, 140],
+        [120, 150],
+        [130, 160],
+        [150, 183],
+        [200, 230],
+        [210, 235],
+        [220, 230],
+        [240, 183],
+        [340, 50]]
       }, {
         name: 'Temperature',
         //data: [3.9, 4.2, 5.7, 8.5, 11.9, 15.2, 17.0, 16.6, 14.2, 10.3, 6.6, 4.8]
@@ -301,7 +313,7 @@
     if (!!window.EventSource) {
       var source = new EventSource('/events');
       var chartVar = 0;
-      var timerVar = setInterval(countTimer, 1000);
+      var timerVar;
       var totalSeconds = 0;
 
       function countTimer() {
@@ -338,8 +350,12 @@
         console.log("Display value is:", x);
         if (chartVar != 0) {
           x.style.display = "block";
+          timerVar = setInterval(countTimer, 1000);
         } else {
           x.style.display = "none";
+          totalSeconds = 0;
+          console.log(totalSeconds);
+          chartT.series[1].setData([]);
         }
       }, false);
 
@@ -349,12 +365,12 @@
           a.style.display = "none";
           console.log("temperature", e.data);
           //var x = (new Date()).getTime(),
-          var x = totalSeconds,
-            y = parseInt(e.data), z = y - 5;
+          totalSeconds,
+            y = parseInt(e.data);
           if (chartT.series[1].data.length > 40) {
-            chartT.series[1].addPoint([x, y], true, true, true);
+            chartT.series[1].addPoint([totalSeconds, y], true, true, true);
           } else {
-            chartT.series[1].addPoint([x, y], true, false, true);
+            chartT.series[1].addPoint([totalSeconds, y], true, false, true);
           }
         } else {
           a.style.display = "block";
