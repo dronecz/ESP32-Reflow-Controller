@@ -1,8 +1,8 @@
-
 extern JsonArray array;
 //extern byte menuSelectLine;
 #define ARROW 0x7e
 
+LV_IMG_DECLARE(czm_logo)
 
 void processMenu() {
   if (state == 0) { // home screen
@@ -46,14 +46,15 @@ void centeredText(String text, uint16_t color, int yCord, int xCord = 0) {
   int16_t x1, y1;
   uint16_t w, h;
   int offSet = 10;
-  display.getTextBounds(string2char(text), 0, 0, &x1, &y1, &w, &h);
-#ifdef DEBUG
-  Serial.print("Text bounds for: \"" + text + "\"");
-  Serial.print(" x1:");  Serial.print(x1);
-  Serial.print(" y1:");  Serial.print(y1);
-  Serial.print(" w:");  Serial.print(w);
-  Serial.print(" h:");  Serial.println(h);
-#endif
+  //  display.getTextBounds(string2char(text), 0, 0, &x1, &y1, &w, &h);
+  //#ifdef DEBUG
+  //  Serial.print("Text bounds for: \"" + text + "\"");
+  //  Serial.print(" x1:");  Serial.print(x1);
+  //  Serial.print(" y1:");  Serial.print(y1);
+  //  Serial.print(" w:");  Serial.print(w);
+  //  Serial.print(" h:");  Serial.println(h);
+  //#endif
+
   display.setTextColor(color);
   display.fillRect(((display.width() - w) / 2), (yCord - (h / 2)), (w + offSet) , (h + offSet), ILI9341_BLACK);
   display.setCursor(((display.width() - w) / 2), (yCord + (h / 2)));
@@ -64,14 +65,14 @@ void rightText(String text, uint16_t color, int yCord, int xCord = 5) {
   int16_t x1, y1;
   uint16_t w, h;
   int offSet = 10;
-  display.getTextBounds(string2char(text), 0, 0, &x1, &y1, &w, &h);
-#ifdef DEBUG
-  Serial.print("Text bounds for: \"" + text + "\"");
-  Serial.print(" x1:");  Serial.print(x1);
-  Serial.print(" y1:");  Serial.print(y1);
-  Serial.print(" w:");  Serial.print(w);
-  Serial.print(" h:");  Serial.println(h);
-#endif
+  //  display.getTextBounds(string2char(text), 0, 0, &x1, &y1, &w, &h);
+  //#ifdef DEBUG
+  //  Serial.print("Text bounds for: \"" + text + "\"");
+  //  Serial.print(" x1:");  Serial.print(x1);
+  //  Serial.print(" y1:");  Serial.print(y1);
+  //  Serial.print(" w:");  Serial.print(w);
+  //  Serial.print(" h:");  Serial.println(h);
+  //#endif
   display.setTextColor(color);
   //display.fillRect(((display.width() - w) / 2), (yCord - (h / 2)), (w + offSet) , (h + offSet), ILI9341_BLACK);//
   display.setCursor(((display.width() - w) - xCord), yCord/*(yCord + (h /2))*/); //
@@ -82,14 +83,14 @@ void leftText(String text, uint16_t color, int yCord, int xCord = 0) {
   int16_t x1, y1;
   uint16_t w, h;
   int offSet = 10;
-  display.getTextBounds(string2char(text), 0, 0, &x1, &y1, &w, &h);
-#ifdef DEBUG
-  Serial.print("Text bounds for: \"" + text + "\"");
-  Serial.print(" x1:");  Serial.print(x1);
-  Serial.print(" y1:");  Serial.print(y1);
-  Serial.print(" w:");  Serial.print(w);
-  Serial.print(" h:");  Serial.println(h);
-#endif
+  //  display.getTextBounds(string2char(text), 0, 0, &x1, &y1, &w, &h);
+  //#ifdef DEBUG
+  //  Serial.print("Text bounds for: \"" + text + "\"");
+  //  Serial.print(" x1:");  Serial.print(x1);
+  //  Serial.print(" y1:");  Serial.print(y1);
+  //  Serial.print(" w:");  Serial.print(w);
+  //  Serial.print(" h:");  Serial.println(h);
+  //#endif
   display.setTextColor(color);
   //display.fillRect(((display.width() - w) / 2), (yCord - (h / 2)), (w + offSet) , (h + offSet), ILI9341_BLACK);//
   display.setCursor(xCord + 30, yCord/*(yCord + (h /2))*/); //
@@ -98,10 +99,6 @@ void leftText(String text, uint16_t color, int yCord, int xCord = 0) {
 
 void ShowMenuOptions( bool clearAll )
 {
-  int buttonPosY[] = { 45, 100, 145, 200 };
-  int buttonHeight = 16;
-  int buttonWidth = 4;
-
   display.setTextColor( ILI9341_WHITE, ILI9341_BLACK );
   display.setTextSize(2);
 
@@ -110,95 +107,6 @@ void ShowMenuOptions( bool clearAll )
 
     UpdateSettingsPointer();
   }
-  //  else if ( state == 11 )
-  //  {
-  //    // button 0
-  //    display.fillRect( display.width() - 100,  buttonPosY[0] - 2, 100, buttonHeight + 4, ILI9341_BLACK );
-  //    display.fillRect( display.width() - 5,  buttonPosY[0], buttonWidth, buttonHeight, ILI9341_GREEN );
-  //    switch ( settings_pointer )
-  //    {
-  //
-  //      case 1:
-  //      case 2:
-  //      case 3:
-  //      case 4:
-  //      case 5:
-  //        //println_Right( display, "CHANGE", display.width() - 27, buttonPosY[0] + 8 );
-  //        break;
-  //
-  //      default:
-  //        //println_Right( display, "SELECT", display.width() - 27, buttonPosY[0] + 8 );
-  //        break;
-  //    }
-  //
-  //    // button 1
-  //    display.fillRect( display.width() - 5,  buttonPosY[1], buttonWidth, buttonHeight, ILI9341_RED );
-  //    //println_Right( display, "BACK", display.width() - 27, buttonPosY[1] + 8 );
-  //
-  //    // button 2
-  //    display.fillRect( display.width() - 5,  buttonPosY[2], buttonWidth, buttonHeight, ILI9341_BLUE );
-  //    //println_Right( display, "/\\", display.width() - 27, buttonPosY[2] + 8 );
-  //
-  //    // button 3
-  //    display.fillRect( display.width() - 5,  buttonPosY[3], buttonWidth, buttonHeight, ILI9341_YELLOW );
-  //    //println_Right( display, "\\/", display.width() - 27, buttonPosY[3] + 8 );
-  //
-  //    UpdateSettingsPointer();
-  //  }
-  //  else if ( state == 12 )
-  //  {
-  //    // button 0
-  //    display.fillRect( display.width() - 5,  buttonPosY[0], buttonWidth, buttonHeight, ILI9341_GREEN );
-  //    //println_Right( display, "SELECT", display.width() - 27, buttonPosY[0] + 8 );
-  //
-  //    // button 1
-  //    display.fillRect( display.width() - 5,  buttonPosY[1], buttonWidth, buttonHeight, ILI9341_RED );
-  //    //println_Right( display, "BACK", display.width() - 27, buttonPosY[1] + 8 );
-  //
-  //    // button 2
-  //    display.fillRect( display.width() - 5,  buttonPosY[2], buttonWidth, buttonHeight, ILI9341_BLUE );
-  //    //println_Right( display, "/\\", display.width() - 27, buttonPosY[2] + 8 );
-  //
-  //    // button 3
-  //    display.fillRect( display.width() - 5,  buttonPosY[3], buttonWidth, buttonHeight, ILI9341_YELLOW );
-  //    //println_Right( display, "\\/", display.width() - 27, buttonPosY[3] + 8 );
-  //
-  //    UpdateSettingsPointer();
-  //  }
-  //  else if ( state == 13 ) // restore settings to default
-  //  {
-  //    // button 0
-  //    display.fillRect( display.width() - 5,  buttonPosY[0], buttonWidth, buttonHeight, ILI9341_GREEN );
-  //    //println_Right( display, "YES", display.width() - 27, buttonPosY[0] + 8 );
-  //
-  //    // button 1
-  //    display.fillRect( display.width() - 5,  buttonPosY[1], buttonWidth, buttonHeight, ILI9341_RED );
-  //    //println_Right( display, "NO", display.width() - 27, buttonPosY[1] + 8 );
-  //  }
-  //  else if ( state == 1 || state == 2 || state == 16 ) // warmup, reflow, calibration
-  //  {
-  //    // button 0
-  //    display.fillRect( display.width() - 5,  buttonPosY[0], buttonWidth, buttonHeight, ILI9341_GREEN );
-  //    //println_Right( display, "ABORT", display.width() - 27, buttonPosY[0] + 8 );
-  //  }
-  //  else if ( state == 3 ) // Finished
-  //  {
-  //    display.fillRect( display.width() - 100,  buttonPosY[0] - 2, 100, buttonHeight + 4, ILI9341_BLACK );
-  //
-  //    // button 0
-  //    display.fillRect( display.width() - 5,  buttonPosY[0], buttonWidth, buttonHeight, ILI9341_GREEN );
-  //    //println_Right( display, "MENU", display.width() - 27, buttonPosY[0] + 8 );
-  //  }
-  //  else if ( state == 15 )
-  //  {
-  //    // button 0
-  //    display.fillRect( display.width() - 5,  buttonPosY[0], buttonWidth, buttonHeight, ILI9341_GREEN );
-  //    //println_Right( display, "START", display.width() - 27, buttonPosY[0] + 8 );
-  //
-  //    // button 1
-  //    display.fillRect( display.width() - 5,  buttonPosY[1], buttonWidth, buttonHeight, ILI9341_RED );
-  //    //println_Right( display, "BACK", display.width() - 27, buttonPosY[1] + 8 );
-  //  }
 }
 
 void UpdateSettingsPointer() {
@@ -361,7 +269,7 @@ void UpdateSettingsPointer() {
 
 void infoScreen() {
   display.fillScreen(ILI9341_BLACK);
-  display.setFont(&FreeSans9pt7b);
+  //  display.setFont(&FreeSans9pt7b);
   display.setTextColor(ILI9341_WHITE);
   display.setTextSize(1);
   display.setCursor(5, 15);
@@ -373,33 +281,46 @@ void infoScreen() {
 }
 
 void startScreen() {
-  display.fillScreen(ILI9341_BLACK);
-  int y;
-  if (horizontal != 0) {
-    display.setRotation(3);
-    y = 40;
-    display.setFont(&FreeSans9pt7b);
-    display.setTextSize(2);
-    centeredText("ESP32", ILI9341_WHITE, y);
-    centeredText("Reflow", ILI9341_WHITE, y + 32);
-    centeredText("Controller", ILI9341_WHITE, y + 64);
-    display.setTextSize(1);
-    centeredText("by", ILI9341_WHITE, y + 134);
-    centeredText("Czech maker", ILI9341_WHITE, y + 154);
-    centeredText("www.czechmaker.com", ILI9341_WHITE, y + 174);
-  } else {
-    display.setRotation(2);
-    y = 100;
-    display.setFont(&FreeSans9pt7b);
-    display.setTextSize(2);
-    centeredText("ESP32", ILI9341_WHITE, y);
-    centeredText("Reflow", ILI9341_WHITE, y + 32);
-    centeredText("Controller", ILI9341_WHITE, y + 64);
-    display.setTextSize(1);
-    centeredText("by", ILI9341_WHITE, y + 164);
-    centeredText("Czech maker", ILI9341_WHITE, y + 184);
-    centeredText("www.czechmaker.com", ILI9341_WHITE, y + 204);
-  }
+
+  static lv_style_t font_big;
+  lv_style_init(&font_big);
+  lv_style_set_text_font(&font_big, LV_STATE_DEFAULT, &lv_font_montserrat_28);
+
+  static lv_style_t font_med;
+  lv_style_init(&font_med);
+  lv_style_set_text_font(&font_med, LV_STATE_DEFAULT, &lv_font_montserrat_20);
+
+  static lv_style_t font_small;
+  lv_style_init(&font_small);
+  lv_style_set_text_font(&font_small, LV_STATE_DEFAULT, &lv_font_montserrat_16);
+
+  lv_obj_t * base_obj = lv_obj_create(lv_scr_act(), NULL);
+  //lv_obj_set_size(base_obj, LV_HOR_RES, LV_VER_RES);
+  lv_obj_set_size(base_obj, 240, 320);
+
+  lv_obj_t * welcome_text = lv_label_create(base_obj, NULL);
+  lv_obj_add_style(welcome_text, LV_LABEL_PART_MAIN, &font_big);
+  lv_label_set_align(welcome_text, LV_LABEL_ALIGN_CENTER);       /*Center aligned lines*/
+  lv_label_set_text(welcome_text, "ESP32\nReflow\nControler");
+  lv_obj_align(welcome_text, NULL, LV_ALIGN_IN_TOP_MID, 0, 30);
+
+  lv_obj_t * by = lv_label_create(base_obj, NULL);
+  lv_obj_add_style(by, LV_LABEL_PART_MAIN, &font_small);
+  lv_label_set_align(by, LV_LABEL_ALIGN_CENTER);
+  lv_label_set_text(by, "by");
+  lv_obj_align(by, NULL, LV_ALIGN_CENTER, 0, -20);
+
+  lv_obj_t * logo = lv_img_create(base_obj, NULL);
+  lv_img_set_src(logo, &czm_logo);
+  //lv_img_set_zoom(logo, 220);
+  lv_obj_align(logo, NULL, LV_ALIGN_CENTER, 0, 60);
+
+  lv_obj_t * web_address = lv_label_create(base_obj, NULL);
+  lv_obj_add_style(web_address, LV_LABEL_PART_MAIN, &font_small);
+  lv_label_set_align(web_address, LV_LABEL_ALIGN_CENTER);
+  lv_label_set_text(web_address, "www.czechmaker.com");
+  lv_obj_align(web_address, NULL, LV_ALIGN_IN_BOTTOM_MID, 0, -10);
+
   delay(2000);
   loopScreen();
 }
@@ -410,8 +331,7 @@ void loopScreen() {
   Serial.println("State is :" + String(state));
 #endif
   display.fillScreen(ILI9341_BLACK);
-
-  display.setFont(&FreeSerif9pt7b);
+  //display.setFont(&FreeSerif9pt7b);
   display.setTextSize(1);
   if (connected != 0 && useOTA != 0) {
     rightText("WiFi", ILI9341_GREEN, 15);
@@ -422,7 +342,7 @@ void loopScreen() {
   }  else {
     rightText("WiFi", ILI9341_GREEN, 15);
   }
-  display.setFont(&FreeSans9pt7b);
+  // display.setFont(&FreeSans9pt7b);
   display.setTextSize(1);
   if (updataAvailable != 0) {
     centeredText("!UPDATE AVAILABLE!", ILI9341_GREEN, 10);
@@ -498,7 +418,7 @@ void startReflowScreen() {
     display.fillScreen(ILI9341_BLACK);
     int tempTextPos = 240;
     int infoText = 50;
-    display.setFont(&FreeSans9pt7b);
+    //display.setFont(&FreeSans9pt7b);
     display.setTextSize(2);
     centeredText("Start reflow?", ILI9341_RED, infoText);
     display.setTextSize(1);
@@ -518,7 +438,7 @@ void stopReflowScreen() {
   display.fillScreen(ILI9341_BLACK);
   int tempTextPos = 240;
   int infoText = 50;
-  display.setFont(&FreeSans9pt7b);
+  //display.setFont(&FreeSans9pt7b);
   display.setTextSize(2);
   centeredText("Stop reflow?", ILI9341_RED, infoText);
   display.setTextSize(1);
@@ -532,7 +452,7 @@ void noThermocoupleScreen() {
 #endif
   display.fillScreen(ILI9341_BLACK);
   int infoText = 100;
-  display.setFont(&FreeSans9pt7b);
+  //  display.setFont(&FreeSans9pt7b);
   display.setTextSize(1);
   centeredText("Can not start reflow", ILI9341_RED, infoText);
   centeredText("profile as there is no", ILI9341_RED, infoText + 20);
@@ -550,7 +470,7 @@ void mainMenuScreen() {
 #endif
   int y = 55;
   int h = 20;
-  display.setFont(&FreeSans9pt7b);
+  //  display.setFont(&FreeSans9pt7b);
   display.fillScreen(ILI9341_BLACK);
   display.setTextColor(ILI9341_WHITE);
   display.setTextSize(1);
@@ -598,7 +518,7 @@ void showSelectProfile() {
 #endif
   display.fillScreen(ILI9341_BLACK);
   //display.setRotation(2);
-  display.setFont(&FreeSans9pt7b);
+  //  display.setFont(&FreeSans9pt7b);
   display.setTextColor(ILI9341_WHITE);
   display.setTextSize(1);
   display.setCursor(0, 4);
@@ -630,7 +550,7 @@ void showChangeProfile() {
 #endif
   int y = 55; //from left side of the LCD
   int h = 20;
-  display.setFont(&FreeSans9pt7b);
+  //  display.setFont(&FreeSans9pt7b);
   display.fillScreen(ILI9341_BLACK);
   display.setTextColor(ILI9341_WHITE);
   display.setTextSize(1);
@@ -651,7 +571,7 @@ void showAddProfile() {
 #endif
   int y = 55; //from left side of the LCD
   int h = 20;
-  display.setFont(&FreeSans9pt7b);
+  //  display.setFont(&FreeSans9pt7b);
   display.fillScreen(ILI9341_BLACK);
   display.setTextColor(ILI9341_WHITE);
   display.setTextSize(1);
@@ -682,7 +602,7 @@ void showSettings(byte pointer = 0) {
 #endif
   int y = 55; //from left side of the LCD
   int h = 20;
-  display.setFont(&FreeSans9pt7b);
+  //  display.setFont(&FreeSans9pt7b);
   display.fillScreen(ILI9341_BLACK);
   display.setTextColor(ILI9341_WHITE);
   display.setTextSize(1);
@@ -741,7 +661,7 @@ void showInfo() {
 #endif
   int y = 55; //from left side of the LCD
   int h = 20;
-  display.setFont(&FreeSans9pt7b);
+  //  display.setFont(&FreeSans9pt7b);
   display.fillScreen(ILI9341_BLACK);
   display.setTextColor(ILI9341_WHITE);
   display.setTextSize(1);
@@ -844,14 +764,14 @@ void startUpdateScreen() {
   if (horizontal != 0) {
     display.setRotation(3);
     y = 40;
-    display.setFont(&FreeSans9pt7b);
+    //    display.setFont(&FreeSans9pt7b);
     display.setTextSize(1);
     centeredText("Update started.It may", ILI9341_GREEN, y);
     centeredText("take 2 - 5 mins to complete.", ILI9341_GREEN, y + 20);
   } else {
     display.setRotation(2);
     y = 100;
-    display.setFont(&FreeSans9pt7b);
+    //    display.setFont(&FreeSans9pt7b);
     display.setTextSize(1);
     centeredText("Update started.It may", ILI9341_GREEN, y);
     centeredText("take 2 - 5 mins to complete.", ILI9341_GREEN, y + 20);
@@ -864,14 +784,14 @@ void updateOK() {
   if (horizontal != 0) {
     display.setRotation(3);
     y = 40;
-    display.setFont(&FreeSans9pt7b);
+    //    display.setFont(&FreeSans9pt7b);
     display.setTextSize(1);
     centeredText("Update successfully", ILI9341_GREEN, y);
     centeredText("completed. Rebooting.", ILI9341_GREEN, y + 32);
   } else {
     display.setRotation(2);
     y = 100;
-    display.setFont(&FreeSans9pt7b);
+    //    display.setFont(&FreeSans9pt7b);
     display.setTextSize(1);
     centeredText("Update successfully", ILI9341_GREEN, y);
     centeredText("completed. Rebooting.", ILI9341_GREEN, y + 32);
@@ -889,7 +809,7 @@ void testOutputs() {
 #endif
   int y = 55; //from left side of the LCD
   int h = 20;
-  display.setFont(&FreeSans9pt7b);
+  //  display.setFont(&FreeSans9pt7b);
   display.fillScreen(ILI9341_BLACK);
   display.setTextColor(ILI9341_WHITE);
   display.setTextSize(1);

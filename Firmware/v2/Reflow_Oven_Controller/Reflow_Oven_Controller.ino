@@ -1,9 +1,5 @@
 // ***** INCLUDES *****
-#include <Adafruit_ILI9341.h>
 #include <Adafruit_MAX31856.h>
-#include "Adafruit_GFX.h"
-#include <Fonts/FreeSans9pt7b.h>
-#include <Fonts/FreeSerif9pt7b.h>
 #include <ArduinoJson.h>
 #include <HTTPClient.h>
 #include <Preferences.h>
@@ -15,22 +11,26 @@
 #include <Update.h>
 #include "FS.h"
 #include <SD.h>
-#include <wifiTool.h> //https://github.com/oferzv/wifiTool
+//#include <wifiTool.h> //https://github.com/oferzv/wifiTool
+#include <WiFiManager.h>
 #include "SPI.h"
 #include "config.h"
 #include "Button.h"
 #include <SPIFFS.h>
-
 HTTPClient http;
+#include <lvgl.h>
+#include <TFT_eSPI.h>       // Hardware-specific library
+#include "czm_logo.c"
+
+//#include <../TFT_eSPI_Setups/Setup53_ILI9341.h>
+TFT_eSPI display = TFT_eSPI();  // Invoke custom library
+static lv_disp_buf_t disp_buf;
+static lv_color_t buf[LV_HOR_RES_MAX * 10];
 
 // Use software SPI: CS, DI, DO, CLK
 //Adafruit_MAX31856 max = Adafruit_MAX31856(max_cs, max_di, max_do, max_clk);
 // use hardware SPI, just pass in the CS pin
 Adafruit_MAX31856 max31856 = Adafruit_MAX31856(max_cs);
-
-// Use hardware SPI
-Adafruit_ILI9341 display = Adafruit_ILI9341(display_cs, display_dc, display_rst);
-//Adafruit_ILI9341 display = Adafruit_ILI9341(display_cs, display_dc, display_mosi, display_sclk, display_rst);
 
 #define FORMAT_SPIFFS_IF_FAILED true
 
@@ -39,7 +39,8 @@ AsyncWebServer server(80);
 AsyncEventSource events("/events");
 DNSServer dns;
 WebSocketsServer webSocket = WebSocketsServer(1337);
-WifiTool wifiTool;
+//WifiTool wifiTool;
+WiFiManager wm;
 char msg_buf[10];
 
 #define DEBOUNCE_MS 100
@@ -190,6 +191,29 @@ void changeValues(String variable, bool value, bool sendUpdate = 1) {
   }
 }
 
+#if USE_LV_LOG != 0
+/* Serial debugging */
+void my_print(lv_log_level_t level, const char * file, uint32_t line, const char * dsc)
+{
+
+  Serial.printf("%s@%d->%s\r\n", file, line, dsc);
+  Serial.flush();
+}
+#endif
+
+/* Display flushing */
+void my_disp_flush(lv_disp_drv_t *disp, const lv_area_t *area, lv_color_t *color_p)
+{
+  uint32_t w = (area->x2 - area->x1 + 1);
+  uint32_t h = (area->y2 - area->y1 + 1);
+
+  display.startWrite();
+  display.setAddrWindow(area->x1, area->y1, w, h);
+  display.pushColors(&color_p->full, w * h, true);
+  display.endWrite();
+
+  lv_disp_flush_ready(disp);
+}
 
 void setup() {
   WiFi.mode(WIFI_STA); // explicitly set mode, esp defaults to STA+AP
@@ -228,12 +252,32 @@ void setup() {
 
   Serial.println("Settings Value are: " + settingsValues);
 
+  lv_init();
+  
+  #if USE_LV_LOG != 0
+    lv_log_register_print_cb(my_print); /* register print function for debugging */
+  #endif
+
+  display.begin(); /* TFT init */
+  display.setRotation(2); /* Landscape orientation */
+
+  lv_disp_buf_init(&disp_buf, buf, NULL, LV_HOR_RES_MAX * 10);
+
+  /*Initialize the display*/
+  lv_disp_drv_t disp_drv;
+  lv_disp_drv_init(&disp_drv);
+  disp_drv.hor_res = 240;
+  disp_drv.ver_res = 320;
+  disp_drv.flush_cb = my_disp_flush;
+  disp_drv.buffer = &disp_buf;
+  lv_disp_drv_register(&disp_drv);
+
+  startScreen();
+
   // load profiles from ESP32 memory
   for (int i = 0; i < numOfProfiles; i++) {
     loadProfiles(i);
   }
-  display.begin();
-  startScreen();
 
   if ( !SPIFFS.begin(FORMAT_SPIFFS_IF_FAILED)) {
     Serial.println("Error mounting SPIFFS");
@@ -274,7 +318,15 @@ void setup() {
     }
   }
 
-  wifiTool.begin();
+  //wifiTool.begin();
+
+  wm.setConfigPortalBlocking(false);
+  if (wm.autoConnect("ReflowOvenAP")) {
+    Serial.println("connected...yeey :)");
+  }
+  else {
+    Serial.println("Configportal running");
+  }
 
   if (WiFi.status() == WL_CONNECTED) { // Wait for the Wi-Fi to connect: scan for Wi-Fi networks, and connect to the strongest of the networks above
     Serial.println("\nConnected to " + WiFi.SSID() + "; IP address: " + WiFi.localIP().toString()); // Report which SSID and IP is in use
@@ -470,6 +522,7 @@ void processButtons() {
 }
 
 void loop() {
+  wm.process();
   if (state != 9) { // if we are in test menu, disable LED & SSR control in loop
     reflow_main();
   }
@@ -477,6 +530,8 @@ void loop() {
   //server.handleClient(); // Listen for client connections
   // Look for and handle WebSocket data
   webSocket.loop();
+  lv_task_handler(); /* let the GUI do its work */
+  //delay(5);
 }
 
 void listDir(fs::FS &fs, const char * dirname, uint8_t levels) {
@@ -529,11 +584,11 @@ void readFile(fs::FS & fs, String path, const char * type) {
 }
 
 void wifiSetup() {
-  if (!wifiTool.wifiAutoConnect())
-  {
-    Serial.println("fail to connect to wifi!!!!");
-    wifiTool.runApPortal();
-  }
+  //  if (!wifiTool.wifiAutoConnect())
+  //  {
+  //    Serial.println("fail to connect to wifi!!!!");
+  //    wifiTool.runApPortal();
+  //  }
 }
 
 String getProfile(int Id) {
