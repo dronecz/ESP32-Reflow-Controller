@@ -3,6 +3,26 @@ extern JsonArray array;
 #define ARROW 0x7e
 
 LV_IMG_DECLARE(czm_logo)
+static lv_style_t bg_style;
+static lv_style_t font_big;
+static lv_style_t font_med;
+static lv_style_t font_small;
+
+void setStyles() {
+  
+  lv_style_init(&bg_style);
+  lv_style_set_bg_color(&bg_style, LV_STATE_DEFAULT, LV_COLOR_BLACK);
+  lv_style_set_border_color(&bg_style, LV_STATE_DEFAULT, LV_COLOR_BLACK);
+  
+  lv_style_init(&font_big);
+  lv_style_set_text_font(&font_big, LV_STATE_DEFAULT, &lv_font_montserrat_28);
+  
+  lv_style_init(&font_med);
+  lv_style_set_text_font(&font_med, LV_STATE_DEFAULT, &lv_font_montserrat_20);
+
+  lv_style_init(&font_small);
+  lv_style_set_text_font(&font_small, LV_STATE_DEFAULT, &lv_font_montserrat_16);
+}
 
 void processMenu() {
   if (state == 0) { // home screen
@@ -282,26 +302,32 @@ void infoScreen() {
 
 void startScreen() {
 
-  static lv_style_t font_big;
-  lv_style_init(&font_big);
-  lv_style_set_text_font(&font_big, LV_STATE_DEFAULT, &lv_font_montserrat_28);
-
-  static lv_style_t font_med;
-  lv_style_init(&font_med);
-  lv_style_set_text_font(&font_med, LV_STATE_DEFAULT, &lv_font_montserrat_20);
-
-  static lv_style_t font_small;
-  lv_style_init(&font_small);
-  lv_style_set_text_font(&font_small, LV_STATE_DEFAULT, &lv_font_montserrat_16);
+  //  static lv_style_t bg_style;
+  //  lv_style_init(&bg_style);
+  //  lv_style_set_bg_color(&bg_style, LV_STATE_DEFAULT, LV_COLOR_BLACK);
+  //  lv_style_set_border_color(&bg_style, LV_STATE_DEFAULT, LV_COLOR_BLACK);
+  //
+  //  static lv_style_t font_big;
+  //  lv_style_init(&font_big);
+  //  lv_style_set_text_font(&font_big, LV_STATE_DEFAULT, &lv_font_montserrat_28);
+  //
+  //  static lv_style_t font_med;
+  //  lv_style_init(&font_med);
+  //  lv_style_set_text_font(&font_med, LV_STATE_DEFAULT, &lv_font_montserrat_20);
+  //
+  //  static lv_style_t font_small;
+  //  lv_style_init(&font_small);
+  //  lv_style_set_text_font(&font_small, LV_STATE_DEFAULT, &lv_font_montserrat_16);
 
   lv_obj_t * base_obj = lv_obj_create(lv_scr_act(), NULL);
-  //lv_obj_set_size(base_obj, LV_HOR_RES, LV_VER_RES);
-  lv_obj_set_size(base_obj, 240, 320);
+  lv_obj_set_size(base_obj, LV_HOR_RES, LV_VER_RES);
+  //lv_obj_set_size(base_obj, 240, 320);
+  lv_obj_add_style(base_obj, LV_LABEL_PART_MAIN, &bg_style);
 
   lv_obj_t * welcome_text = lv_label_create(base_obj, NULL);
   lv_obj_add_style(welcome_text, LV_LABEL_PART_MAIN, &font_big);
   lv_label_set_align(welcome_text, LV_LABEL_ALIGN_CENTER);       /*Center aligned lines*/
-  lv_label_set_text(welcome_text, "ESP32\nReflow\nControler");
+  lv_label_set_text(welcome_text, "ESP32\nReflow\nController");
   lv_obj_align(welcome_text, NULL, LV_ALIGN_IN_TOP_MID, 0, 30);
 
   lv_obj_t * by = lv_label_create(base_obj, NULL);
@@ -310,11 +336,13 @@ void startScreen() {
   lv_label_set_text(by, "by");
   lv_obj_align(by, NULL, LV_ALIGN_CENTER, 0, -20);
 
-  lv_obj_t * logo = lv_img_create(base_obj, NULL);
+  Serial.println("start of img part..");
+  lv_obj_t * logo = lv_img_create(lv_scr_act(), NULL);
   lv_img_set_src(logo, &czm_logo);
   //lv_img_set_zoom(logo, 220);
-  lv_obj_align(logo, NULL, LV_ALIGN_CENTER, 0, 60);
-
+  lv_obj_align(logo, NULL, LV_ALIGN_CENTER, 0, 0);
+  Serial.println("end of img part..");
+  
   lv_obj_t * web_address = lv_label_create(base_obj, NULL);
   lv_obj_add_style(web_address, LV_LABEL_PART_MAIN, &font_small);
   lv_label_set_align(web_address, LV_LABEL_ALIGN_CENTER);

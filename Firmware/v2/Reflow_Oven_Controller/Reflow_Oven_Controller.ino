@@ -511,6 +511,7 @@ void setup() {
   Serial.println("Names of used profile: " + usedProfileName);
   events.send(usedProfileName.c_str(), "usedProfile");
   Serial.println();
+  setStyles();
 }
 
 
