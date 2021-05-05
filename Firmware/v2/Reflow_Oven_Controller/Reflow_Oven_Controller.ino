@@ -15,7 +15,8 @@
 #include <Update.h>
 #include "FS.h"
 #include <SD.h>
-#include <wifiTool.h> //https://github.com/oferzv/wifiTool
+//#include <wifiTool.h> //https://github.com/oferzv/wifiTool
+#include <WiFiManager.h>
 #include "SPI.h"
 #include "config.h"
 #include "Button.h"
@@ -39,7 +40,8 @@ AsyncWebServer server(80);
 AsyncEventSource events("/events");
 DNSServer dns;
 WebSocketsServer webSocket = WebSocketsServer(1337);
-WifiTool wifiTool;
+//WifiTool wifiTool;
+WiFiManager wm;
 char msg_buf[10];
 
 #define DEBOUNCE_MS 100
@@ -71,7 +73,7 @@ bool profileIsOn = 0;
 bool noThermocouple = 0;
 bool updataAvailable = 0;
 bool testState = 0;
-bool useSPIFFS = 0;
+bool useSPIFFS = 1;
 
 // Button variables
 int buttonVal[numDigButtons] = {0};                            // value read from button
@@ -274,8 +276,15 @@ void setup() {
     }
   }
 
-  wifiTool.begin();
-
+//  wifiTool.begin();
+ wm.setConfigPortalBlocking(false);
+  if (wm.autoConnect("ReflowOvenAP")) {
+    Serial.println("connected...yeey :)");
+  }
+  else {
+    Serial.println("Configportal running");
+  }
+  
   if (WiFi.status() == WL_CONNECTED) { // Wait for the Wi-Fi to connect: scan for Wi-Fi networks, and connect to the strongest of the networks above
     Serial.println("\nConnected to " + WiFi.SSID() + "; IP address: " + WiFi.localIP().toString()); // Report which SSID and IP is in use
     connected = 1;
@@ -408,16 +417,16 @@ void setup() {
     listDir(SPIFFS, "/profiles", 0);
   } else {
     Serial.print(F("Initializing SD card..."));
-    if (!SD.begin(SD_CS_pin)) { // see if the card is present and can be initialised. Wemos SD-Card CS uses D8
-      Serial.println(F("Card failed or not present, no SD Card data logging possible..."));
-      SD_present = false;
-    } else {
-      Serial.println(F("Card initialised... file access enabled..."));
-      SD_present = true;
-      // Reset number of profiles for fresh load from SD card
-      profileNum = 0;
-      listDir(SD, "/profiles", 0);
-    }
+//    if (!SD.begin(SD_CS_pin)) { // see if the card is present and can be initialised. Wemos SD-Card CS uses D8
+//      Serial.println(F("Card failed or not present, no SD Card data logging possible..."));
+//      SD_present = false;
+//    } else {
+//      Serial.println(F("Card initialised... file access enabled..."));
+//      SD_present = true;
+//      // Reset number of profiles for fresh load from SD card
+//      profileNum = 0;
+//      listDir(SD, "/profiles", 0);
+//    }
   }
   // Load data from selected storage
   if ((SD_present == true) || (useSPIFFS != 0)) {
@@ -459,6 +468,7 @@ void setup() {
   Serial.println("Names of used profile: " + usedProfileName);
   events.send(usedProfileName.c_str(), "usedProfile");
   Serial.println();
+  Serial.println("Connected: " + String(connected));
 }
 
 
@@ -470,6 +480,7 @@ void processButtons() {
 }
 
 void loop() {
+  wm.process();
   if (state != 9) { // if we are in test menu, disable LED & SSR control in loop
     reflow_main();
   }
@@ -529,11 +540,11 @@ void readFile(fs::FS & fs, String path, const char * type) {
 }
 
 void wifiSetup() {
-  if (!wifiTool.wifiAutoConnect())
-  {
-    Serial.println("fail to connect to wifi!!!!");
-    wifiTool.runApPortal();
-  }
+//  if (!wifiTool.wifiAutoConnect())
+//  {
+//    Serial.println("fail to connect to wifi!!!!");
+//    wifiTool.runApPortal();
+//  }
 }
 
 String getProfile(int Id) {

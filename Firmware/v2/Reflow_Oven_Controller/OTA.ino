@@ -100,7 +100,7 @@ void updateFirmware() {
     return;
   }
   if (Update.isFinished()) {
-    updateOK();
+    updateOKScreen();
     Serial.println("Update successfully completed. Rebooting.");
     // This line is specific to the ESP32 platform:
     ESP.restart();

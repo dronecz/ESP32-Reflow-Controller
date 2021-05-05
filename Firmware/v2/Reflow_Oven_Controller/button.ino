@@ -169,25 +169,25 @@ void event1(int pin) {
       else if (state == 1) { // main menu
         if (settings_pointer == 0) {
           if (disableMenu != 0) {
-            showInfo();
+            showInfoScreen();
           } else {
-            showSelectProfile();
+            showSelectProfileScreen();
           }
         } else if (settings_pointer == 1) {
-          showChangeProfile();
+          showChangeProfileScreen();
         } else if  (settings_pointer == 2) {
-          showAddProfile();
+          showAddProfileScreen();
         } else if  (settings_pointer == 3) {
-          showSettings();
+          showSettingsScreen();
         } else if (settings_pointer == 4) {
-          showInfo();
+          showInfoScreen();
         } else if (settings_pointer == 5 ) {
           updateFirmware();
         }
         //previousSettingsPointer = settings_pointer;
       } else if (state == 2) { // select profile
         saveSelectedProfile(settings_pointer);
-        showSelectProfile();
+        showSelectProfileScreen();
       } else if (state == 5) { // settings
         //settings_pointer = 0; // clear pointer
         if (settings_pointer == 0) {
@@ -225,7 +225,7 @@ void event1(int pin) {
           }
           setButtons(115);
           changeValues("buttons", temp, 1);
-          showSettings();
+          showSettingsScreen();
         } else if (settings_pointer == 4) {
           useSPIFFS = !useSPIFFS;
           bool temp = useSPIFFS;
@@ -244,7 +244,14 @@ void event1(int pin) {
             setFan(155);
             changeValues("fan", temp, 1);
           } else {
-            testOutputs();
+            if (connected != 1) {
+              if (verboseOutput != 0) {
+                Serial.println("Calling WiFi setup function");
+              }
+              wifiSetup();
+            } else {
+              testOutputsScreen();
+            }
           }
         } else if  (settings_pointer == 6) {
           if (buttons != 0) {
@@ -254,12 +261,11 @@ void event1(int pin) {
               }
               wifiSetup();
             }
-            else {
-              testOutputs();
-            }
+          } else {
+            testOutputsScreen();
           }
         } else if  (settings_pointer == 7) {
-          testOutputs();
+          testOutputsScreen();
         }
         //previousSettingsPointer = settings_pointer; //store previous position in menu
       } else if (state == 7) {
@@ -317,8 +323,6 @@ void event1(int pin) {
         Serial.println("---------------------");
       }
     } else if (pin == 32) { //Menu button
-      //state = 1;
-
       if (state == 0) {
         mainMenuScreen();
       }
@@ -330,10 +334,10 @@ void event1(int pin) {
       //state = 0;
       if (state == 1 || state == 7 || state == 8) {
         loopScreen();
-        settings_pointer = 0;
+        settings_pointer = previousSettingsPointer;
       } else if (state == 9) {
         settings_pointer = previousSettingsPointer;
-        showSettings();
+        showSettingsScreen(settings_pointer);
       } else {
         if (state > 0) {
           settings_pointer = previousSettingsPointer;
@@ -353,11 +357,6 @@ void event1(int pin) {
     }
   }
   delay(50);
-  //  if (pin == 32) {
-  //    menuScreen();
-  //  } else if (pin == 33) {
-  //    loopScreen();
-  //  }
 }
 
 void event2(int pin)

@@ -1,4 +1,4 @@
-  #include <PID_v1.h>
+#include <PID_v1.h>
 
 extern Adafruit_MAX31856 max31856;
 extern Button AXIS_X;
@@ -229,6 +229,9 @@ void reflow_main() {
     inputInt = input / 1;
 
     if (oldTemp != inputInt) {
+      if (inputInt > 1000) {
+        reflowState = REFLOW_STATE_ERROR;
+      }
       if (state == 0) {
         loopScreen();
         events.send(String(inputInt).c_str(), "temperature");
@@ -280,6 +283,7 @@ void reflow_main() {
     {
       // No thermocouple wire connected
       Serial.println("TC Error!");
+      reflowStatus = REFLOW_STATUS_OFF;
     }
   }
 
