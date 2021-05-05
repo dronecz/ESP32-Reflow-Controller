@@ -336,8 +336,7 @@ void event1(int pin) {
         loopScreen();
         settings_pointer = previousSettingsPointer;
       } else if (state == 9) {
-        settings_pointer = previousSettingsPointer;
-        showSettingsScreen(settings_pointer);
+        showSettingsScreen(tempPointer);
       } else {
         if (state > 0) {
           settings_pointer = previousSettingsPointer;

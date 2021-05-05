@@ -92,6 +92,7 @@ byte previousState = 0;
 
 byte settings_pointer = 0;
 byte previousSettingsPointer = 0;
+byte tempPointer = 0;
 bool   SD_present = false;
 //char* json = "";
 int profileNum = 0;

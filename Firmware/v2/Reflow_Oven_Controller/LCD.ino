@@ -507,6 +507,7 @@ void showSelectProfileScreen() {
   int y = 55; //from left side of the LCD
   int h = 20;
   numOfPointers = profileNum;
+  settings_pointer = 0;
 #ifdef DEBUG
   Serial.println("State is :" + String(state));
 #endif
@@ -718,12 +719,16 @@ void updateOKScreen() {
 }
 
 void testOutputsScreen() {
+  Serial.println();
   previousState = state;
   state = 9;
   numOfPointers = 0;
+  tempPointer = settings_pointer;
   settings_pointer = 0; // clear pointer
 #ifdef DEBUG
   Serial.println("State is :" + String(state));
+  Serial.println("Settings pointer: " + String(settings_pointer));
+  Serial.println("Previous settings pointer: " + String(previousSettingsPointer));
 #endif
   int y = 55; //from left side of the LCD
   int h = 20;
