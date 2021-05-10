@@ -317,6 +317,15 @@ void event1(int pin) {
           }
           testLED(115);
         }
+      } else if (state == 10) {
+        //settings_pointer = 0; // clear pointer
+        if (settings_pointer == 0) {
+          setupWiFiScreen();
+        } else {
+          loopScreen();
+          setupDone = 1;
+          changeValues("setupDone", setupDone, 0);
+        }
       }
       if (verboseOutput != 0) {
         Serial.println("Select");

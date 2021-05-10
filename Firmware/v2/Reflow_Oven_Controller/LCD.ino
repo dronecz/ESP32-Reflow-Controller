@@ -1,40 +1,5 @@
-
 extern JsonArray array;
-//extern byte menuSelectLine;
-#define ARROW 0x7e
 
-
-void processMenu() {
-  if (state == 0) { // home screen
-    //loopScreen();
-    return;
-  } else if (state == 1) { // main menu
-    //mainMenuScreen();
-    return;
-  } else if (state == 2) { // select profile
-
-  } else if (state == 3) { // change profile
-
-  } else if (state == 4) { // add profile
-
-  } else if (state == 5) { // settings
-
-  } else if (state == 6) { // info
-
-  } else {
-
-  }
-  //return;
-}
-
-//extern int inputInt;
-
-//extern bool menu;
-//#define font &FreeSans9pt7b
-char *menuItems[] = {"Select profile", "Change profile", "Add profile", "Settings", "Info"};
-#define menuItemsSize sizeof(menuItems)
-int activeMenu = 0;
-bool screanCleread = 0;
 char* string2char(String command) {
   if (command.length() != 0) {
     char *p = const_cast<char*>(command.c_str());
@@ -105,14 +70,13 @@ void ShowMenuOptions( bool clearAll )
   display.setTextColor( ILI9341_WHITE, ILI9341_BLACK );
   display.setTextSize(2);
 
-  if ( state >= 1 || state <= 9)
+  if ( state >= 1 || state <= 10)
   {
-
     UpdateSettingsPointer();
   }
 }
 
-void UpdateSettingsPointer() {
+void UpdateSettingsPointer() { // this function shows help text at the bottom of the screen and pointer to your selection
   if ( state == 1 ) { // main menu
     //    if (settings_pointer >= 0 && settings_pointer <= 4) {
     display.setTextColor( ILI9341_WHITE, ILI9341_BLACK );
@@ -271,6 +235,27 @@ void UpdateSettingsPointer() {
         break;
     }
   }
+  else if ( state == 10 ) {
+    display.setTextColor( ILI9341_WHITE, ILI9341_BLACK );
+    display.setTextSize(1);
+    display.fillRect( 0, 40, 20, display.height() - 20, ILI9341_BLACK );
+    display.setCursor( 10, ( 250 + ( 20 * settings_pointer ) ) );
+    display.println(">");
+
+    //    display.setTextSize(0);
+    //    display.setTextColor( ILI9341_GREEN, ILI9341_BLACK );
+    //    display.fillRect( 0, display.height() - 50, display.width(), 50, ILI9341_BLACK );
+    //    switch ( settings_pointer )
+    //    {
+    //      case 0:
+    //        centeredText("continue", ILI9341_GREEN, 300);
+    //        break;
+    //
+    //      case 1:
+    //        centeredText("skip.", ILI9341_GREEN, 300);
+    //        break;
+    //    }
+  }
 }
 
 void infoScreen() {
@@ -315,7 +300,11 @@ void startScreen() {
     centeredText("www.czechmaker.com", ILI9341_WHITE, y + 204);
   }
   delay(2000);
-  loopScreen();
+  if (setupDone != 0) {
+    loopScreen();
+  } else {
+    startSetupScreen();
+  }
 }
 
 void loopScreen() {
@@ -761,6 +750,48 @@ void testOutputsScreen() {
   //  y += h;
   //  numOfPointers++;
   ShowMenuOptions(true);
+}
+
+void startSetupScreen() {
+  previousState = state;
+  state = 10;
+  numOfPointers = 0;
+  //  settings_pointer = 0; // clear pointer
+#ifdef DEBUG
+  Serial.println("State is :" + String(state));
+#endif
+  int y = 55; //from left side of the LCD
+  int h = 20;
+  display.setRotation(2);
+  display.setFont(&FreeSans9pt7b);
+  display.fillScreen(ILI9341_BLACK);
+  display.setTextColor(ILI9341_WHITE);
+  display.setTextSize(2);
+  display.setCursor(0, 4);
+  //  centeredText("Info menu", ILI9341_WHITE, 10);
+  //  if (horizontal != 0) {
+  //    display.fillRect(0, 28, 320, 3, ILI9341_WHITE );
+  //  } else {
+  //    display.fillRect(0, 28, 240, 3, ILI9341_WHITE );
+  //  }
+  centeredText("Welcome in", ILI9341_WHITE, y);
+  centeredText("the device", ILI9341_WHITE, y += 30);
+  centeredText("setup", ILI9341_WHITE, y += 30);
+
+  display.setTextSize(1);
+  y = 250;
+  leftText(" continue setup", ILI9341_GREEN, y);
+  numOfPointers++;
+  leftText(" skip setup", ILI9341_RED, y += h);
+  //  display.setCursor(30, y+50);
+  //  display.print("- continue setup");
+  //  display.setCursor(30, y + 20);
+  //  display.print("- skip setup");
+  ShowMenuOptions(true);
+}
+
+void setupWiFiScreen() {
+
 }
 
 void setBuzzer (int y) {

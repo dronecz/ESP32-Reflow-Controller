@@ -74,6 +74,7 @@ bool noThermocouple = 0;
 bool updataAvailable = 0;
 bool testState = 0;
 bool useSPIFFS = 1;
+bool setupDone = 0;
 
 // Button variables
 int buttonVal[numDigButtons] = {0};                            // value read from button
@@ -87,7 +88,7 @@ int holdTime = 1000;
 int oldTemp = 0;
 
 byte numOfPointers = 0;
-byte state = 0; // 0 = boot, 1 = main menu, 2 = select profile, 3 = change profile, 4 = add profile, 5 = settings, 6 = info, 7 = start reflow, 8 = stop reflow, 9 = test outputs
+byte state = 0; // 0 = boot, 1 = main menu, 2 = select profile, 3 = change profile, 4 = add profile, 5 = settings, 6 = info, 7 = start reflow, 8 = stop reflow, 9 = test outputs , 10 = setup
 byte previousState = 0;
 
 byte settings_pointer = 0;
@@ -177,6 +178,11 @@ void changeValues(String variable, bool value, bool sendUpdate = 1) {
     Serial.println("horizontal value changed to: " + String(horizontal));
     setDisplay(75);
     startScreen();
+  } else if (variable == "setupDone") {
+    Serial.println("Current value is: " + String(setupDone));
+    preferences.putBool("setupDone", value);
+    horizontal = preferences.getBool("setupDone", 0);
+    Serial.println("setupDone value changed to: " + String(setupDone));
   } else {
     Serial.println("Current value is: " + String(fan));
     preferences.putBool("fan", value);
@@ -211,6 +217,7 @@ void setup() {
   useOTA = preferences.getBool("useOTA", 0);
   profileUsed = preferences.getInt("profileUsed", 0);
   useSPIFFS = preferences.getBool("useSPIFFS", 0);
+  setupDone = preferences.getBool("setupDone", 0);
   preferences.end();
 
   Serial.println();
@@ -235,9 +242,10 @@ void setup() {
   for (int i = 0; i < numOfProfiles; i++) {
     loadProfiles(i);
   }
+  
   display.begin();
   startScreen();
-
+  
   if ( !SPIFFS.begin(FORMAT_SPIFFS_IF_FAILED)) {
     Serial.println("Error mounting SPIFFS");
     return;
@@ -277,15 +285,6 @@ void setup() {
     }
   }
 
-//  wifiTool.begin();
- wm.setConfigPortalBlocking(false);
-  if (wm.autoConnect("ReflowOvenAP")) {
-    Serial.println("connected...yeey :)");
-  }
-  else {
-    Serial.println("Configportal running");
-  }
-  
   if (WiFi.status() == WL_CONNECTED) { // Wait for the Wi-Fi to connect: scan for Wi-Fi networks, and connect to the strongest of the networks above
     Serial.println("\nConnected to " + WiFi.SSID() + "; IP address: " + WiFi.localIP().toString()); // Report which SSID and IP is in use
     connected = 1;
@@ -418,16 +417,16 @@ void setup() {
     listDir(SPIFFS, "/profiles", 0);
   } else {
     Serial.print(F("Initializing SD card..."));
-//    if (!SD.begin(SD_CS_pin)) { // see if the card is present and can be initialised. Wemos SD-Card CS uses D8
-//      Serial.println(F("Card failed or not present, no SD Card data logging possible..."));
-//      SD_present = false;
-//    } else {
-//      Serial.println(F("Card initialised... file access enabled..."));
-//      SD_present = true;
-//      // Reset number of profiles for fresh load from SD card
-//      profileNum = 0;
-//      listDir(SD, "/profiles", 0);
-//    }
+    //    if (!SD.begin(SD_CS_pin)) { // see if the card is present and can be initialised. Wemos SD-Card CS uses D8
+    //      Serial.println(F("Card failed or not present, no SD Card data logging possible..."));
+    //      SD_present = false;
+    //    } else {
+    //      Serial.println(F("Card initialised... file access enabled..."));
+    //      SD_present = true;
+    //      // Reset number of profiles for fresh load from SD card
+    //      profileNum = 0;
+    //      listDir(SD, "/profiles", 0);
+    //    }
   }
   // Load data from selected storage
   if ((SD_present == true) || (useSPIFFS != 0)) {
@@ -541,11 +540,13 @@ void readFile(fs::FS & fs, String path, const char * type) {
 }
 
 void wifiSetup() {
-//  if (!wifiTool.wifiAutoConnect())
-//  {
-//    Serial.println("fail to connect to wifi!!!!");
-//    wifiTool.runApPortal();
-//  }
+  wm.setConfigPortalBlocking(false);
+  if (wm.autoConnect("ReflowOvenAP")) {
+    Serial.println("connected...yeey :)");
+  }
+  else {
+    Serial.println("Configportal running");
+  }
 }
 
 String getProfile(int Id) {
