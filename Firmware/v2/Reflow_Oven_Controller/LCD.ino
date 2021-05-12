@@ -235,26 +235,12 @@ void UpdateSettingsPointer() { // this function shows help text at the bottom of
         break;
     }
   }
-  else if ( state == 10 ) {
+  else if ( state == 10 || state == 101 || state == 102 || state == 103 ) {
     display.setTextColor( ILI9341_WHITE, ILI9341_BLACK );
     display.setTextSize(1);
     display.fillRect( 0, 40, 20, display.height() - 20, ILI9341_BLACK );
     display.setCursor( 10, ( 250 + ( 20 * settings_pointer ) ) );
     display.println(">");
-
-    //    display.setTextSize(0);
-    //    display.setTextColor( ILI9341_GREEN, ILI9341_BLACK );
-    //    display.fillRect( 0, display.height() - 50, display.width(), 50, ILI9341_BLACK );
-    //    switch ( settings_pointer )
-    //    {
-    //      case 0:
-    //        centeredText("continue", ILI9341_GREEN, 300);
-    //        break;
-    //
-    //      case 1:
-    //        centeredText("skip.", ILI9341_GREEN, 300);
-    //        break;
-    //    }
   }
 }
 
@@ -768,30 +754,111 @@ void startSetupScreen() {
   display.setTextColor(ILI9341_WHITE);
   display.setTextSize(2);
   display.setCursor(0, 4);
-  //  centeredText("Info menu", ILI9341_WHITE, 10);
-  //  if (horizontal != 0) {
-  //    display.fillRect(0, 28, 320, 3, ILI9341_WHITE );
-  //  } else {
-  //    display.fillRect(0, 28, 240, 3, ILI9341_WHITE );
-  //  }
   centeredText("Welcome in", ILI9341_WHITE, y);
-  centeredText("the device", ILI9341_WHITE, y += 30);
-  centeredText("setup", ILI9341_WHITE, y += 30);
+  centeredText("the device", ILI9341_WHITE, y += 40);
+  centeredText("setup", ILI9341_WHITE, y += 40);
 
   display.setTextSize(1);
   y = 250;
   leftText(" continue setup", ILI9341_GREEN, y);
   numOfPointers++;
   leftText(" skip setup", ILI9341_RED, y += h);
-  //  display.setCursor(30, y+50);
-  //  display.print("- continue setup");
-  //  display.setCursor(30, y + 20);
-  //  display.print("- skip setup");
+  ShowMenuOptions(true);
+}
+
+void setupButtonsScreen() {
+  previousState = state;
+  state = 101;
+  numOfPointers = 0;
+  //  settings_pointer = 0; // clear pointer
+#ifdef DEBUG
+  Serial.println("State is :" + String(state));
+#endif
+  int y = 55; //from left side of the LCD
+  int h = 20;
+  display.setRotation(2);
+  display.setFont(&FreeSerif9pt7b);
+  display.fillScreen(ILI9341_BLACK);
+  display.setTextColor(ILI9341_WHITE);
+  display.setTextSize(2);
+  display.setCursor(0, 4);
+  centeredText("Do you have", ILI9341_WHITE, y);
+  centeredText("Menu & Back", ILI9341_WHITE, y += 40);
+  centeredText("buttons?", ILI9341_WHITE, y += 40);
+
+  display.setTextSize(1);
+  y = 250;
+  leftText(" Yes", ILI9341_GREEN, y);
+  numOfPointers++;
+  leftText(" No", ILI9341_GREEN, y += h);
+  numOfPointers++;
+  leftText(" skip setup", ILI9341_RED, y += h);
   ShowMenuOptions(true);
 }
 
 void setupWiFiScreen() {
+  previousState = state;
+  state = 102;
+  numOfPointers = 0;
+  //  settings_pointer = 0; // clear pointer
+#ifdef DEBUG
+  Serial.println("State is :" + String(state));
+#endif
+  int y = 55; //from left side of the LCD
+  int h = 20;
+  display.setRotation(2);
+  display.setFont(&FreeSerif9pt7b);
+  display.fillScreen(ILI9341_BLACK);
+  display.setTextColor(ILI9341_WHITE);
+  display.setTextSize(2);
+  display.setCursor(0, 4);
+  centeredText("Do you want", ILI9341_WHITE, y);
+  centeredText("to setup ", ILI9341_WHITE, y += 40);
+  centeredText("WiFi?", ILI9341_WHITE, y += 40);
 
+  display.setTextSize(1);
+  y = 250;
+  leftText(" Yes", ILI9341_GREEN, y);
+  numOfPointers++;
+  leftText(" No", ILI9341_GREEN, y += h);
+  numOfPointers++;
+  leftText(" skip setup", ILI9341_RED, y += h);
+  ShowMenuOptions(true);
+}
+
+void setupWiFiScreen2() {
+  wifiSetup();
+  previousState = state;
+  state = 103;
+  numOfPointers = 0;
+  //  settings_pointer = 0; // clear pointer
+#ifdef DEBUG
+  Serial.println("State is :" + String(state));
+#endif
+  int y = 55; //from left side of the LCD
+  int h = 20;
+  display.setRotation(2);
+  display.setFont(&FreeSerif9pt7b);
+  display.fillScreen(ILI9341_BLACK);
+  display.setTextColor(ILI9341_WHITE);
+  display.setTextSize(1);
+  display.setCursor(0, 4);
+  centeredText("Please connect to", ILI9341_WHITE, y);
+  centeredText("ReflowOvenAP", ILI9341_BLUE, y += h);
+  centeredText("open browser and ", ILI9341_WHITE, y += h);
+  centeredText("type in this", ILI9341_WHITE, y += h);
+  centeredText("address:", ILI9341_WHITE, y += h);
+  centeredText(" ", ILI9341_WHITE, y += h);
+  centeredText("192.168.4.1", ILI9341_RED, y += h);
+
+  display.setTextSize(1);
+  y = 250;
+  leftText(" skip wifi setup", ILI9341_GREEN, y);
+  numOfPointers++;
+  //  leftText(" No", ILI9341_GREEN, y += h);
+  //  numOfPointers++;
+  leftText(" skip setup", ILI9341_RED, y += h);
+  ShowMenuOptions(true);
 }
 
 void setBuzzer (int y) {
@@ -808,15 +875,17 @@ void setBuzzer (int y) {
 }
 
 void setButtons (int y) {
-  display.fillRect( 30, y - 18, 200, 20, ILI9341_BLACK );
-  display.setTextColor(ILI9341_WHITE);
-  display.setTextSize(1);
-  display.setCursor(30, y);
-  display.print("Menu/Back buttons: ");
-  if (buttons != 0) {
-    display.println("Yes");
-  } else {
-    display.println("No");
+  if (state != 101) {
+    display.fillRect( 30, y - 18, 200, 20, ILI9341_BLACK );
+    display.setTextColor(ILI9341_WHITE);
+    display.setTextSize(1);
+    display.setCursor(30, y);
+    display.print("Menu/Back buttons: ");
+    if (buttons != 0) {
+      display.println("Yes");
+    } else {
+      display.println("No");
+    }
   }
 }
 

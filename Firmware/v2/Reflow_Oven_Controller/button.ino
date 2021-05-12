@@ -320,10 +320,36 @@ void event1(int pin) {
       } else if (state == 10) {
         //settings_pointer = 0; // clear pointer
         if (settings_pointer == 0) {
+          setupButtonsScreen();
+        } else {
+          loopScreen();
+//          setupDone = 1;
+          changeValues("setupDone", setupDone, 0);
+        }
+      } else if (state == 101) {
+        //settings_pointer = 0; // clear pointer
+        if (settings_pointer == 0) {
+          buttons = 1;
+          changeValues("buttons", buttons, 1);
+          setupWiFiScreen();
+        } else if (settings_pointer == 1) {
+          buttons = 0;
+          changeValues("buttons", buttons, 1);
           setupWiFiScreen();
         } else {
           loopScreen();
-          setupDone = 1;
+//          setupDone = 1;
+          changeValues("setupDone", setupDone, 0);
+        }
+      }else if (state == 102) {
+        //settings_pointer = 0; // clear pointer
+        if (settings_pointer == 0) {
+          setupWiFiScreen2();
+        } else if (settings_pointer == 1) {
+//          setupWiFiScreen();
+        } else {
+          loopScreen();
+//          setupDone = 1;
           changeValues("setupDone", setupDone, 0);
         }
       }

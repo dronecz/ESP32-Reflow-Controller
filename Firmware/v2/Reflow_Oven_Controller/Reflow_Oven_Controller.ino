@@ -40,7 +40,6 @@ AsyncWebServer server(80);
 AsyncEventSource events("/events");
 DNSServer dns;
 WebSocketsServer webSocket = WebSocketsServer(1337);
-//WifiTool wifiTool;
 WiFiManager wm;
 char msg_buf[10];
 
@@ -242,10 +241,10 @@ void setup() {
   for (int i = 0; i < numOfProfiles; i++) {
     loadProfiles(i);
   }
-  
+
   display.begin();
   startScreen();
-  
+
   if ( !SPIFFS.begin(FORMAT_SPIFFS_IF_FAILED)) {
     Serial.println("Error mounting SPIFFS");
     return;
@@ -284,6 +283,8 @@ void setup() {
       Serial.println(digitalButtonPins[i]);
     }
   }
+
+//  wm._begin();
 
   if (WiFi.status() == WL_CONNECTED) { // Wait for the Wi-Fi to connect: scan for Wi-Fi networks, and connect to the strongest of the networks above
     Serial.println("\nConnected to " + WiFi.SSID() + "; IP address: " + WiFi.localIP().toString()); // Report which SSID and IP is in use
@@ -417,16 +418,16 @@ void setup() {
     listDir(SPIFFS, "/profiles", 0);
   } else {
     Serial.print(F("Initializing SD card..."));
-    //    if (!SD.begin(SD_CS_pin)) { // see if the card is present and can be initialised. Wemos SD-Card CS uses D8
-    //      Serial.println(F("Card failed or not present, no SD Card data logging possible..."));
-    //      SD_present = false;
-    //    } else {
-    //      Serial.println(F("Card initialised... file access enabled..."));
-    //      SD_present = true;
-    //      // Reset number of profiles for fresh load from SD card
-    //      profileNum = 0;
-    //      listDir(SD, "/profiles", 0);
-    //    }
+    if (!SD.begin(SD_CS_pin)) { // see if the card is present and can be initialised. Wemos SD-Card CS uses D8
+      Serial.println(F("Card failed or not present, no SD Card data logging possible..."));
+      SD_present = false;
+    } else {
+      Serial.println(F("Card initialised... file access enabled..."));
+      SD_present = true;
+      // Reset number of profiles for fresh load from SD card
+      profileNum = 0;
+      listDir(SD, "/profiles", 0);
+    }
   }
   // Load data from selected storage
   if ((SD_present == true) || (useSPIFFS != 0)) {
@@ -540,13 +541,16 @@ void readFile(fs::FS & fs, String path, const char * type) {
 }
 
 void wifiSetup() {
+  //  int timeout = 120; // seconds to run for
+  //  wm.setConfigPortalTimeout(timeout);
   wm.setConfigPortalBlocking(false);
-  if (wm.autoConnect("ReflowOvenAP")) {
-    Serial.println("connected...yeey :)");
-  }
-  else {
-    Serial.println("Configportal running");
-  }
+  wm.startConfigPortal("ReflowOvenAP");
+  //  if (wm.startConfigPortal("ReflowOvenAP")) {
+  //    Serial.println("connected...yeey :)");
+  //  }
+  //  else {
+  //    Serial.println("Configportal running");
+  //  }
 }
 
 String getProfile(int Id) {
