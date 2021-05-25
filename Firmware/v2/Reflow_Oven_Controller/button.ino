@@ -323,7 +323,7 @@ void event1(int pin) {
           setupButtonsScreen();
         } else {
           loopScreen();
-//          setupDone = 1;
+          //          setupDone = 1;
           changeValues("setupDone", setupDone, 0);
         }
       } else if (state == 101) {
@@ -338,18 +338,29 @@ void event1(int pin) {
           setupWiFiScreen();
         } else {
           loopScreen();
-//          setupDone = 1;
+          //          setupDone = 1;
           changeValues("setupDone", setupDone, 0);
         }
-      }else if (state == 102) {
+      } else if (state == 102) {
         //settings_pointer = 0; // clear pointer
         if (settings_pointer == 0) {
           setupWiFiScreen2();
         } else if (settings_pointer == 1) {
-//          setupWiFiScreen();
+          wm.stopConfigPortal();
+          //set next screen!
         } else {
           loopScreen();
-//          setupDone = 1;
+          //          setupDone = 1;
+          changeValues("setupDone", setupDone, 0);
+        }
+      } else if (state == 103) {
+        //settings_pointer = 0; // clear pointer
+        if (settings_pointer == 0) {
+          wm.stopConfigPortal();
+          //add next step after wifi skip!
+        } else {
+          loopScreen();
+          //          setupDone = 1;
           changeValues("setupDone", setupDone, 0);
         }
       }

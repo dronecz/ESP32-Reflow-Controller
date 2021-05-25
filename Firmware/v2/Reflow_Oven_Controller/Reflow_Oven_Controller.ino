@@ -416,19 +416,20 @@ void setup() {
   if (useSPIFFS != 0) {
     profileNum = 0;
     listDir(SPIFFS, "/profiles", 0);
-  } else {
-    Serial.print(F("Initializing SD card..."));
-    if (!SD.begin(SD_CS_pin)) { // see if the card is present and can be initialised. Wemos SD-Card CS uses D8
-      Serial.println(F("Card failed or not present, no SD Card data logging possible..."));
-      SD_present = false;
-    } else {
-      Serial.println(F("Card initialised... file access enabled..."));
-      SD_present = true;
-      // Reset number of profiles for fresh load from SD card
-      profileNum = 0;
-      listDir(SD, "/profiles", 0);
-    }
-  }
+  } 
+//  else {
+//    Serial.print(F("Initializing SD card..."));
+//    if (!SD.begin(SD_CS_pin)) { // see if the card is present and can be initialised. Wemos SD-Card CS uses D8
+//      Serial.println(F("Card failed or not present, no SD Card data logging possible..."));
+//      SD_present = false;
+//    } else {
+//      Serial.println(F("Card initialised... file access enabled..."));
+//      SD_present = true;
+//      // Reset number of profiles for fresh load from SD card
+//      profileNum = 0;
+//      listDir(SD, "/profiles", 0);
+//    }
+//  }
   // Load data from selected storage
   if ((SD_present == true) || (useSPIFFS != 0)) {
     profile_t paste_profile_load[numOfProfiles];
@@ -541,6 +542,7 @@ void readFile(fs::FS & fs, String path, const char * type) {
 }
 
 void wifiSetup() {
+  server.end();
   //  int timeout = 120; // seconds to run for
   //  wm.setConfigPortalTimeout(timeout);
   wm.setConfigPortalBlocking(false);
