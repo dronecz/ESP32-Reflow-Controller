@@ -74,6 +74,7 @@ bool updataAvailable = 0;
 bool testState = 0;
 bool useSPIFFS = 1;
 bool setupDone = 0;
+bool useWebserver = 0;
 
 // Button variables
 int buttonVal[numDigButtons] = {0};                            // value read from button
@@ -109,6 +110,8 @@ String inputMessage1;
 int inputMessage2;
 String settingsValues;
 String setSettingsValue;
+unsigned long startTime = 0; //variable to store millis from start
+String apName; // variable to store SSID for flash memory
 
 // Structure for paste profiles
 typedef struct {
@@ -284,8 +287,6 @@ void setup() {
     }
   }
 
-//  wm._begin();
-
   if (WiFi.status() == WL_CONNECTED) { // Wait for the Wi-Fi to connect: scan for Wi-Fi networks, and connect to the strongest of the networks above
     Serial.println("\nConnected to " + WiFi.SSID() + "; IP address: " + WiFi.localIP().toString()); // Report which SSID and IP is in use
     connected = 1;
@@ -295,12 +296,179 @@ void setup() {
     }
   }
 
+  if (setupDone != 1) {
+    wm.resetSettings();
+  }
+
+  if (useWebserver != 0) {
+    webserverFunc();
+  }
+
+  max31856.begin();
+  max31856.setThermocoupleType(MAX31856_TCTYPE_K);
+
+  // Set window size
+  windowSize = 2000;
+  // Initialize time keeping variable
+  nextCheck = millis();
+  // Initialize thermocouple reading variable
+  nextRead = millis();
+
+  if (useSPIFFS != 0) {
+    profileNum = 0;
+    listDir(SPIFFS, "/profiles", 0);
+  }
+  //  else {
+  //    Serial.print(F("Initializing SD card..."));
+  //    if (!SD.begin(SD_CS_pin)) { // see if the card is present and can be initialised. Wemos SD-Card CS uses D8
+  //      Serial.println(F("Card failed or not present, no SD Card data logging possible..."));
+  //      SD_present = false;
+  //    } else {
+  //      Serial.println(F("Card initialised... file access enabled..."));
+  //      SD_present = true;
+  //      // Reset number of profiles for fresh load from SD card
+  //      profileNum = 0;
+  //      listDir(SD, "/profiles", 0);
+  //    }
+  //  }
+  
+  // Load data from selected storage
+  if ((SD_present == true) || (useSPIFFS != 0)) {
+    profile_t paste_profile_load[numOfProfiles];
+    // Scan all profiles from source
+
+    for (int i = 0; i < profileNum; i++) {
+      if (useSPIFFS != 0) {
+        parseJsonProfile(SPIFFS, jsonName[i], i, paste_profile_load);
+      } else {
+        parseJsonProfile(SD, jsonName[i], i, paste_profile_load);
+      }
+    }
+    //Compare profiles, if they are already in memory
+    for (int i = 0; i < profileNum; i++) {
+      compareProfiles(paste_profile_load[i], paste_profile[i], i);
+    }
+  }
+
+  Serial.println();
+  Serial.print("Number of profiles: ");
+  Serial.println(profileNum);
+
+  Serial.println("Titles and alloys: ");
+  for (int i = 0; i < profileNum; i++) {
+    Serial.print((String)i + ". ");
+    Serial.print(paste_profile[i].title);
+    Serial.print(", ");
+    Serial.println(paste_profile[i].alloy);
+  }
+
+  for (int i = 0; i < profileNum; i++) {
+    profileNames += (paste_profile[i].title);
+    profileNames += (", ");
+  }
+  Serial.println("Names of all profiles: " + profileNames);
+  events.send(profileNames.c_str(), "profileNames");
+  usedProfileName = paste_profile[profileUsed].title;
+  Serial.println("Names of used profile: " + usedProfileName);
+  events.send(usedProfileName.c_str(), "usedProfile");
+  Serial.println();
+  Serial.println("Connected: " + String(connected));
+}
+
+
+void processButtons() {
+  for (int i = 0; i < numDigButtons; i++) {
+    digitalButton(digitalButtonPins[i]);
+  }
+  readAnalogButtons();
+}
+
+//***************************************//
+
+void loop() {
+  checkWiFiSetup();
+  wm.process();
+  if (state != 9) { // if we are in test menu, disable LED & SSR control in loop
+    reflow_main();
+  }
+  processButtons();
+  //server.handleClient(); // Listen for client connections
+  // Look for and handle WebSocket data
+  webSocket.loop();
+}
+
+//***********************************//
+
+void listDir(fs::FS &fs, const char * dirname, uint8_t levels) {
+  Serial.printf("Listing directory: %s\r\n", dirname);
+
+  File root = fs.open(dirname);
+  if (!root) {
+    Serial.println("Failed to open directory");
+    return;
+  }
+  if (!root.isDirectory()) {
+    Serial.println("Not a directory");
+    return;
+  }
+
+  File file = root.openNextFile();
+  String tempFileName;
+  while (file) {
+    if (file.isDirectory()) {
+      Serial.print("  DIR : ");
+      Serial.println(file.name());
+      if (levels) {
+        listDir(fs, file.name(), levels - 1);
+      }
+    } else {
+      tempFileName = file.name();
+      if (tempFileName.endsWith("json")) {
+        Serial.println("Find this JSON file: "  + tempFileName);
+        jsonName[profileNum] = tempFileName;
+        profileNum++;
+      }
+    }
+    file = root.openNextFile();
+  }
+}
+
+void readFile(fs::FS & fs, String path, const char * type) {
+  Serial.printf("Reading file: %s\n", path);
+
+  File file = fs.open(path);
+  if (!file) {
+    Serial.println("Failed to open file for reading");
+    return;
+  }
+  Serial.print("Read from file: ");
+  while (file.available()) {
+    Serial.write(file.read());
+  }
+  file.close();
+}
+
+void wifiSetup() {
+  server.end();
+  //  int timeout = 120; // seconds to run for
+  //  wm.setConfigPortalTimeout(timeout);
+  wm.setConfigPortalBlocking(false);
+  wm.startConfigPortal("ReflowOvenAP");
+  //  if (wm.startConfigPortal("ReflowOvenAP")) {
+  //    Serial.println("connected...yeey :)");
+  //  }
+  //  else {
+  //    Serial.println("Configportal running");
+  //  }
+}
+
+void webserverFunc() {
+
   // The logical name http://reflowserver.local will also access the device if you have 'Bonjour' running or your system supports multicast dns
   if (!MDNS.begin("reflowserver")) {          // Set your preferred server name, if you use "myserver" the address would be http://myserver.local/
     Serial.println(F("Error setting up MDNS responder!"));
     ESP.restart();
   }
-
   /** webserver start**/
 
   // Route for root / web page
@@ -402,156 +570,29 @@ void setup() {
   /** webserver end**/
 
   Serial.println("HTTP server started");
+}
 
-  max31856.begin();
-  max31856.setThermocoupleType(MAX31856_TCTYPE_K);
-
-  // Set window size
-  windowSize = 2000;
-  // Initialize time keeping variable
-  nextCheck = millis();
-  // Initialize thermocouple reading variable
-  nextRead = millis();
-
-  if (useSPIFFS != 0) {
-    profileNum = 0;
-    listDir(SPIFFS, "/profiles", 0);
-  } 
-//  else {
-//    Serial.print(F("Initializing SD card..."));
-//    if (!SD.begin(SD_CS_pin)) { // see if the card is present and can be initialised. Wemos SD-Card CS uses D8
-//      Serial.println(F("Card failed or not present, no SD Card data logging possible..."));
-//      SD_present = false;
-//    } else {
-//      Serial.println(F("Card initialised... file access enabled..."));
-//      SD_present = true;
-//      // Reset number of profiles for fresh load from SD card
-//      profileNum = 0;
-//      listDir(SD, "/profiles", 0);
-//    }
-//  }
-  // Load data from selected storage
-  if ((SD_present == true) || (useSPIFFS != 0)) {
-    profile_t paste_profile_load[numOfProfiles];
-    // Scan all profiles from source
-
-    for (int i = 0; i < profileNum; i++) {
-      if (useSPIFFS != 0) {
-        parseJsonProfile(SPIFFS, jsonName[i], i, paste_profile_load);
-      } else {
-        parseJsonProfile(SD, jsonName[i], i, paste_profile_load);
-      }
-    }
-    //Compare profiles, if they are already in memory
-    for (int i = 0; i < profileNum; i++) {
-      compareProfiles(paste_profile_load[i], paste_profile[i], i);
+void checkWiFiSetup() {
+  if (state == 103) {
+    wifi_config_t conf;
+    esp_wifi_get_config(WIFI_IF_STA, &conf);
+    apName = String(reinterpret_cast<const char*>(conf.sta.ssid));
+    if (apName != NULL) {
+      Serial.println("Registered new SSID: " + apName);
+      startTime = millis();
+      setupWiFiScreenDone();
     }
   }
+  if (state == 104) {
+    //    if (WiFi.localIP()[0] != 0) {
+    if (millis() - startTime > 5000) {
+      downloadProfilesScreen();
 
-  Serial.println();
-  Serial.print("Number of profiles: ");
-  Serial.println(profileNum);
-
-  Serial.println("Titles and alloys: ");
-  for (int i = 0; i < profileNum; i++) {
-    Serial.print((String)i + ". ");
-    Serial.print(paste_profile[i].title);
-    Serial.print(", ");
-    Serial.println(paste_profile[i].alloy);
-  }
-
-  for (int i = 0; i < profileNum; i++) {
-    profileNames += (paste_profile[i].title);
-    profileNames += (", ");
-  }
-  Serial.println("Names of all profiles: " + profileNames);
-  events.send(profileNames.c_str(), "profileNames");
-  usedProfileName = paste_profile[profileUsed].title;
-  Serial.println("Names of used profile: " + usedProfileName);
-  events.send(usedProfileName.c_str(), "usedProfile");
-  Serial.println();
-  Serial.println("Connected: " + String(connected));
-}
-
-
-void processButtons() {
-  for (int i = 0; i < numDigButtons; i++) {
-    digitalButton(digitalButtonPins[i]);
-  }
-  readAnalogButtons();
-}
-
-void loop() {
-  wm.process();
-  if (state != 9) { // if we are in test menu, disable LED & SSR control in loop
-    reflow_main();
-  }
-  processButtons();
-  //server.handleClient(); // Listen for client connections
-  // Look for and handle WebSocket data
-  webSocket.loop();
-}
-
-void listDir(fs::FS &fs, const char * dirname, uint8_t levels) {
-  Serial.printf("Listing directory: %s\r\n", dirname);
-
-  File root = fs.open(dirname);
-  if (!root) {
-    Serial.println("Failed to open directory");
-    return;
-  }
-  if (!root.isDirectory()) {
-    Serial.println("Not a directory");
-    return;
-  }
-
-  File file = root.openNextFile();
-  String tempFileName;
-  while (file) {
-    if (file.isDirectory()) {
-      Serial.print("  DIR : ");
-      Serial.println(file.name());
-      if (levels) {
-        listDir(fs, file.name(), levels - 1);
-      }
-    } else {
-      tempFileName = file.name();
-      if (tempFileName.endsWith("json")) {
-        Serial.println("Find this JSON file: "  + tempFileName);
-        jsonName[profileNum] = tempFileName;
-        profileNum++;
-      }
     }
-    file = root.openNextFile();
+  } else {
+    //      state = 103;
+    //      WiFi.reconnect();
   }
-}
-
-void readFile(fs::FS & fs, String path, const char * type) {
-  Serial.printf("Reading file: %s\n", path);
-
-  File file = fs.open(path);
-  if (!file) {
-    Serial.println("Failed to open file for reading");
-    return;
-  }
-  Serial.print("Read from file: ");
-  while (file.available()) {
-    Serial.write(file.read());
-  }
-  file.close();
-}
-
-void wifiSetup() {
-  server.end();
-  //  int timeout = 120; // seconds to run for
-  //  wm.setConfigPortalTimeout(timeout);
-  wm.setConfigPortalBlocking(false);
-  wm.startConfigPortal("ReflowOvenAP");
-  //  if (wm.startConfigPortal("ReflowOvenAP")) {
-  //    Serial.println("connected...yeey :)");
-  //  }
-  //  else {
-  //    Serial.println("Configportal running");
   //  }
 }
 
@@ -578,4 +619,71 @@ String getProfile(int Id) {
   returnString += String(paste_profile[Id].stages_cool_1);
   Serial.println("Profile as String is: " + returnString);
   return returnString;
+}
+
+bool getFiles(String address, String fileName, String dir = "/") {
+  // create buffer for read
+  uint8_t buff[128] = {0}; // 2048
+  int fileSize;
+  bool compareStat = 0;
+  String url;
+  url += address;
+  url += fileName; //.substring(1);
+  Serial.println("Address of the file is: " + url);
+  //  String fileName_ = "/";
+  //  fileName_ += fileName;
+  dir += "/";
+  dir += fileName;
+  Serial.println("Full path is: " + dir);
+  //  File f = SPIFFS.open(fileName_, "w");
+  File f = SPIFFS.open(dir, "w");
+  if (f) {
+    //    http.begin(address);
+    http.begin(url);
+    int httpCode = http.GET();
+    int len = http.getSize();
+    fileSize = len;
+    Serial.println("File size is: " + String(len));
+    if (httpCode == 200) {
+      //      if (httpCode == HTTP_CODE_OK) {
+      //        http.writeToStream(&f);
+      WiFiClient *stream = http.getStreamPtr();
+      // read all data from server
+      while (http.connected() && (len > 0 || len == -1)) {
+        size_t size = stream->available();
+        if (size) {
+          // read up to 128 byte
+          int c = stream->readBytes(buff, ((size > sizeof(buff)) ? sizeof(buff) : size));
+          // Calculate percentage of downloaded file and write it to Serial
+          float percentage = (fileSize - size) / (fileSize / 100.0);
+          Serial.printf("%4.1f %| %d bytes available for read \r\n", percentage, size);
+
+          f.write(buff, c);
+          if (len > 0) {
+            len -= c;
+          }
+        }
+      }
+    } else {
+      Serial.printf("[HTTP] GET... failed, error: %s\n", http.errorToString(httpCode).c_str());
+    }
+    f.close();
+    Serial.println("File closed");
+  }
+  http.end();
+  Serial.println("Connection closed");
+
+  // Compare size of file
+  f = SPIFFS.open(dir, "r");
+  if (fileSize == f.size()) {
+    compareStat = 1;
+    Serial.println("Size of downloaded file is equal to expected!");
+  }
+  else {
+    Serial.println("Size of downloaded file is NOT equal to expected!");
+  }
+  f.close();
+  Serial.println("----------------------------");
+  Serial.println();
+  return compareStat;
 }

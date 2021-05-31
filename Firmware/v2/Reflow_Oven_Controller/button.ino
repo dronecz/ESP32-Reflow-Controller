@@ -1,4 +1,6 @@
 
+String profileAddress = "http://czechmaker.com/roc/profiles/";
+String profileNamesDownload[] = {"Sn42Bi576Ag04.json", "sn63pb37.json", "sn965ag30cu05.json"};
 
 byte digitalButton (int pin) {
 
@@ -354,10 +356,24 @@ void event1(int pin) {
           changeValues("setupDone", setupDone, 0);
         }
       } else if (state == 103) {
-        //settings_pointer = 0; // clear pointer
         if (settings_pointer == 0) {
           wm.stopConfigPortal();
           //add next step after wifi skip!
+        } else {
+          loopScreen();
+          //          setupDone = 1;
+          changeValues("setupDone", setupDone, 0);
+        }
+      } else if (state == 105) {
+        //settings_pointer = 0; // clear pointer
+        if (settings_pointer == 0) {
+          int numOfRecords = (int)sizeof(profileNamesDownload) / sizeof(profileNamesDownload[0]);
+          for (int i = 0; i < numOfRecords; i++ ) {
+            getFiles(profileAddress, profileNamesDownload[i], "/profiles");
+          }
+          listDir(SPIFFS, "/profiles", 0);
+        } else if (settings_pointer == 1) {
+          //add next step after profile download skip!
         } else {
           loopScreen();
           //          setupDone = 1;

@@ -235,7 +235,7 @@ void UpdateSettingsPointer() { // this function shows help text at the bottom of
         break;
     }
   }
-  else if ( state == 10 || state == 101 || state == 102 || state == 103 ) {
+  else if ( state == 10 || state == 101 || state == 102 || state == 103 || state == 104 || state == 105 || state == 106 || state == 107) {
     display.setTextColor( ILI9341_WHITE, ILI9341_BLACK );
     display.setTextSize(1);
     display.fillRect( 0, 40, 20, display.height() - 20, ILI9341_BLACK );
@@ -860,6 +860,62 @@ void setupWiFiScreen2() {
   leftText(" skip setup", ILI9341_RED, y += h);
   ShowMenuOptions(true);
 }
+
+void setupWiFiScreenDone() {
+  String ipAddress = WiFi.localIP().toString();
+  previousState = state;
+  state = 104;
+  numOfPointers = 0;
+  //  settings_pointer = 0; // clear pointer
+#ifdef DEBUG
+  Serial.println("State is :" + String(state));
+#endif
+  int y = 85; //from left side of the LCD
+  int h = 20;
+  display.setRotation(2);
+  display.setFont(&FreeSerif9pt7b);
+  display.fillScreen(ILI9341_BLACK);
+  display.setTextColor(ILI9341_WHITE);
+  display.setTextSize(1);
+  display.setCursor(0, 4);
+  centeredText("WiFi setup", ILI9341_GREEN, y);
+  centeredText("successful! ", ILI9341_GREEN, y += h);
+  centeredText("IP adress is:", ILI9341_GREEN, y += h);
+  centeredText(ipAddress, ILI9341_BLUE, y += h);
+}
+
+void downloadProfilesScreen() {
+  previousState = state;
+  state = 105;
+  numOfPointers = 0;
+  //  settings_pointer = 0; // clear pointer
+#ifdef DEBUG
+  Serial.println("State is :" + String(state));
+#endif
+  int y = 55; //from left side of the LCD
+  int h = 40;
+  display.setRotation(2);
+  display.setFont(&FreeSerif9pt7b);
+  display.fillScreen(ILI9341_BLACK);
+  display.setTextColor(ILI9341_WHITE);
+  display.setTextSize(2);
+  display.setCursor(0, 4);
+  centeredText("Do you want", ILI9341_WHITE, y);
+  centeredText("to download ", ILI9341_WHITE, y += h);
+  centeredText("reflow", ILI9341_WHITE, y += h);
+  centeredText("profiles?", ILI9341_WHITE, y += h);
+
+  display.setTextSize(1);
+  y = 250;
+  h = 20;
+  leftText(" yes", ILI9341_GREEN, y);
+  numOfPointers++;
+  leftText(" skip download", ILI9341_BLUE, y += h);
+  numOfPointers++;
+  leftText(" skip setup", ILI9341_RED, y += h);
+  ShowMenuOptions(true);
+}
+
 
 void setBuzzer (int y) {
   display.fillRect( 30, y - 18, 200, 20, ILI9341_BLACK );
