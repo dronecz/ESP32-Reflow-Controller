@@ -212,14 +212,14 @@ void setup() {
   Serial.println("FW version is: " + String(fwVersion) + "_&_" + String(__DATE__) + "_&_" + String(__TIME__));
 
   preferences.begin("store", false);
-  buttons = preferences.getBool("buttons", 0);
-  fan = preferences.getBool("fan", 0);
-  horizontal = preferences.getBool("horizontal", 0);
-  buzzer = preferences.getBool("buzzer", 0);
-  useOTA = preferences.getBool("useOTA", 0);
-  profileUsed = preferences.getInt("profileUsed", 0);
-  useSPIFFS = preferences.getBool("useSPIFFS", 0);
-  setupDone = preferences.getBool("setupDone", 0);
+  buttons = preferences.getBool("buttons", buttons); //bool Preferences::getBool(const char* key, const bool defaultValue)
+  fan = preferences.getBool("fan", fan);
+  horizontal = preferences.getBool("horizontal", horizontal);
+  buzzer = preferences.getBool("buzzer", buzzer);
+  useOTA = preferences.getBool("useOTA", useOTA);
+  profileUsed = preferences.getInt("profileUsed", profileUsed);
+  useSPIFFS = preferences.getBool("useSPIFFS", useSPIFFS);
+  setupDone = preferences.getBool("setupDone", setupDone);
   preferences.end();
 
   Serial.println();
@@ -229,6 +229,8 @@ void setup() {
   Serial.println("Buzzer: " + String(buzzer));
   Serial.println("OTA: " + String(useOTA));
   Serial.println("Used profile: " + String(profileUsed));
+  Serial.println("Use SPIFFS: " + String(useSPIFFS));
+  Serial.println("Setup done: " + String(setupDone));
   Serial.println();
 
   settingsValues += String(useOTA) + ",";
@@ -317,20 +319,21 @@ void setup() {
   if (useSPIFFS != 0) {
     profileNum = 0;
     listDir(SPIFFS, "/profiles", 0);
+    Serial.print(F("Using SPIFFS..."));
   }
-  //  else {
-  //    Serial.print(F("Initializing SD card..."));
-  //    if (!SD.begin(SD_CS_pin)) { // see if the card is present and can be initialised. Wemos SD-Card CS uses D8
-  //      Serial.println(F("Card failed or not present, no SD Card data logging possible..."));
-  //      SD_present = false;
-  //    } else {
-  //      Serial.println(F("Card initialised... file access enabled..."));
-  //      SD_present = true;
-  //      // Reset number of profiles for fresh load from SD card
-  //      profileNum = 0;
-  //      listDir(SD, "/profiles", 0);
-  //    }
-  //  }
+    else {
+      Serial.print(F("Initializing SD card..."));
+      if (!SD.begin(SD_CS_pin)) { // see if the card is present and can be initialised. Wemos SD-Card CS uses D8
+        Serial.println(F("Card failed or not present, no SD Card data logging possible..."));
+        SD_present = false;
+      } else {
+        Serial.println(F("Card initialised... file access enabled..."));
+        SD_present = true;
+        // Reset number of profiles for fresh load from SD card
+        profileNum = 0;
+        listDir(SD, "/profiles", 0);
+      }
+    }
   
   // Load data from selected storage
   if ((SD_present == true) || (useSPIFFS != 0)) {
