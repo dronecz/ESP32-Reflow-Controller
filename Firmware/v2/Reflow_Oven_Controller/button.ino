@@ -1,6 +1,8 @@
 
 String profileAddress = "http://czechmaker.com/roc/profiles/";
 String profileNamesDownload[] = {"Sn42Bi576Ag04.json", "sn63pb37.json", "sn965ag30cu05.json"};
+String webserverAddress = "http://czechmaker.com/roc/src/";
+String webserverFileNames[] = {"bootstrap.bundle.min.js", "bootstrap.min.css", "bootstrap.min.js", "bootstrap-grid.min.css", "bootstrap-reboot.min.css", "jquery.min.js", "jquery.slim.min.js", "simple-sidebar.css"};
 
 byte digitalButton (int pin) {
 
@@ -367,17 +369,42 @@ void event1(int pin) {
       } else if (state == 105) {
         //settings_pointer = 0; // clear pointer
         if (settings_pointer == 0) {
-          int numOfRecords = (int)sizeof(profileNamesDownload) / sizeof(profileNamesDownload[0]);
+          numOfRecords = (int)sizeof(profileNamesDownload) / sizeof(profileNamesDownload[0]);
+          tempInt = 0;
           for (int i = 0; i < numOfRecords; i++ ) {
-            getFiles(profileAddress, profileNamesDownload[i], "/profiles");
+            tempInt += getFiles(profileAddress, profileNamesDownload[i], "/profiles");
+            Serial.println("Number of profiles download: " + String(tempInt));
           }
           listDir(SPIFFS, "/profiles", 0);
         } else if (settings_pointer == 1) {
-          //add next step after profile download skip!
+          useWebserverScreen();
         } else {
           loopScreen();
           //          setupDone = 1;
           changeValues("setupDone", setupDone, 0);
+        }
+      } else if (state == 107) {
+        //settings_pointer = 0; // clear pointer
+        if (settings_pointer == 0) {
+          numOfRecords = 10;
+          numOfRecords = (int)sizeof(webserverFileNames) / sizeof(webserverFileNames[0]);
+          Serial.println("Number of files for download: " + String(numOfRecords));
+          tempInt = 0;
+          for (int i = 0; i < numOfRecords; i++ ) {
+            tempInt += getFiles(webserverAddress, webserverFileNames[i], "/src");
+            Serial.println("Number of files for download: " + String(tempInt));
+          }
+          listDir(SPIFFS, "/src", 0);
+          setupDone = 1;
+          useWebserver = 1;
+          changeValues("setupDone", setupDone, 0);
+          changeValues("useWebserver", useWebserver, 0);
+          //        } else if (settings_pointer == 1) {
+          //
+          //        } else {
+          //          loopScreen();
+          //          //          setupDone = 1;
+          //          changeValues("setupDone", setupDone, 0);
         }
       }
       if (verboseOutput != 0) {

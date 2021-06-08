@@ -294,7 +294,12 @@ void startScreen() {
 }
 
 void loopScreen() {
-  state = 0;
+  if (state == 109) {
+    previousState = state;
+    state = 0;
+  } else {
+    state = 0;
+  }
 #ifdef DEBUG
   Serial.println("State is :" + String(state));
 #endif
@@ -914,6 +919,105 @@ void downloadProfilesScreen() {
   numOfPointers++;
   leftText(" skip setup", ILI9341_RED, y += h);
   ShowMenuOptions(true);
+}
+
+void profilesDownloadFinished() {
+  startTime = millis();
+  previousState = state;
+  state = 106;
+  numOfPointers = 0;
+  //  settings_pointer = 0; // clear pointer
+#ifdef DEBUG
+  Serial.println("State is :" + String(state));
+#endif
+  int y = 85; //from left side of the LCD
+  int h = 20;
+  display.setRotation(2);
+  display.setFont(&FreeSerif9pt7b);
+  display.fillScreen(ILI9341_BLACK);
+  display.setTextColor(ILI9341_WHITE);
+  display.setTextSize(1);
+  display.setCursor(0, 4);
+  centeredText("All profiles", ILI9341_GREEN, y);
+  centeredText("were", ILI9341_GREEN, y += h);
+  centeredText("successfullly!", ILI9341_GREEN, y += h);
+  centeredText("downloaded!", ILI9341_GREEN, y += h);
+}
+
+void useWebserverScreen() {
+  previousState = state;
+  state = 107;
+  numOfPointers = 0;
+  //  settings_pointer = 0; // clear pointer
+#ifdef DEBUG
+  Serial.println("State is :" + String(state));
+#endif
+  int y = 55; //from left side of the LCD
+  int h = 40;
+  display.setRotation(2);
+  display.setFont(&FreeSerif9pt7b);
+  display.fillScreen(ILI9341_BLACK);
+  display.setTextColor(ILI9341_WHITE);
+  display.setTextSize(2);
+  display.setCursor(0, 4);
+  centeredText("Do you want", ILI9341_WHITE, y);
+  centeredText("to use ", ILI9341_WHITE, y += h);
+  centeredText("webserver", ILI9341_WHITE, y += h);
+
+  display.setTextSize(1);
+  y = 250;
+  h = 20;
+  leftText(" yes", ILI9341_GREEN, y);
+  numOfPointers++;
+  leftText(" no", ILI9341_BLUE, y += h);
+  numOfPointers++;
+  leftText(" skip setup", ILI9341_RED, y += h);
+  ShowMenuOptions(true);
+}
+
+void webserverDownloadFinished() {
+  startTime = millis();
+  previousState = state;
+  state = 108;
+  numOfPointers = 0;
+  //  settings_pointer = 0; // clear pointer
+#ifdef DEBUG
+  Serial.println("State is :" + String(state));
+#endif
+  int y = 85; //from left side of the LCD
+  int h = 20;
+  display.setRotation(2);
+  display.setFont(&FreeSerif9pt7b);
+  display.fillScreen(ILI9341_BLACK);
+  display.setTextColor(ILI9341_WHITE);
+  display.setTextSize(1);
+  display.setCursor(0, 4);
+  centeredText("All files", ILI9341_GREEN, y);
+  centeredText("for webserver", ILI9341_GREEN, y += h);
+  centeredText("were", ILI9341_GREEN, y += h);
+  centeredText("successfullly!", ILI9341_GREEN, y += h);
+  centeredText("downloaded!", ILI9341_GREEN, y += h);
+}
+
+void finishSetupScreen() {
+  startTime = millis();
+  previousState = state;
+  state = 109;
+  numOfPointers = 0;
+  //  settings_pointer = 0; // clear pointer
+#ifdef DEBUG
+  Serial.println("State is :" + String(state));
+#endif
+  int y = 55; //from left side of the LCD
+  int h = 40;
+  display.setRotation(2);
+  display.setFont(&FreeSerif9pt7b);
+  display.fillScreen(ILI9341_BLACK);
+  display.setTextColor(ILI9341_WHITE);
+  display.setTextSize(2);
+  display.setCursor(0, 4);
+  centeredText("Your setup", ILI9341_WHITE, y);
+  centeredText("is finished. ", ILI9341_WHITE, y += h);
 }
 
 

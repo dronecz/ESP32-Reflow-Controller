@@ -112,6 +112,8 @@ String settingsValues;
 String setSettingsValue;
 unsigned long startTime = 0; //variable to store millis from start
 String apName; // variable to store SSID for flash memory
+int tempInt = -1;
+int numOfRecords;
 
 // Structure for paste profiles
 typedef struct {
@@ -255,6 +257,8 @@ void setup() {
     return;
   }
 
+  SPIFFS.format(); //for testing, commnent out for normal usage
+
   // SSR pin initialization to ensure reflow oven is off
 
   pinMode(ssrPin, OUTPUT);
@@ -321,20 +325,20 @@ void setup() {
     listDir(SPIFFS, "/profiles", 0);
     Serial.print(F("Using SPIFFS..."));
   }
-    else {
-      Serial.print(F("Initializing SD card..."));
-      if (!SD.begin(SD_CS_pin)) { // see if the card is present and can be initialised. Wemos SD-Card CS uses D8
-        Serial.println(F("Card failed or not present, no SD Card data logging possible..."));
-        SD_present = false;
-      } else {
-        Serial.println(F("Card initialised... file access enabled..."));
-        SD_present = true;
-        // Reset number of profiles for fresh load from SD card
-        profileNum = 0;
-        listDir(SD, "/profiles", 0);
-      }
+  else {
+    Serial.print(F("Initializing SD card..."));
+    if (!SD.begin(SD_CS_pin)) { // see if the card is present and can be initialised. Wemos SD-Card CS uses D8
+      Serial.println(F("Card failed or not present, no SD Card data logging possible..."));
+      SD_present = false;
+    } else {
+      Serial.println(F("Card initialised... file access enabled..."));
+      SD_present = true;
+      // Reset number of profiles for fresh load from SD card
+      profileNum = 0;
+      listDir(SD, "/profiles", 0);
     }
-  
+  }
+
   // Load data from selected storage
   if ((SD_present == true) || (useSPIFFS != 0)) {
     profile_t paste_profile_load[numOfProfiles];
@@ -389,7 +393,7 @@ void processButtons() {
 //***************************************//
 
 void loop() {
-  checkWiFiSetup();
+  checkDeviceSetup();
   wm.process();
   if (state != 9) { // if we are in test menu, disable LED & SSR control in loop
     reflow_main();
@@ -575,7 +579,7 @@ void webserverFunc() {
   Serial.println("HTTP server started");
 }
 
-void checkWiFiSetup() {
+void checkDeviceSetup() {
   if (state == 103) {
     wifi_config_t conf;
     esp_wifi_get_config(WIFI_IF_STA, &conf);
@@ -587,16 +591,35 @@ void checkWiFiSetup() {
     }
   }
   if (state == 104) {
-    //    if (WiFi.localIP()[0] != 0) {
     if (millis() - startTime > 5000) {
       downloadProfilesScreen();
-
     }
-  } else {
-    //      state = 103;
-    //      WiFi.reconnect();
   }
-  //  }
+  if (state == 105) {
+    if (tempInt == numOfRecords) {
+      profilesDownloadFinished();
+    }
+  }
+  if (state == 106) {
+    if (millis() - startTime > 5000) {
+      useWebserverScreen();
+    }
+  }
+  if (state == 107) {
+    if (tempInt == numOfRecords) {
+      webserverDownloadFinished();
+    }
+  }
+  if (state == 108) {
+    if (millis() - startTime > 5000) {
+      finishSetupScreen();
+    }
+  }
+  if (state == 109) {
+    if (millis() - startTime > 5000) {
+      loopScreen();
+    }
+  }
 }
 
 String getProfile(int Id) {
