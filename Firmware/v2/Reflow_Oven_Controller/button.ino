@@ -384,27 +384,30 @@ void event1(int pin) {
           changeValues("setupDone", setupDone, 0);
         }
       } else if (state == 107) {
+
         //settings_pointer = 0; // clear pointer
         if (settings_pointer == 0) {
-          numOfRecords = 10;
+          Serial.println("*****************");
+          Serial.println("Number of files for download: " + String(numOfRecords));
+          Serial.println("Number of files for download: " + String(tempInt));
+          Serial.println("*****************");
           numOfRecords = (int)sizeof(webserverFileNames) / sizeof(webserverFileNames[0]);
           Serial.println("Number of files for download: " + String(numOfRecords));
           tempInt = 0;
+          Serial.println("*****************");
+          Serial.println("Number of files for download: " + String(numOfRecords));
+          Serial.println("Number of files for download: " + String(tempInt));
+          Serial.println("*****************");
+          
           for (int i = 0; i < numOfRecords; i++ ) {
             tempInt += getFiles(webserverAddress, webserverFileNames[i], "/src");
             Serial.println("Number of files for download: " + String(tempInt));
           }
           listDir(SPIFFS, "/src", 0);
-          setupDone = 1;
+//          setupDone = 1;
           useWebserver = 1;
           changeValues("setupDone", setupDone, 0);
           changeValues("useWebserver", useWebserver, 0);
-          //        } else if (settings_pointer == 1) {
-          //
-          //        } else {
-          //          loopScreen();
-          //          //          setupDone = 1;
-          //          changeValues("setupDone", setupDone, 0);
         }
       }
       if (verboseOutput != 0) {

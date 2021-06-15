@@ -8,7 +8,7 @@ extern bool isFault;
 extern String activeStatus;
 extern void loopScreen();
 extern int oldTemp;
-extern byte state;
+extern int state;
 extern bool disableMenu;
 extern bool profileIsOn;
 

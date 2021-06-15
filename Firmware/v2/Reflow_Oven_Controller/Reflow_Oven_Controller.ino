@@ -88,7 +88,7 @@ int holdTime = 1000;
 int oldTemp = 0;
 
 byte numOfPointers = 0;
-byte state = 0; // 0 = boot, 1 = main menu, 2 = select profile, 3 = change profile, 4 = add profile, 5 = settings, 6 = info, 7 = start reflow, 8 = stop reflow, 9 = test outputs , 10 = setup
+int state = 0; // 0 = boot, 1 = main menu, 2 = select profile, 3 = change profile, 4 = add profile, 5 = settings, 6 = info, 7 = start reflow, 8 = stop reflow, 9 = test outputs , 10 = setup
 byte previousState = 0;
 
 byte settings_pointer = 0;
@@ -114,6 +114,7 @@ unsigned long startTime = 0; //variable to store millis from start
 String apName; // variable to store SSID for flash memory
 int tempInt = -1;
 int numOfRecords;
+float percentage;
 
 // Structure for paste profiles
 typedef struct {
@@ -257,7 +258,7 @@ void setup() {
     return;
   }
 
-  SPIFFS.format(); //for testing, commnent out for normal usage
+  //  SPIFFS.format(); //for testing, commnent out for normal usage
 
   // SSR pin initialization to ensure reflow oven is off
 
@@ -322,7 +323,7 @@ void setup() {
 
   if (useSPIFFS != 0) {
     profileNum = 0;
-    listDir(SPIFFS, "/profiles", 0);
+    listDir(SPIFFS, "/", 0);
     Serial.print(F("Using SPIFFS..."));
   }
   else {
@@ -587,7 +588,18 @@ void checkDeviceSetup() {
     if (apName != NULL) {
       Serial.println("Registered new SSID: " + apName);
       startTime = millis();
-      setupWiFiScreenDone();
+      if (WiFi.localIP()[0] > 0) {
+        setupWiFiScreenDone();
+      } else {
+        //if we did not get IP address, we have to clear SSID
+        WiFi.disconnect(true);
+        yield();
+        Serial.println("AP name after clear is: " + apName);
+        Serial.println("No IP address, restart WiFi setup.");
+        if (apName == NULL) {
+          setupWiFiScreenFail();
+        }
+      }
     }
   }
   if (state == 104) {
@@ -595,7 +607,13 @@ void checkDeviceSetup() {
       downloadProfilesScreen();
     }
   }
+  if (state == 1040) {
+    if (millis() - startTime > 5000) {
+      setupWiFiScreen2();
+    }
+  }
   if (state == 105) {
+    //    WiFi.onEvent(WiFiEvent);
     if (tempInt == numOfRecords) {
       profilesDownloadFinished();
     }
@@ -606,8 +624,10 @@ void checkDeviceSetup() {
     }
   }
   if (state == 107) {
-    if (tempInt == numOfRecords) {
-      webserverDownloadFinished();
+    if (tempInt != 0 && numOfRecords != 0) {
+      if (tempInt == numOfRecords) {
+        webserverDownloadFinished();
+      }
     }
   }
   if (state == 108) {
@@ -656,60 +676,70 @@ bool getFiles(String address, String fileName, String dir = "/") {
   url += address;
   url += fileName; //.substring(1);
   Serial.println("Address of the file is: " + url);
-  //  String fileName_ = "/";
-  //  fileName_ += fileName;
   dir += "/";
   dir += fileName;
   Serial.println("Full path is: " + dir);
   //  File f = SPIFFS.open(fileName_, "w");
   File f = SPIFFS.open(dir, "w");
-  if (f) {
-    //    http.begin(address);
-    http.begin(url);
-    int httpCode = http.GET();
-    int len = http.getSize();
-    fileSize = len;
+  http.begin(url);
+  int httpCode = http.GET();
+  int len = http.getSize();
+  fileSize = len;
+  if (len != -1) {
     Serial.println("File size is: " + String(len));
     if (httpCode == 200) {
-      //      if (httpCode == HTTP_CODE_OK) {
-      //        http.writeToStream(&f);
-      WiFiClient *stream = http.getStreamPtr();
-      // read all data from server
-      while (http.connected() && (len > 0 || len == -1)) {
-        size_t size = stream->available();
-        if (size) {
-          // read up to 128 byte
-          int c = stream->readBytes(buff, ((size > sizeof(buff)) ? sizeof(buff) : size));
-          // Calculate percentage of downloaded file and write it to Serial
-          float percentage = (fileSize - size) / (fileSize / 100.0);
-          Serial.printf("%4.1f %| %d bytes available for read \r\n", percentage, size);
-
-          f.write(buff, c);
-          if (len > 0) {
-            len -= c;
+//      
+      if (f) {
+        WiFiClient *stream = http.getStreamPtr();
+        // read all data from server
+        while (http.connected() && (len > 0 || len == -1)) {
+          size_t size = stream->available();
+          if (size) {
+            // read up to 128 byte
+            int c = stream->readBytes(buff, ((size > sizeof(buff)) ? sizeof(buff) : size));
+            // Calculate percentage of downloaded file and write it to Serial
+            percentage = 0;
+            percentage = (fileSize - size) / (fileSize / 100.0);
+            Serial.printf("%4.1f %| %d bytes available for read \r\n", percentage, size);
+            updateFilesDownloading();
+            f.write(buff, c);
+            if (len > 0) {
+              len -= c;
+            }
           }
         }
       }
     } else {
       Serial.printf("[HTTP] GET... failed, error: %s\n", http.errorToString(httpCode).c_str());
     }
+    http.end();
+    Serial.println("Connection closed");
     f.close();
     Serial.println("File closed");
+    // Compare size of file
+    f = SPIFFS.open(dir, "r");
+    if (fileSize == f.size()) {
+      compareStat = 1;
+      Serial.println("Size of downloaded file is equal to expected!");
+    }
+    else {
+      Serial.println("Size of downloaded file is NOT equal to expected!");
+    }
+    f.close();
+    Serial.println("----------------------------");
+    Serial.println();
+    return compareStat;
+  } else {
+    Serial.println("Not connected to the Internet!");
   }
-  http.end();
-  Serial.println("Connection closed");
+}
 
-  // Compare size of file
-  f = SPIFFS.open(dir, "r");
-  if (fileSize == f.size()) {
-    compareStat = 1;
-    Serial.println("Size of downloaded file is equal to expected!");
+static void WiFiEvent(WiFiEvent_t event, WiFiEventInfo_t info)
+{
+  if (event == SYSTEM_EVENT_STA_DISCONNECTED) {
+    if (info.disconnected.reason == 6) {
+      Serial.println("NOT_AUTHED reconnect");
+      WiFi.reconnect();
+    }
   }
-  else {
-    Serial.println("Size of downloaded file is NOT equal to expected!");
-  }
-  f.close();
-  Serial.println("----------------------------");
-  Serial.println();
-  return compareStat;
 }

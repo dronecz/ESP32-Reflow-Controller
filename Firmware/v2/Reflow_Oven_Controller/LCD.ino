@@ -889,6 +889,30 @@ void setupWiFiScreenDone() {
   centeredText(ipAddress, ILI9341_BLUE, y += h);
 }
 
+void setupWiFiScreenFail() {
+  startTime = millis();
+  wm.stopConfigPortal();
+  previousState = state;
+  state = 1040;
+  numOfPointers = 0;
+  //  settings_pointer = 0; // clear pointer
+#ifdef DEBUG
+  Serial.println("State is :" + String(state));
+#endif
+  int y = 85; //from left side of the LCD
+  int h = 20;
+  display.setRotation(2);
+  display.setFont(&FreeSerif9pt7b);
+  display.fillScreen(ILI9341_BLACK);
+  display.setTextColor(ILI9341_WHITE);
+  display.setTextSize(1);
+  display.setCursor(0, 4);
+  centeredText("WiFi setup", ILI9341_RED, y);
+  centeredText("failed! ", ILI9341_RED, y += h);
+  centeredText("Restarting", ILI9341_RED, y += h);
+  centeredText("WiFiManager...", ILI9341_RED, y += h);
+}
+
 void downloadProfilesScreen() {
   previousState = state;
   state = 105;
@@ -946,6 +970,7 @@ void profilesDownloadFinished() {
 
 void useWebserverScreen() {
   previousState = state;
+  tempInt, numOfRecords = 0;
   state = 107;
   numOfPointers = 0;
   //  settings_pointer = 0; // clear pointer
@@ -973,6 +998,33 @@ void useWebserverScreen() {
   numOfPointers++;
   leftText(" skip setup", ILI9341_RED, y += h);
   ShowMenuOptions(true);
+}
+
+void updateFilesDownloading() {
+  //  settings_pointer = 0; // clear pointer
+#ifdef DEBUG
+  Serial.println("State is :" + String(state));
+#endif
+  int y = 85; //from left side of the LCD
+  int h = 25;
+//  String tempS = percentage.toString();
+  if (tempInt == 0) {
+    display.setRotation(2);
+    display.setFont(&FreeSerif9pt7b);
+    display.fillScreen(ILI9341_BLACK);
+    display.setTextColor(ILI9341_WHITE);
+    display.setTextSize(1);
+    display.setCursor(0, 4);
+    centeredText("Downloading", ILI9341_GREEN, y);
+    centeredText("files:", ILI9341_GREEN, y += h);
+    centeredText(" ", ILI9341_GREEN, y += h);
+    centeredText("Current file" + String(percentage), ILI9341_GREEN, y += h);
+    centeredText("Files: " + String(tempInt) + " / " + String(numOfRecords), ILI9341_GREEN, y += h);
+  } else {
+    y = 135;
+    centeredText("Current file: " + String(percentage) + "%", ILI9341_GREEN, y += h);
+    centeredText("Files: " + String(tempInt) + " / " + String(numOfRecords), ILI9341_GREEN, y += h);
+  }
 }
 
 void webserverDownloadFinished() {
@@ -1008,7 +1060,7 @@ void finishSetupScreen() {
 #ifdef DEBUG
   Serial.println("State is :" + String(state));
 #endif
-  int y = 55; //from left side of the LCD
+  int y = 105; //from left side of the LCD
   int h = 40;
   display.setRotation(2);
   display.setFont(&FreeSerif9pt7b);
