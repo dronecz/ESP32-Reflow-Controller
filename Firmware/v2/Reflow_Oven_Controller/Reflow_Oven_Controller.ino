@@ -114,7 +114,6 @@ unsigned long startTime = 0; //variable to store millis from start
 String apName; // variable to store SSID for flash memory
 int tempInt = -1;
 int numOfRecords;
-float percentage;
 
 // Structure for paste profiles
 typedef struct {
@@ -698,10 +697,10 @@ bool getFiles(String address, String fileName, String dir = "/") {
             // read up to 128 byte
             int c = stream->readBytes(buff, ((size > sizeof(buff)) ? sizeof(buff) : size));
             // Calculate percentage of downloaded file and write it to Serial
-            percentage = 0;
-            percentage = (fileSize - size) / (fileSize / 100.0);
+            float percentage = (fileSize - size) / (fileSize / 100.0);
             Serial.printf("%4.1f %| %d bytes available for read \r\n", percentage, size);
-            updateFilesDownloading();
+            String tempS = String(percentage);
+            updateFilesDownloading(tempS);
             f.write(buff, c);
             if (len > 0) {
               len -= c;

@@ -1000,14 +1000,13 @@ void useWebserverScreen() {
   ShowMenuOptions(true);
 }
 
-void updateFilesDownloading() {
+void updateFilesDownloading(String temp) {
   //  settings_pointer = 0; // clear pointer
 #ifdef DEBUG
   Serial.println("State is :" + String(state));
 #endif
   int y = 85; //from left side of the LCD
-  int h = 25;
-//  String tempS = percentage.toString();
+  int h = 25;;
   if (tempInt == 0) {
     display.setRotation(2);
     display.setFont(&FreeSerif9pt7b);
@@ -1018,11 +1017,11 @@ void updateFilesDownloading() {
     centeredText("Downloading", ILI9341_GREEN, y);
     centeredText("files:", ILI9341_GREEN, y += h);
     centeredText(" ", ILI9341_GREEN, y += h);
-    centeredText("Current file" + String(percentage), ILI9341_GREEN, y += h);
+    centeredText("Current file: " + temp, ILI9341_GREEN, y += h);
     centeredText("Files: " + String(tempInt) + " / " + String(numOfRecords), ILI9341_GREEN, y += h);
   } else {
     y = 135;
-    centeredText("Current file: " + String(percentage) + "%", ILI9341_GREEN, y += h);
+    centeredText("Current file: " + temp + "%", ILI9341_GREEN, y += h);
     centeredText("Files: " + String(tempInt) + " / " + String(numOfRecords), ILI9341_GREEN, y += h);
   }
 }
