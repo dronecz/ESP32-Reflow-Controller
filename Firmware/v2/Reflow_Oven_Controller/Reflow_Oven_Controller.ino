@@ -687,7 +687,7 @@ bool getFiles(String address, String fileName, String dir = "/") {
   if (len != -1) {
     Serial.println("File size is: " + String(len));
     if (httpCode == 200) {
-//      
+      //
       if (f) {
         WiFiClient *stream = http.getStreamPtr();
         // read all data from server
@@ -697,7 +697,9 @@ bool getFiles(String address, String fileName, String dir = "/") {
             // read up to 128 byte
             int c = stream->readBytes(buff, ((size > sizeof(buff)) ? sizeof(buff) : size));
             // Calculate percentage of downloaded file and write it to Serial
-            float percentage = (fileSize - size) / (fileSize / 100.0);
+            int p;
+            p += (int)sizeof(buff);
+            float percentage = (fileSize - p) / (fileSize / 100.0);
             Serial.printf("%4.1f %| %d bytes available for read \r\n", percentage, size);
             String tempS = String(percentage);
             updateFilesDownloading(tempS);

@@ -1021,7 +1021,7 @@ void updateFilesDownloading(String temp) {
     centeredText("Files: " + String(tempInt) + " / " + String(numOfRecords), ILI9341_GREEN, y += h);
   } else {
     y = 135;
-    centeredText("Current file: " + temp + "%", ILI9341_GREEN, y += h);
+    centeredText("Current file left: " + temp + "%", ILI9341_GREEN, y += h);
     centeredText("Files: " + String(tempInt) + " / " + String(numOfRecords), ILI9341_GREEN, y += h);
   }
 }
