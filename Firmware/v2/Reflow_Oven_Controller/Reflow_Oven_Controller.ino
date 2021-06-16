@@ -591,13 +591,22 @@ void checkDeviceSetup() {
         setupWiFiScreenDone();
       } else {
         //if we did not get IP address, we have to clear SSID
-        WiFi.disconnect(true);
-        yield();
-        Serial.println("AP name after clear is: " + apName);
-        Serial.println("No IP address, restart WiFi setup.");
-        if (apName == NULL) {
-          setupWiFiScreenFail();
-        }
+//        WiFi.disconnect(true);
+        wifi_init_config_t cfg = WIFI_INIT_CONFIG_DEFAULT(); //load the flash-saved configs
+        esp_wifi_init(&cfg); //initiate and allocate wifi resources (does not matter if connection fails) 
+        if(esp_wifi_restore()!=ESP_OK)
+        {
+            Serial.println("WiFi is not initialized by esp_wifi_init ");
+         }else{
+             Serial.println("WiFi Configurations Cleared!");
+             setupWiFiScreenFail();
+         }
+//        yield();
+//        Serial.println("AP name after clear is: " + apName);
+//        Serial.println("No IP address, restart WiFi setup.");
+//        if (apName == NULL) {
+//          setupWiFiScreenFail();
+//        }
       }
     }
   }
@@ -699,7 +708,7 @@ bool getFiles(String address, String fileName, String dir = "/") {
             // Calculate percentage of downloaded file and write it to Serial
             int p;
             p += (int)sizeof(buff);
-            float percentage = (fileSize - p) / (fileSize / 100.0);
+            float percentage = 100 - ((fileSize - p) / (fileSize / 100.0));
             Serial.printf("%4.1f %| %d bytes available for read \r\n", percentage, size);
             String tempS = String(percentage);
             updateFilesDownloading(tempS);
