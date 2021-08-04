@@ -1000,30 +1000,30 @@ void useWebserverScreen() {
   ShowMenuOptions(true);
 }
 
-void updateFilesDownloading(String temp) {
-  //  settings_pointer = 0; // clear pointer
-#ifdef DEBUG
-  Serial.println("State is :" + String(state));
-#endif
+void downloadDataScreen() {
   int y = 85; //from left side of the LCD
   int h = 25;;
-  if (tempInt == 0) {
     display.setRotation(2);
     display.setFont(&FreeSerif9pt7b);
     display.fillScreen(ILI9341_BLACK);
     display.setTextColor(ILI9341_WHITE);
     display.setTextSize(1);
     display.setCursor(0, 4);
-    centeredText("Downloading", ILI9341_GREEN, y);
-    centeredText("files:", ILI9341_GREEN, y += h);
-    centeredText(" ", ILI9341_GREEN, y += h);
-    centeredText("Current file: " + temp, ILI9341_GREEN, y += h);
-    centeredText("Files: " + String(tempInt) + " / " + String(numOfRecords), ILI9341_GREEN, y += h);
-  } else {
-    y = 135;
-    centeredText("Current file left: " + temp + "%", ILI9341_GREEN, y += h);
-    centeredText("Files: " + String(tempInt) + " / " + String(numOfRecords), ILI9341_GREEN, y += h);
-  }
+    centeredText("Downloading... ", ILI9341_GREEN, y); //85
+    centeredText(" ", ILI9341_GREEN, y += h); //110
+    centeredText("Current file: ", ILI9341_BLUE, y += h); //135
+    centeredText(" ", ILI9341_GREEN, y += h); //160
+    centeredText("Files: ", ILI9341_CYAN, y += h); //185
+    centeredText(" ", ILI9341_GREEN, y += h); //210
+}
+
+void updateFilesDownloading(String temp) {
+  int y = 160;
+  centeredText(" ", ILI9341_GREEN, y);
+  centeredText(temp, ILI9341_GREEN, y);
+  y = 210;
+  centeredText(" ", ILI9341_GREEN, y);
+  centeredText(String(tempInt) + " / " + String(numOfRecords), ILI9341_GREEN, y);
 }
 
 void webserverDownloadFinished() {

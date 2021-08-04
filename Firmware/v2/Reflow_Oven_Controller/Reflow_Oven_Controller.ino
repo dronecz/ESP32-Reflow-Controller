@@ -9,8 +9,8 @@
 #include <Preferences.h>
 #include <WiFi.h>
 #include <ESPAsyncWebServer.h>
-#include <WebSocketsServer.h>
-#include <DNSServer.h>
+//#include <WebSocketsServer.h>
+//#include <DNSServer.h>
 #include <ESPmDNS.h>
 #include <Update.h>
 #include "FS.h"
@@ -39,7 +39,7 @@ Preferences preferences;
 AsyncWebServer server(80);
 AsyncEventSource events("/events");
 DNSServer dns;
-WebSocketsServer webSocket = WebSocketsServer(1337);
+//WebSocketsServer webSocket = WebSocketsServer(1337);
 WiFiManager wm;
 char msg_buf[10];
 
@@ -75,6 +75,10 @@ bool testState = 0;
 bool useSPIFFS = 1;
 bool setupDone = 0;
 bool useWebserver = 0;
+bool portalRunning      = false;
+bool startAP            = true; // start AP and webserver if true, else start only webserver
+unsigned int  timeout   = 120; // seconds to run for
+unsigned int  startTime = millis();
 
 // Button variables
 int buttonVal[numDigButtons] = {0};                            // value read from button
@@ -110,10 +114,11 @@ String inputMessage1;
 int inputMessage2;
 String settingsValues;
 String setSettingsValue;
-unsigned long startTime = 0; //variable to store millis from start
+//unsigned long startTime = 0; //variable to store millis from start
 String apName; // variable to store SSID for flash memory
 int tempInt = -1;
 int numOfRecords;
+String serialMessages;
 
 // Structure for paste profiles
 typedef struct {
@@ -394,14 +399,15 @@ void processButtons() {
 
 void loop() {
   checkDeviceSetup();
-  wm.process();
+//  wm.process();
   if (state != 9) { // if we are in test menu, disable LED & SSR control in loop
     reflow_main();
   }
   processButtons();
   //server.handleClient(); // Listen for client connections
   // Look for and handle WebSocket data
-  webSocket.loop();
+  //  webSocket.loop();
+  sendDebug();
 }
 
 //***********************************//
@@ -456,10 +462,46 @@ void readFile(fs::FS & fs, String path, const char * type) {
 }
 
 void wifiSetup() {
+//    wm.autoConnect();
+  // is auto timeout portal running
+  //  if (portalRunning) {
+  //    wm.process(); // do processing
+  //
+  //    // check for timeout
+  //    if ((millis() - startTime) > (timeout * 1000)) {
+  //      Serial.println("portaltimeout");
+  //      portalRunning = false;
+  //      if (startAP) {
+  //        wm.stopConfigPortal();
+  //      }
+  //      else {
+  //        wm.stopWebPortal();
+  //      }
+  //    }
+  //  }
+  //
+  //  // is configuration portal requested?
+  //  if (!portalRunning) {
+  //    if (startAP) {
+  //      Serial.println("Button Pressed, Starting Config Portal");
+  //      //      wm.setConfigPortalBlocking(false);
+  //      //      wm.startConfigPortal();
+  //      wm.startConfigPortal("ReflowOvenAP");
+  //    }
+  //    else {
+  //      Serial.println("Button Pressed, Starting Web Portal");
+  //      wm.startWebPortal();
+  //    }
+  //    portalRunning = true;
+  //    startTime = millis();
+  //  }
+
   server.end();
   //  int timeout = 120; // seconds to run for
   //  wm.setConfigPortalTimeout(timeout);
-  wm.setConfigPortalBlocking(false);
+//  wm.DEBUG_WM(DEBUG_MAX);
+    WiFi.mode(WIFI_STA); // explicitly set mode, esp defaults to STA+AP
+    wm.setConfigPortalBlocking(false);
   wm.startConfigPortal("ReflowOvenAP");
   //  if (wm.startConfigPortal("ReflowOvenAP")) {
   //    Serial.println("connected...yeey :)");
@@ -541,6 +583,10 @@ void webserverFunc() {
     request->send_P(200, "text/plain", setSettingsValue.c_str());
   });
 
+  server.on("/serialMess", HTTP_GET, [](AsyncWebServerRequest * request) {
+    request->send_P(200, "text/plain", serialMessages.c_str());
+  });
+
   // Send a GET request to <ESP_IP>/update?output=<inputMessage1>&state=<inputMessage2>
   server.on("/update", HTTP_GET, [] (AsyncWebServerRequest * request) {
     // GET input1 value on <ESP_IP>/update?output=<inputMessage1>&state=<inputMessage2>
@@ -591,22 +637,22 @@ void checkDeviceSetup() {
         setupWiFiScreenDone();
       } else {
         //if we did not get IP address, we have to clear SSID
-//        WiFi.disconnect(true);
+        //        WiFi.disconnect(true);
         wifi_init_config_t cfg = WIFI_INIT_CONFIG_DEFAULT(); //load the flash-saved configs
-        esp_wifi_init(&cfg); //initiate and allocate wifi resources (does not matter if connection fails) 
-        if(esp_wifi_restore()!=ESP_OK)
+        esp_wifi_init(&cfg); //initiate and allocate wifi resources (does not matter if connection fails)
+        if (esp_wifi_restore() != ESP_OK)
         {
-            Serial.println("WiFi is not initialized by esp_wifi_init ");
-         }else{
-             Serial.println("WiFi Configurations Cleared!");
-             setupWiFiScreenFail();
-         }
-//        yield();
-//        Serial.println("AP name after clear is: " + apName);
-//        Serial.println("No IP address, restart WiFi setup.");
-//        if (apName == NULL) {
-//          setupWiFiScreenFail();
-//        }
+          Serial.println("WiFi is not initialized by esp_wifi_init ");
+        } else {
+          Serial.println("WiFi Configurations Cleared!");
+          setupWiFiScreenFail();
+        }
+        //        yield();
+        //        Serial.println("AP name after clear is: " + apName);
+        //        Serial.println("No IP address, restart WiFi setup.");
+        //        if (apName == NULL) {
+        //          setupWiFiScreenFail();
+        //        }
       }
     }
   }
@@ -674,8 +720,8 @@ String getProfile(int Id) {
   Serial.println("Profile as String is: " + returnString);
   return returnString;
 }
-
-bool getFiles(String address, String fileName, String dir = "/") {
+/*
+  bool getFiles(String address, String fileName, String dir = "/") {
   // create buffer for read
   uint8_t buff[128] = {0}; // 2048
   int fileSize;
@@ -708,7 +754,7 @@ bool getFiles(String address, String fileName, String dir = "/") {
             // Calculate percentage of downloaded file and write it to Serial
             int p;
             p += (int)sizeof(buff);
-            float percentage = 100 - ((fileSize - p) / (fileSize / 100.0));
+            float percentage = (fileSize - p) / (fileSize / 100.0);
             Serial.printf("%4.1f %| %d bytes available for read \r\n", percentage, size);
             String tempS = String(percentage);
             updateFilesDownloading(tempS);
@@ -742,6 +788,80 @@ bool getFiles(String address, String fileName, String dir = "/") {
   } else {
     Serial.println("Not connected to the Internet!");
   }
+  }
+*/
+
+
+bool getFiles(String address, String fileName, String dir = "/") {
+  // create buffer for read
+  uint8_t buff[128] = {0}; // 2048
+  int fileSize;
+  bool compareStat = 0;
+  String url;
+  url += address;
+  url += fileName; //.substring(1);
+  Serial.println("Address of the file is: " + url);
+  dir += "/";
+  dir += fileName;
+  Serial.println("Full path is: " + dir);
+  File f = SPIFFS.open(dir, "w");
+  Serial.println(f);
+  if (f) {
+    //    http.begin(address);
+    http.begin(url);
+    int httpCode = http.GET();
+    int len = http.getSize();
+    fileSize = len;
+    Serial.println("File size is: " + String(len));
+    if (httpCode == 200) {
+      //      if (httpCode == HTTP_CODE_OK) {
+      //        http.writeToStream(&f);
+      WiFiClient *stream = http.getStreamPtr();
+      // read all data from server
+      while (http.connected() && (len > 0 || len == -1)) {
+        size_t size = stream->available();
+        if (size) {
+          // read up to 128 byte
+          int c = stream->readBytes(buff, ((size > sizeof(buff)) ? sizeof(buff) : size));
+          // write it to Serial
+          //Serial.printf("%d bytes read[c].\r\n", c);
+          //Serial.printf("%d bytes available for read \r\n", size);
+          // Calculate percentage of downloaded file
+          int p;
+          p += (int)sizeof(buff);
+          float percentage = 100 - ((fileSize - p) / (fileSize / 100.0));
+          Serial.printf("%4.1f %| %d bytes available for read \r\n", percentage, size);
+          String tempS = String(percentage);
+          updateFilesDownloading(tempS);
+          f.write(buff, c);
+          if (len > 0) {
+            len -= c;
+          }
+        }
+      }
+    } else {
+      Serial.printf("[HTTP] GET... failed, error: %s\n", http.errorToString(httpCode).c_str());
+    }
+    f.close();
+    Serial.println("File closed");
+  }
+  http.end();
+  Serial.println("Connection closed");
+
+  // Compare size of file
+  f = SPIFFS.open(dir, "r");
+  if (fileSize == f.size()) {
+    compareStat = 1;
+    Serial.println("Size of downloaded file is equal to expected!");
+  }
+  else {
+    Serial.println("Size of downloaded file is NOT equal to expected!");
+    Serial.println("File size in SPIFFS is: " + String(f.size()));
+  }
+  f.close();
+  Serial.println("----------------------------");
+  Serial.println();
+  return compareStat;
 }
 
 static void WiFiEvent(WiFiEvent_t event, WiFiEventInfo_t info)
@@ -750,6 +870,15 @@ static void WiFiEvent(WiFiEvent_t event, WiFiEventInfo_t info)
     if (info.disconnected.reason == 6) {
       Serial.println("NOT_AUTHED reconnect");
       WiFi.reconnect();
+    }
+  }
+}
+
+void sendDebug() {
+  if (useWebserver != 0) {
+    if (Serial.available()) {
+      serialMessages = Serial.read();
+      events.send(serialMessages.c_str(), "serialMess");
     }
   }
 }

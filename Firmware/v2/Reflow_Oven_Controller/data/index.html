@@ -342,6 +342,10 @@
       source.addEventListener('message', function (e) {
         console.log("message", e.data);
       }, false);
+      
+      source.addEventListener('serialMess', function (e) {
+        console.log("serialMess", e.data);
+      }, false);
 
       source.addEventListener('showchart', function (e) {
         chartVar = parseInt(e.data);

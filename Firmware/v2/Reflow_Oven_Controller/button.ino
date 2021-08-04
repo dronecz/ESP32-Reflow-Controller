@@ -327,7 +327,7 @@ void event1(int pin) {
           setupButtonsScreen();
         } else {
           loopScreen();
-          //          setupDone = 1;
+                    setupDone = 1;
           changeValues("setupDone", setupDone, 0);
         }
       } else if (state == 101) {
@@ -342,7 +342,7 @@ void event1(int pin) {
           setupWiFiScreen();
         } else {
           loopScreen();
-          //          setupDone = 1;
+                    setupDone = 1;
           changeValues("setupDone", setupDone, 0);
         }
       } else if (state == 102) {
@@ -354,7 +354,7 @@ void event1(int pin) {
           //set next screen!
         } else {
           loopScreen();
-          //          setupDone = 1;
+                    setupDone = 1;
           changeValues("setupDone", setupDone, 0);
         }
       } else if (state == 103) {
@@ -363,12 +363,13 @@ void event1(int pin) {
           //add next step after wifi skip!
         } else {
           loopScreen();
-          //          setupDone = 1;
+                    setupDone = 1;
           changeValues("setupDone", setupDone, 0);
         }
       } else if (state == 105) {
         //settings_pointer = 0; // clear pointer
         if (settings_pointer == 0) {
+          downloadDataScreen();
           numOfRecords = (int)sizeof(profileNamesDownload) / sizeof(profileNamesDownload[0]);
           tempInt = 0;
           for (int i = 0; i < numOfRecords; i++ ) {
@@ -380,13 +381,14 @@ void event1(int pin) {
           useWebserverScreen();
         } else {
           loopScreen();
-          //          setupDone = 1;
+                    setupDone = 1;
           changeValues("setupDone", setupDone, 0);
         }
       } else if (state == 107) {
 
         //settings_pointer = 0; // clear pointer
         if (settings_pointer == 0) {
+          downloadDataScreen();
           Serial.println("*****************");
           Serial.println("Number of files for download: " + String(numOfRecords));
           Serial.println("Number of files for download: " + String(tempInt));

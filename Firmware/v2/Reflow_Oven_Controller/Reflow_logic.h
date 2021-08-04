@@ -196,6 +196,7 @@ long lastDebounceTime;
 switch_t switchStatus;
 // Seconds timer
 int timerSeconds;
+bool startTemp = 0;
 
 // Specify PID control interface & it must be here, after all declaration
 PID reflowOvenPID(&input, &output, &setpoint, kp, ki, kd, DIRECT);
@@ -210,8 +211,16 @@ void reflow_main() {
     // Read thermocouple next sampling period
     nextRead += SENSOR_SAMPLING_TIME;
     // Read current temperature
-
-    input = max31856.readThermocoupleTemperature();
+    if (startTemp != 1) { // if we did not read temp yet
+      input = max31856.readThermocoupleTemperature(); // read temp for the first time after start
+      if (input >= 30) { //if temp of the oven is higher than 30°C
+        tempCorrection = input - 30; // than, subtract 30 degrees from actual temp to get error offset
+        startTemp = 1; // set bool variable so we will not do this again at  next read 
+        Serial.println("Temp correction value is: " + String(tempCorrection));
+      }
+    }
+    
+    input = max31856.readThermocoupleTemperature() - tempCorrection;
 
     // Check and print any faults
     uint8_t fault = max31856.readFault();
