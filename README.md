@@ -30,6 +30,8 @@ Second version of the board. Reworked buzzer and changed for SMD version.
 
 This board include 2 more buttons (Menu & Back button), fan connector, Reset button and USB-C connector.
 
+Board dimensions are 105 x 51 mm. 
+
 ***
 
 ### There are 2 version of firmware for this board:
