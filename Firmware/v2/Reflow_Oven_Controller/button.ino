@@ -350,7 +350,6 @@ void event1(int pin) {
         if (settings_pointer == 0) {
           setupWiFiScreen2();
         } else if (settings_pointer == 1) {
-          wm.stopConfigPortal();
           //set next screen!
         } else {
           loopScreen();
@@ -359,7 +358,6 @@ void event1(int pin) {
         }
       } else if (state == 103) {
         if (settings_pointer == 0) {
-          wm.stopConfigPortal();
           //add next step after wifi skip!
         } else {
           loopScreen();

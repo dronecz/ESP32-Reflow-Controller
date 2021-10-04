@@ -9,18 +9,16 @@
 #include <Preferences.h>
 #include <WiFi.h>
 #include <ESPAsyncWebServer.h>
-//#include <WebSocketsServer.h>
-//#include <DNSServer.h>
+#include <DNSServer.h>
 #include <ESPmDNS.h>
 #include <Update.h>
 #include "FS.h"
 #include <SD.h>
-//#include <wifiTool.h> //https://github.com/oferzv/wifiTool
-#include <WiFiManager.h>
 #include "SPI.h"
 #include "config.h"
 #include "Button.h"
 #include <SPIFFS.h>
+#include <esp_wifi.h>
 
 HTTPClient http;
 
@@ -39,8 +37,6 @@ Preferences preferences;
 AsyncWebServer server(80);
 AsyncEventSource events("/events");
 DNSServer dns;
-//WebSocketsServer webSocket = WebSocketsServer(1337);
-WiFiManager wm;
 char msg_buf[10];
 
 #define DEBOUNCE_MS 100
@@ -308,7 +304,6 @@ void setup() {
   }
 
   if (setupDone != 1) {
-    wm.resetSettings();
   }
 
   if (useWebserver != 0) {
@@ -399,7 +394,6 @@ void processButtons() {
 
 void loop() {
   checkDeviceSetup();
-//  wm.process();
   if (state != 9) { // if we are in test menu, disable LED & SSR control in loop
     reflow_main();
   }
@@ -462,53 +456,12 @@ void readFile(fs::FS & fs, String path, const char * type) {
 }
 
 void wifiSetup() {
-//    wm.autoConnect();
-  // is auto timeout portal running
-  //  if (portalRunning) {
-  //    wm.process(); // do processing
-  //
-  //    // check for timeout
-  //    if ((millis() - startTime) > (timeout * 1000)) {
-  //      Serial.println("portaltimeout");
-  //      portalRunning = false;
-  //      if (startAP) {
-  //        wm.stopConfigPortal();
-  //      }
-  //      else {
-  //        wm.stopWebPortal();
-  //      }
-  //    }
-  //  }
-  //
-  //  // is configuration portal requested?
-  //  if (!portalRunning) {
-  //    if (startAP) {
-  //      Serial.println("Button Pressed, Starting Config Portal");
-  //      //      wm.setConfigPortalBlocking(false);
-  //      //      wm.startConfigPortal();
-  //      wm.startConfigPortal("ReflowOvenAP");
-  //    }
-  //    else {
-  //      Serial.println("Button Pressed, Starting Web Portal");
-  //      wm.startWebPortal();
-  //    }
-  //    portalRunning = true;
-  //    startTime = millis();
-  //  }
 
-  server.end();
-  //  int timeout = 120; // seconds to run for
-  //  wm.setConfigPortalTimeout(timeout);
-//  wm.DEBUG_WM(DEBUG_MAX);
-    WiFi.mode(WIFI_STA); // explicitly set mode, esp defaults to STA+AP
-    wm.setConfigPortalBlocking(false);
-  wm.startConfigPortal("ReflowOvenAP");
-  //  if (wm.startConfigPortal("ReflowOvenAP")) {
-  //    Serial.println("connected...yeey :)");
-  //  }
-  //  else {
-  //    Serial.println("Configportal running");
-  //  }
+  Serial.println(F("Running AP.."));
+  WiFi.mode(WIFI_AP);
+  WiFi.softAPConfig(IPAddress(192, 168, 4, 1), IPAddress(192, 168, 4, 1), IPAddress(255, 255, 255, 0));
+  WiFi.softAP("ReflowOvenAP");
+  webserverFunc();
 }
 
 void webserverFunc() {

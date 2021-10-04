@@ -891,7 +891,6 @@ void setupWiFiScreenDone() {
 
 void setupWiFiScreenFail() {
   startTime = millis();
-  wm.stopConfigPortal();
   previousState = state;
   state = 1040;
   numOfPointers = 0;
