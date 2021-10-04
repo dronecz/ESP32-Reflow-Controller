@@ -124,6 +124,14 @@ typedef enum REFLOW_STATE
   REFLOW_STATE_ERROR
 } reflowState_t;
 
+typedef enum BAKE_STATE
+{
+  BAKE_STATE_IDLE,
+  BAKE_STATE_BAKE,
+  BAKE_STATE_COOL,
+  BAKE_STATE_COMPLETE
+} bakeState_t;
+
 typedef enum REFLOW_STATUS
 {
   REFLOW_STATUS_OFF,
@@ -197,6 +205,7 @@ switch_t switchStatus;
 // Seconds timer
 int timerSeconds;
 bool startTemp = 0;
+bakeState_t bakeState;
 
 // Specify PID control interface & it must be here, after all declaration
 PID reflowOvenPID(&input, &output, &setpoint, kp, ki, kd, DIRECT);
@@ -215,11 +224,11 @@ void reflow_main() {
       input = max31856.readThermocoupleTemperature(); // read temp for the first time after start
       if (input >= 30) { //if temp of the oven is higher than 30°C
         tempCorrection = input - 30; // than, subtract 30 degrees from actual temp to get error offset
-        startTemp = 1; // set bool variable so we will not do this again at  next read 
+        startTemp = 1; // set bool variable so we will not do this again at  next read
         Serial.println("Temp correction value is: " + String(tempCorrection));
       }
     }
-    
+
     input = max31856.readThermocoupleTemperature() - tempCorrection;
 
     // Check and print any faults
@@ -439,8 +448,75 @@ void reflow_main() {
         reflowState = REFLOW_STATE_IDLE;
       }
       break;
+
   }
 
+  switch (bakeState) {
+
+    case BAKE_STATE_IDLE:
+      if (input >= TEMPERATURE_ROOM)
+      {
+        reflowState = REFLOW_STATE_TOO_HOT;
+        Serial.println("Status: Too hot to start");
+      }
+      else
+      {
+        // If switch is pressed to start reflow process
+        if (profileIsOn != 0)
+        {
+          events.send(String(profileIsOn).c_str(), "showchart");
+          Serial.println("Sending start of the profile to the webserver!");
+          // Send header for CSV file
+          Serial.println("Time Setpoint Input Output");
+          // Intialize seconds timer for serial debug information
+          timerSeconds = 0;
+          // Initialize PID control window starting time
+          windowStartTime = millis();
+          // Ramp up to minimum soaking temperature
+          setpoint = bakeTemp;
+          // Tell the PID to range between 0 and the full window size
+          reflowOvenPID.SetOutputLimits(0, windowSize);
+          reflowOvenPID.SetSampleTime(PID_SAMPLE_TIME);
+          // Turn the PID on
+          reflowOvenPID.SetMode(AUTOMATIC);
+          // Proceed to preheat stage
+          bakeState = BAKE_STATE_BAKE;
+        }
+      }
+      break;
+
+    case BAKE_STATE_BAKE:
+      activeStatus = "Baking";
+      reflowStatus = REFLOW_STATUS_ON;
+      float wantedTemp;
+      // If time for bake is runout, finish baking
+      if (currentBakeTime >= bakeTime)
+      {
+        // Retrieve current time for buzzer usage
+        buzzerPeriod = millis() + 1000;
+        // Turn on buzzer and green LED to indicate completion
+        digitalWrite(buzzerPin, HIGH);
+        // Turn off reflow process
+        reflowStatus = REFLOW_STATUS_OFF;
+        // Proceed to reflow Completion state
+        bakeState = BAKE_STATE_COMPLETE;
+      }
+      break;
+
+    case BAKE_STATE_COMPLETE:
+      activeStatus = "Complete";
+      if (millis() > buzzerPeriod)
+      {
+        // Turn off buzzer and green LED
+        digitalWrite(buzzerPin, LOW);
+        // Reflow process ended
+        reflowState = REFLOW_STATE_IDLE;
+        profileIsOn = 0;
+        disableMenu = 0;
+        Serial.println("Baking is OFF");
+      }
+      break;
+  }
   // If switch 1 is pressed
   if (switchStatus == SWITCH_1)
   {

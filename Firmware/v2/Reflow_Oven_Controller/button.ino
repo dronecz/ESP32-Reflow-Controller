@@ -171,81 +171,105 @@ void event1(int pin) {
         }
       }
       else if (state == 1) { // main menu
-        if (settings_pointer == 0) {
-          if (disableMenu != 0) {
+        if (ovenMode != 1) {
+          if (settings_pointer == 0) {
+            if (disableMenu != 0) {
+              showInfoScreen();
+            } else {
+              showSelectBakeSettingsScreen();
+            }
+          } else if (settings_pointer == 1) {
+            showSettingsScreen();
+          } else if  (settings_pointer == 2) {
             showInfoScreen();
-          } else {
-            showSelectProfileScreen();
+          }else if (settings_pointer == 3 ) {
+            updateFirmware();
           }
-        } else if (settings_pointer == 1) {
-          showChangeProfileScreen();
-        } else if  (settings_pointer == 2) {
-          showAddProfileScreen();
-        } else if  (settings_pointer == 3) {
-          showSettingsScreen();
-        } else if (settings_pointer == 4) {
-          showInfoScreen();
-        } else if (settings_pointer == 5 ) {
-          updateFirmware();
+        } else {
+          if (settings_pointer == 0) {
+            if (disableMenu != 0) {
+              showInfoScreen();
+            } else {
+              showSelectProfileScreen();
+            }
+          } else if (settings_pointer == 1) {
+            showChangeProfileScreen();
+          } else if  (settings_pointer == 2) {
+            showAddProfileScreen();
+          } else if  (settings_pointer == 3) {
+            showSettingsScreen();
+          } else if (settings_pointer == 4) {
+            showInfoScreen();
+          } else if (settings_pointer == 5 ) {
+            updateFirmware();
+          }
+          //previousSettingsPointer = settings_pointer;
         }
-        //previousSettingsPointer = settings_pointer;
       } else if (state == 2) { // select profile
         saveSelectedProfile(settings_pointer);
         showSelectProfileScreen();
       } else if (state == 5) { // settings
         //settings_pointer = 0; // clear pointer
         if (settings_pointer == 0) {
+          ovenMode = !ovenMode;
+          bool temp = ovenMode;
+          if (verboseOutput != 0) {
+            Serial.println("Oven mode value is: " + String(ovenMode));
+          }
+          setMode(55);
+          changeValues("ovenMode", temp, 1);
+        } else if (settings_pointer == 1) {
           buzzer = !buzzer;
           bool temp = buzzer;
           if (verboseOutput != 0) {
             Serial.println("Buzzer value is: " + String(buzzer));
           }
-          setBuzzer(55);
+          setBuzzer(75);
           changeValues("buzzer", temp, 1);
-        } else if (settings_pointer == 1) {
+        } else if (settings_pointer == 2) {
           horizontal = !horizontal;
           bool temp = horizontal;
           if (verboseOutput != 0) {
             Serial.println("Display value is: " + String(horizontal));
           }
-          setDisplay(75);
+          setDisplay(95);
           changeValues("horizontal", temp, 1);
           previousSettingsPointer, settings_pointer = 0;
           startScreen();
-        } else if  (settings_pointer == 2) {
+        } else if  (settings_pointer == 3) {
           useOTA = !useOTA;
           bool temp = useOTA;
           if (verboseOutput != 0) {
             Serial.println("Download FW by OTA: " + String(useOTA));
           }
-          setOTA(95);
+          setOTA(115);
           changeValues("useOTA", temp, 1);
         }
-        else if (settings_pointer == 3) {
+        else if (settings_pointer == 4) {
           buttons = !buttons;
           bool temp = buttons;
           if (verboseOutput != 0) {
             Serial.println("Buttons value is: " + String(buttons));
           }
-          setButtons(115);
+          setButtons(135);
           changeValues("buttons", temp, 1);
           showSettingsScreen();
-        } else if (settings_pointer == 4) {
+        } else if (settings_pointer == 5) {
           useSPIFFS = !useSPIFFS;
           bool temp = useSPIFFS;
           if (verboseOutput != 0) {
             Serial.println("Use SPIFFS: " + String(useSPIFFS));
           }
-          setStorage(135);
+          setStorage(155);
           changeValues("useSPIFFS", temp, 1);
-        } else if  (settings_pointer == 5) {
+        } else if  (settings_pointer == 6) {
           if (buttons != 0) {
             fan = !fan;
             bool temp = fan;
             if (verboseOutput != 0) {
               Serial.println("Fan value is: " + String(fan));
             }
-            setFan(155);
+            setFan(175);
             changeValues("fan", temp, 1);
           } else {
             if (connected != 1) {
@@ -257,7 +281,7 @@ void event1(int pin) {
               testOutputsScreen();
             }
           }
-        } else if  (settings_pointer == 6) {
+        } else if  (settings_pointer == 7) {
           if (buttons != 0) {
             if (connected != 1) {
               if (verboseOutput != 0) {
@@ -268,7 +292,7 @@ void event1(int pin) {
           } else {
             testOutputsScreen();
           }
-        } else if  (settings_pointer == 7) {
+        } else if  (settings_pointer == 8) {
           testOutputsScreen();
         }
         //previousSettingsPointer = settings_pointer; //store previous position in menu
@@ -327,7 +351,7 @@ void event1(int pin) {
           setupButtonsScreen();
         } else {
           loopScreen();
-                    setupDone = 1;
+          setupDone = 1;
           changeValues("setupDone", setupDone, 0);
         }
       } else if (state == 101) {
@@ -342,7 +366,7 @@ void event1(int pin) {
           setupWiFiScreen();
         } else {
           loopScreen();
-                    setupDone = 1;
+          setupDone = 1;
           changeValues("setupDone", setupDone, 0);
         }
       } else if (state == 102) {
@@ -353,7 +377,7 @@ void event1(int pin) {
           //set next screen!
         } else {
           loopScreen();
-                    setupDone = 1;
+          setupDone = 1;
           changeValues("setupDone", setupDone, 0);
         }
       } else if (state == 103) {
@@ -361,7 +385,7 @@ void event1(int pin) {
           //add next step after wifi skip!
         } else {
           loopScreen();
-                    setupDone = 1;
+          setupDone = 1;
           changeValues("setupDone", setupDone, 0);
         }
       } else if (state == 105) {
@@ -379,7 +403,7 @@ void event1(int pin) {
           useWebserverScreen();
         } else {
           loopScreen();
-                    setupDone = 1;
+          setupDone = 1;
           changeValues("setupDone", setupDone, 0);
         }
       } else if (state == 107) {
@@ -398,13 +422,13 @@ void event1(int pin) {
           Serial.println("Number of files for download: " + String(numOfRecords));
           Serial.println("Number of files for download: " + String(tempInt));
           Serial.println("*****************");
-          
+
           for (int i = 0; i < numOfRecords; i++ ) {
             tempInt += getFiles(webserverAddress, webserverFileNames[i], "/src");
             Serial.println("Number of files for download: " + String(tempInt));
           }
           listDir(SPIFFS, "/src", 0);
-//          setupDone = 1;
+          //          setupDone = 1;
           useWebserver = 1;
           changeValues("setupDone", setupDone, 0);
           changeValues("useWebserver", useWebserver, 0);

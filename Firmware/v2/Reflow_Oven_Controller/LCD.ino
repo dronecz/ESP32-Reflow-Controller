@@ -89,38 +89,71 @@ void UpdateSettingsPointer() { // this function shows help text at the bottom of
     display.setTextSize(0);
     display.setTextColor( ILI9341_GREEN, ILI9341_BLACK );
     display.fillRect( 0, display.height() - 40, display.width(), 40, ILI9341_BLACK );
-    switch ( settings_pointer ) {
 
-      case 0:
-        if (disableMenu != 0) {
-          //println_Center( display, "Select which profile to reflow", display.width() / 2, display.height() - 20 );
+    if (ovenMode != 1) {
+      switch ( settings_pointer ) {
+        case 0:
+          if (disableMenu != 0) {
+            //println_Center( display, "Select which profile to reflow", display.width() / 2, display.height() - 20 );
+            centeredText("Show info menu", ILI9341_GREEN, 300);
+            break;
+          } else {
+            centeredText("Select which profile to reflow", ILI9341_GREEN, 300);
+            break;
+          }
+
+        case 1:
+          centeredText("Setup bake profile", ILI9341_GREEN, 300);
+          break;
+
+        case 2:
+          centeredText("Show settings menu", ILI9341_GREEN, 300);
+          break;
+
+        case 3:
           centeredText("Show info menu", ILI9341_GREEN, 300);
           break;
-        } else {
-          centeredText("Select which profile to reflow", ILI9341_GREEN, 300);
+        case 4:
+          if (updataAvailable = 1) {
+            centeredText("Press Select to start update", ILI9341_GREEN, 300);
+          }
           break;
-        }
 
-      case 1:
-        centeredText("Change selected profile", ILI9341_GREEN, 300);
-        break;
+      }
+    } else {
+      switch ( settings_pointer ) {
+        case 0:
+          if (disableMenu != 0) {
+            //println_Center( display, "Select which profile to reflow", display.width() / 2, display.height() - 20 );
+            centeredText("Show info menu", ILI9341_GREEN, 300);
+            break;
+          } else {
+            centeredText("Select which profile to reflow", ILI9341_GREEN, 300);
+            break;
+          }
 
-      case 2:
-        centeredText("Add reflow profile", ILI9341_GREEN, 300);
-        break;
+        case 1:
+          centeredText("Change selected profile", ILI9341_GREEN, 300);
+          break;
 
-      case 3:
-        centeredText("Show settings menu", ILI9341_GREEN, 300);
-        break;
+        case 2:
+          centeredText("Add reflow profile", ILI9341_GREEN, 300);
+          break;
 
-      case 4:
-        centeredText("Show info menu", ILI9341_GREEN, 300);
-        break;
-      case 5:
-        if (updataAvailable = 1) {
-          centeredText("Press Select to start update", ILI9341_GREEN, 300);
-        }
-        break;
+        case 3:
+          centeredText("Show settings menu", ILI9341_GREEN, 300);
+          break;
+
+        case 4:
+          centeredText("Show info menu", ILI9341_GREEN, 300);
+          break;
+
+        case 5:
+          if (updataAvailable = 1) {
+            centeredText("Press Select to start update", ILI9341_GREEN, 300);
+          }
+          break;
+      }
     }
     display.setTextSize(2);
     previousSettingsPointer = settings_pointer;
@@ -155,27 +188,32 @@ void UpdateSettingsPointer() { // this function shows help text at the bottom of
     display.fillRect( 0, display.height() - 50, display.width(), 50, ILI9341_BLACK );
     switch ( settings_pointer )
     {
+
       case 0:
-        centeredText("Set buzzer on/off.", ILI9341_GREEN, 300);
+        centeredText("Set mode of the oven.", ILI9341_GREEN, 300);
         break;
 
       case 1:
-        centeredText("Orientation of the screen.", ILI9341_GREEN, 300);
+        centeredText("Set buzzer on/off.", ILI9341_GREEN, 300);
         break;
 
       case 2:
+        centeredText("Orientation of the screen.", ILI9341_GREEN, 300);
+        break;
+
+      case 3:
         centeredText("Set Yes if you want to", ILI9341_GREEN, 280);
         centeredText("use FW updates from web.", ILI9341_GREEN, 300);
         break;
 
-      case 3:
+      case 4:
         centeredText("Set Yes if you have them.", ILI9341_GREEN, 300);
         break;
-      case 4:
+      case 5:
         centeredText("Set Yes to use SPIFFS", ILI9341_GREEN, 280);
         centeredText("for profiles.", ILI9341_GREEN, 300);
         break;
-      case 5:
+      case 6:
         if (buttons != 0) {
           centeredText("Set Yes to use fan.", ILI9341_GREEN, 300);
         } else {
@@ -186,7 +224,7 @@ void UpdateSettingsPointer() { // this function shows help text at the bottom of
           }
         }
         break;
-      case 6:
+      case 7:
         if (buttons != 0) {
           if (connected != 1) {
             centeredText("WiFi Setup", ILI9341_GREEN, 300);
@@ -199,7 +237,7 @@ void UpdateSettingsPointer() { // this function shows help text at the bottom of
           centeredText("Enter Test menu.", ILI9341_GREEN, 300);
         }
         break;
-      case 7:
+      case 8:
         if (buttons != 0) {
           centeredText("Enter Test menu.", ILI9341_GREEN, 300);
         }
@@ -457,18 +495,33 @@ void mainMenuScreen() {
   }
   display.setCursor(10, y);
   if (disableMenu != 1) {
-    leftText("Select profile", ILI9341_WHITE, y); rightText("->", ILI9341_WHITE, y);
-    y += h;
-    numOfPointers++;
-    leftText("Change profile", ILI9341_WHITE, y); rightText("->", ILI9341_WHITE, y);
-    y += h;
-    numOfPointers++;
-    leftText("Add profile", ILI9341_WHITE, y); rightText("->", ILI9341_WHITE, y);
-    y += h;
-    numOfPointers++;
-    leftText("Settings", ILI9341_WHITE, y); rightText("->", ILI9341_WHITE, y);
-    y += h;
-    numOfPointers++;
+    if (ovenMode != 1) {
+      leftText("Bake profile", ILI9341_WHITE, y); rightText("->", ILI9341_WHITE, y);
+      y += h;
+      numOfPointers++;
+      //      leftText("Change profile", ILI9341_WHITE, y); rightText("->", ILI9341_WHITE, y);
+      //      y += h;
+      //      numOfPointers++;
+      //      leftText("Add profile", ILI9341_WHITE, y); rightText("->", ILI9341_WHITE, y);
+      //      y += h;
+      //      numOfPointers++;
+      leftText("Settings", ILI9341_WHITE, y); rightText("->", ILI9341_WHITE, y);
+      y += h;
+      numOfPointers++;
+    } else {
+      leftText("Select profile", ILI9341_WHITE, y); rightText("->", ILI9341_WHITE, y);
+      y += h;
+      numOfPointers++;
+      leftText("Change profile", ILI9341_WHITE, y); rightText("->", ILI9341_WHITE, y);
+      y += h;
+      numOfPointers++;
+      leftText("Add profile", ILI9341_WHITE, y); rightText("->", ILI9341_WHITE, y);
+      y += h;
+      numOfPointers++;
+      leftText("Settings", ILI9341_WHITE, y); rightText("->", ILI9341_WHITE, y);
+      y += h;
+      numOfPointers++;
+    }
   }
   leftText("Info", ILI9341_WHITE, y); rightText("->", ILI9341_WHITE, y);
 
@@ -587,30 +640,34 @@ void showSettingsScreen(byte pointer = 0) {
   }
   display.setCursor(30, y);
 
-  setBuzzer(y); //y == 55;
+  setMode(y); //y == 55;
   y += h;
   numOfPointers++; //0
 
-  setDisplay(y);
+  setBuzzer(y);
   y += h;
   numOfPointers++; //1
 
-  setOTA(y);
+  setDisplay(y);
   y += h;
   numOfPointers++; //2
 
-  setButtons(y);
+  setOTA(y);
   y += h;
   numOfPointers++; //3
 
-  setStorage(y);
+  setButtons(y);
   y += h;
   numOfPointers++; //4
+
+  setStorage(y);
+  y += h;
+  numOfPointers++; //5
 
   if (buttons != 0) {
     setFan(y);
     y += h;
-    numOfPointers++; //5
+    numOfPointers++; //6
     if (connected != 1) {
       wifiSetupShow(y);
       y += h;
@@ -656,6 +713,26 @@ void showInfoScreen() {
   }
 }
 
+void showSelectBakeSettingsScreen() {
+  previousState = state;
+  state = 11;
+#ifdef DEBUG
+  Serial.println("State is :" + String(state));
+#endif
+  int y = 55; //from left side of the LCD
+  int h = 20;
+  display.setFont(&FreeSans9pt7b);
+  display.fillScreen(ILI9341_BLACK);
+  display.setTextColor(ILI9341_WHITE);
+  display.setTextSize(1);
+  display.setCursor(0, 4);
+  centeredText("Bake profile menu", ILI9341_WHITE, 10);
+  if (horizontal != 0) {
+    display.fillRect(0, 28, 320, 3, ILI9341_WHITE );
+  } else {
+    display.fillRect(0, 28, 240, 3, ILI9341_WHITE );
+  }
+}
 
 void startUpdateScreen() {
   display.fillScreen(ILI9341_BLACK);
@@ -1002,18 +1079,18 @@ void useWebserverScreen() {
 void downloadDataScreen() {
   int y = 85; //from left side of the LCD
   int h = 25;;
-    display.setRotation(2);
-    display.setFont(&FreeSerif9pt7b);
-    display.fillScreen(ILI9341_BLACK);
-    display.setTextColor(ILI9341_WHITE);
-    display.setTextSize(1);
-    display.setCursor(0, 4);
-    centeredText("Downloading... ", ILI9341_GREEN, y); //85
-    centeredText(" ", ILI9341_GREEN, y += h); //110
-    centeredText("Current file: ", ILI9341_BLUE, y += h); //135
-    centeredText(" ", ILI9341_GREEN, y += h); //160
-    centeredText("Files: ", ILI9341_CYAN, y += h); //185
-    centeredText(" ", ILI9341_GREEN, y += h); //210
+  display.setRotation(2);
+  display.setFont(&FreeSerif9pt7b);
+  display.fillScreen(ILI9341_BLACK);
+  display.setTextColor(ILI9341_WHITE);
+  display.setTextSize(1);
+  display.setCursor(0, 4);
+  centeredText("Downloading... ", ILI9341_GREEN, y); //85
+  centeredText(" ", ILI9341_GREEN, y += h); //110
+  centeredText("Current file: ", ILI9341_BLUE, y += h); //135
+  centeredText(" ", ILI9341_GREEN, y += h); //160
+  centeredText("Files: ", ILI9341_CYAN, y += h); //185
+  centeredText(" ", ILI9341_GREEN, y += h); //210
 }
 
 void updateFilesDownloading(String temp) {
@@ -1068,6 +1145,19 @@ void finishSetupScreen() {
   display.setCursor(0, 4);
   centeredText("Your setup", ILI9341_WHITE, y);
   centeredText("is finished. ", ILI9341_WHITE, y += h);
+}
+
+void setMode (int y) {
+  display.fillRect( 30, y - 18, 200, 20, ILI9341_BLACK );
+  display.setTextColor(ILI9341_WHITE);
+  display.setTextSize(1);
+  display.setCursor(30, y);
+  display.print("Set mode: ");
+  if (ovenMode != 0) {
+    display.println("Reflow");
+  } else {
+    display.println("Bake");
+  }
 }
 
 

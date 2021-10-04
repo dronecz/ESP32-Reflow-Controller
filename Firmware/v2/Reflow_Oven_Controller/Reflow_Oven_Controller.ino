@@ -53,7 +53,7 @@ unsigned long lastDebounceTime_ = 0;  // the last time the output pin was toggle
 unsigned long debounceDelay = 200;    // the debounce time; increase if the output flicker
 
 String activeStatus = "Idle";
-bool menu = 0;
+bool ovenMode = 0; // 0 - bake, 1 - reflow
 bool isFault = 0;
 bool connected = 0;
 bool horizontal = 0;
@@ -76,6 +76,19 @@ bool startAP            = true; // start AP and webserver if true, else start on
 unsigned int  timeout   = 120; // seconds to run for
 unsigned int  startTime = millis();
 
+// Bake variables = borrowed from Unexpected Maker fw (https://github.com/UnexpectedMaker/ReflowMaster/blob/master/Code/Reflow_Master_v2/Reflow_Master_v2.ino#L159)
+long currentBakeTime = 0; // Used to countdown the bake time
+byte currentBakeTimeCounter = 0;
+int lastTempDirection = 0;
+long minBakeTime = 600; // 10 mins in seconds
+long maxBakeTime = 10800; // 3 hours in seconds
+float minBakeTemp = 45; // 45 Degrees C
+float maxBakeTemp = 100; // 100 Degrees C
+int bakeTemp;
+unsigned long bakeTime;
+byte savedBakeTemp;
+unsigned long savedBakeTime; 
+
 // Button variables
 int buttonVal[numDigButtons] = {0};                            // value read from button
 int buttonLast[numDigButtons] = {0};                           // buffered value of the button's previous state
@@ -86,9 +99,11 @@ boolean menuMode[numDigButtons] = {false};                     // whether menu m
 int debounce = 50;
 int holdTime = 1000;
 int oldTemp = 0;
+int bakeTempOffset = 3;
+
 
 byte numOfPointers = 0;
-int state = 0; // 0 = boot, 1 = main menu, 2 = select profile, 3 = change profile, 4 = add profile, 5 = settings, 6 = info, 7 = start reflow, 8 = stop reflow, 9 = test outputs , 10 = setup
+int state = 0; // 0 = boot, 1 = main menu, 2 = select profile, 3 = change profile, 4 = add profile, 5 = settings, 6 = info, 7 = start reflow, 8 = stop reflow, 9 = test outputs , 10 = setup, 11 = bake mode setup
 byte previousState = 0;
 
 byte settings_pointer = 0;
@@ -188,6 +203,11 @@ void changeValues(String variable, bool value, bool sendUpdate = 1) {
     preferences.putBool("setupDone", value);
     horizontal = preferences.getBool("setupDone", 0);
     Serial.println("setupDone value changed to: " + String(setupDone));
+  } else if (variable == "ovenMode") {
+    Serial.println("Current value is: " + String(ovenMode));
+    preferences.putBool("ovenMode", value);
+    horizontal = preferences.getBool("ovenMode", 0);
+    Serial.println("ovenMode value changed to: " + String(ovenMode));
   } else {
     Serial.println("Current value is: " + String(fan));
     preferences.putBool("fan", value);
@@ -223,6 +243,7 @@ void setup() {
   profileUsed = preferences.getInt("profileUsed", profileUsed);
   useSPIFFS = preferences.getBool("useSPIFFS", useSPIFFS);
   setupDone = preferences.getBool("setupDone", setupDone);
+  ovenMode = preferences.getBool("ovenMode", ovenMode);
   preferences.end();
 
   Serial.println();
@@ -456,7 +477,6 @@ void readFile(fs::FS & fs, String path, const char * type) {
 }
 
 void wifiSetup() {
-
   Serial.println(F("Running AP.."));
   WiFi.mode(WIFI_AP);
   WiFi.softAPConfig(IPAddress(192, 168, 4, 1), IPAddress(192, 168, 4, 1), IPAddress(255, 255, 255, 0));
@@ -817,15 +837,15 @@ bool getFiles(String address, String fileName, String dir = "/") {
   return compareStat;
 }
 
-static void WiFiEvent(WiFiEvent_t event, WiFiEventInfo_t info)
-{
-  if (event == SYSTEM_EVENT_STA_DISCONNECTED) {
-    if (info.disconnected.reason == 6) {
-      Serial.println("NOT_AUTHED reconnect");
-      WiFi.reconnect();
-    }
-  }
-}
+//static void WiFiEvent(WiFiEvent_t event, WiFiEventInfo_t info)
+//{
+//  if (event == SYSTEM_EVENT_STA_DISCONNECTED) {
+//    if (info.eth_connected.reason == 6) {
+//      Serial.println("NOT_AUTHED reconnect");
+//      WiFi.reconnect();
+//    }
+//  }
+//}
 
 void sendDebug() {
   if (useWebserver != 0) {
