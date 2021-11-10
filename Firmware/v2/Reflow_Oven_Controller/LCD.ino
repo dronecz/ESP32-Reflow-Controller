@@ -98,22 +98,19 @@ void UpdateSettingsPointer() { // this function shows help text at the bottom of
             centeredText("Show info menu", ILI9341_GREEN, 300);
             break;
           } else {
-            centeredText("Select which profile to reflow", ILI9341_GREEN, 300);
+            centeredText("Setup bake profile", ILI9341_GREEN, 300);
             break;
           }
 
         case 1:
-          centeredText("Setup bake profile", ILI9341_GREEN, 300);
-          break;
-
-        case 2:
           centeredText("Show settings menu", ILI9341_GREEN, 300);
           break;
 
-        case 3:
+        case 2:
           centeredText("Show info menu", ILI9341_GREEN, 300);
           break;
-        case 4:
+
+        case 3:
           if (updataAvailable = 1) {
             centeredText("Press Select to start update", ILI9341_GREEN, 300);
           }
@@ -716,6 +713,7 @@ void showInfoScreen() {
 void showSelectBakeSettingsScreen() {
   previousState = state;
   state = 11;
+  numOfPointers = 0;
 #ifdef DEBUG
   Serial.println("State is :" + String(state));
 #endif
@@ -732,6 +730,15 @@ void showSelectBakeSettingsScreen() {
   } else {
     display.fillRect(0, 28, 240, 3, ILI9341_WHITE );
   }
+
+  setBakeTemp(y); //y == 55;
+  y += h;
+  numOfPointers++; //0
+
+  setBakeDuration(y);
+  y += 2 * h;
+  numOfPointers++; //1
+
 }
 
 void startUpdateScreen() {
@@ -1078,7 +1085,7 @@ void useWebserverScreen() {
 
 void downloadDataScreen() {
   int y = 85; //from left side of the LCD
-  int h = 25;;
+  int h = 25;
   display.setRotation(2);
   display.setFont(&FreeSerif9pt7b);
   display.fillScreen(ILI9341_BLACK);
@@ -1308,6 +1315,41 @@ void testLED(int y) {
     display.println("Off");
     digitalWrite(ledPin, LOW);
   }
+}
+
+void setBakeTemp(int y) {
+  int h = 20;
+  //display.fillRect( 30, y - 18, 200, 20, ILI9341_BLACK );
+  display.setTextColor(ILI9341_WHITE);
+  display.setTextSize(1);
+  display.setCursor(30, y);
+  display.println("Bake temperature: ");
+  rightText("80 C", ILI9341_WHITE, y += h, 30);
+  // if (testState != LOW) {
+  //   display.println("On");
+  //   digitalWrite(ledPin, HIGH);
+  // } else {
+  //   display.println("Off");
+  //   digitalWrite(ledPin, LOW);
+  // }
+}
+
+void setBakeDuration(int y) {
+  //int y = 55; //from left side of the LCD
+  int h = 20;
+  //display.fillRect( 30, y - 18, 200, 20, ILI9341_BLACK );
+  display.setTextColor(ILI9341_WHITE);
+  display.setTextSize(1);
+  display.setCursor(30, y += h );
+  display.println("Bake duration: ");
+  rightText("5 mins", ILI9341_WHITE, y += h, 30);
+  // if (testState != LOW) {
+  //   display.println("On");
+  //   digitalWrite(ledPin, HIGH);
+  // } else {
+  //   display.println("Off");
+  //   digitalWrite(ledPin, LOW);
+  // }
 }
 
 /* Saved for later use.. */

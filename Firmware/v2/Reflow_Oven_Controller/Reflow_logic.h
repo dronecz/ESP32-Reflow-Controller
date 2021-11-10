@@ -129,7 +129,9 @@ typedef enum BAKE_STATE
   BAKE_STATE_IDLE,
   BAKE_STATE_BAKE,
   BAKE_STATE_COOL,
-  BAKE_STATE_COMPLETE
+  BAKE_STATE_COMPLETE,
+  BAKE_STATE_TOO_HOT,
+  BAKE_STATE_ERROR
 } bakeState_t;
 
 typedef enum REFLOW_STATUS
@@ -137,6 +139,12 @@ typedef enum REFLOW_STATUS
   REFLOW_STATUS_OFF,
   REFLOW_STATUS_ON
 } reflowStatus_t;
+
+typedef enum BAKE_STATUS
+{
+  BAKE_STATUS_OFF,
+  BAKE_STATUS_ON
+} bakeStatus_t;
 
 typedef  enum SWITCH
 {
@@ -196,6 +204,7 @@ unsigned long buzzerPeriod;
 reflowState_t reflowState;
 // Reflow oven controller status
 reflowStatus_t reflowStatus;
+bakeStatus_t bakeStatus;
 // Switch debounce state machine state variable
 debounceState_t debounceState;
 // Switch debounce timer
@@ -249,6 +258,7 @@ void reflow_main() {
     if (oldTemp != inputInt) {
       if (inputInt > 1000) {
         reflowState = REFLOW_STATE_ERROR;
+        bakeState = BAKE_STATE_ERROR;
       }
       if (state == 0) {
         loopScreen();
@@ -267,12 +277,13 @@ void reflow_main() {
       // Illegal operation
       reflowState = REFLOW_STATE_ERROR;
       reflowStatus = REFLOW_STATUS_OFF;
+      bakeState = BAKE_STATE_ERROR;
+      bakeStatus = BAKE_STATUS_OFF;
     }
     oldTemp = inputInt;
   }
 
-  if (millis() > nextCheck)
-  {
+  if (millis() > nextCheck) {
     // Check input in the next seconds
     nextCheck += 1000;
     // If reflow process is on going
@@ -291,6 +302,20 @@ void reflow_main() {
       Serial.print(" ");
       Serial.println(output);
     }
+    //     }else if (bakeStatus == BAKE_STATUS_ON){
+    // // Toggle red LED as system heart beat
+    //       digitalWrite(ledPin, !(digitalRead(ledPin)));
+    //       // Increase seconds timer for reflow curve analysis
+    //       timerSeconds++;
+    //       // Send temperature and time stamp to serial
+    //       Serial.print(timerSeconds);
+    //       Serial.print(" ");
+    //       Serial.print(setpoint);
+    //       Serial.print(" ");
+    //       Serial.print(input);
+    //       Serial.print(" ");
+    //       Serial.println(output);
+    //     }
     else
     {
       // Turn off red LED
@@ -303,283 +328,258 @@ void reflow_main() {
       Serial.println("TC Error!");
       reflowStatus = REFLOW_STATUS_OFF;
     }
-  }
 
-  // Reflow oven controller state machine
-  switch (reflowState)
-  {
-    case REFLOW_STATE_IDLE:
-      activeStatus = "Idle";
-      // If oven temperature is still above room temperature
-      if (input >= TEMPERATURE_ROOM)
-      {
-        reflowState = REFLOW_STATE_TOO_HOT;
-        Serial.println("Status: Too hot to start");
-      }
-      else
-      {
-        // If switch is pressed to start reflow process
-        if (profileIsOn != 0)
-        {
-          events.send(String(profileIsOn).c_str(), "showchart");
-          Serial.println("Sending start of the profile to the webserver!");
-          // Send header for CSV file
-          Serial.println("Time Setpoint Input Output");
-          // Intialize seconds timer for serial debug information
-          timerSeconds = 0;
-          // Initialize PID control window starting time
-          windowStartTime = millis();
-          // Ramp up to minimum soaking temperature
-          setpoint = paste_profile[profileUsed].stages_preheat_1;
-          // Tell the PID to range between 0 and the full window size
-          reflowOvenPID.SetOutputLimits(0, windowSize);
-          reflowOvenPID.SetSampleTime(PID_SAMPLE_TIME);
-          // Turn the PID on
-          reflowOvenPID.SetMode(AUTOMATIC);
-          // Proceed to preheat stage
-          reflowState = REFLOW_STATE_PREHEAT;
-        }
-      }
-      break;
-
-    case REFLOW_STATE_PREHEAT:
-      activeStatus = "Preheat";
-      reflowStatus = REFLOW_STATUS_ON;
-      // If minimum soak temperature is achieve
-      if (input >= paste_profile[profileUsed].stages_preheat_1)
-      {
-        // Chop soaking period into smaller sub-period
-        timerSoak = millis() + SOAK_MICRO_PERIOD;
-        // Set less agressive PID parameters for soaking ramp
-        reflowOvenPID.SetTunings(PID_KP_SOAK, PID_KI_SOAK, PID_KD_SOAK);
-        // Ramp up to first section of soaking temperature
-        setpoint = paste_profile[profileUsed].stages_preheat_1 + SOAK_TEMPERATURE_STEP;
-        // Proceed to soaking state
-        reflowState = REFLOW_STATE_SOAK;
-      }
-      break;
-
-    case REFLOW_STATE_SOAK:
-      activeStatus = "Soak";
-      // If micro soak temperature is achieved
-      if (millis() > timerSoak)
-      {
-        timerSoak = millis() + SOAK_MICRO_PERIOD;
-        // Increment micro setpoint
-        setpoint += SOAK_TEMPERATURE_STEP;
-        if (setpoint > paste_profile[profileUsed].stages_soak_1)
-        {
-          // Set agressive PID parameters for reflow ramp
-          reflowOvenPID.SetTunings(PID_KP_REFLOW, PID_KI_REFLOW, PID_KD_REFLOW);
-          // Ramp up to first section of soaking temperature
-          setpoint = paste_profile[profileUsed].stages_reflow_1;
-          // Proceed to reflowing state
-          reflowState = REFLOW_STATE_REFLOW;
-        }
-      }
-      break;
-
-    case REFLOW_STATE_REFLOW:
-      activeStatus = "Reflow";
-      // We need to avoid hovering at peak temperature for too long
-      // Crude method that works like a charm and safe for the components
-      if (input >= (paste_profile[profileUsed].stages_reflow_1 - 5))
-      {
-        // Set PID parameters for cooling ramp
-        reflowOvenPID.SetTunings(PID_KP_REFLOW, PID_KI_REFLOW, PID_KD_REFLOW);
-        // Ramp down to minimum cooling temperature
-        setpoint = TEMPERATURE_COOL_MIN;
-        // Proceed to cooling state
-        reflowState = REFLOW_STATE_COOL;
-      }
-      break;
-
-    case REFLOW_STATE_COOL:
-      activeStatus = "Cool";
-      // If minimum cool temperature is achieve
-      if (input <= TEMPERATURE_COOL_MIN)
-      {
-        // Retrieve current time for buzzer usage
-        buzzerPeriod = millis() + 1000;
-        // Turn on buzzer and green LED to indicate completion
-        digitalWrite(buzzerPin, HIGH);
-        // Turn off reflow process
-        reflowStatus = REFLOW_STATUS_OFF;
-        // Proceed to reflow Completion state
-        reflowState = REFLOW_STATE_COMPLETE;
-      }
-      break;
-
-    case REFLOW_STATE_COMPLETE:
-      activeStatus = "Complete";
-      if (millis() > buzzerPeriod)
-      {
-        // Turn off buzzer and green LED
-        digitalWrite(buzzerPin, LOW);
-        // Reflow process ended
-        reflowState = REFLOW_STATE_IDLE;
-        profileIsOn = 0;
-        disableMenu = 0;
-        Serial.println("Profile is OFF");
-      }
-      break;
-
-    case REFLOW_STATE_TOO_HOT:
-      // If oven temperature drops below room temperature
-      if (input < TEMPERATURE_ROOM)
-      {
-        // Ready to reflow
-        reflowState = REFLOW_STATE_IDLE;
-      }
-      break;
-
-    case REFLOW_STATE_ERROR:
-      // If thermocouple problem is still present
-
-      if (input == MAX31856_FAULT_CJRANGE)// || (input == FAULT_SHORT_GND) ||
-        //          (input == FAULT_SHORT_VCC))
-      {
-        // Wait until thermocouple wire is connected
-        reflowState = REFLOW_STATE_ERROR;
-      }
-      else
-      {
-        // Clear to perform reflow process
-        reflowState = REFLOW_STATE_IDLE;
-      }
-      break;
-
-  }
-
-  switch (bakeState) {
-
-    case BAKE_STATE_IDLE:
-      if (input >= TEMPERATURE_ROOM)
-      {
-        reflowState = REFLOW_STATE_TOO_HOT;
-        Serial.println("Status: Too hot to start");
-      }
-      else
-      {
-        // If switch is pressed to start reflow process
-        if (profileIsOn != 0)
-        {
-          events.send(String(profileIsOn).c_str(), "showchart");
-          Serial.println("Sending start of the profile to the webserver!");
-          // Send header for CSV file
-          Serial.println("Time Setpoint Input Output");
-          // Intialize seconds timer for serial debug information
-          timerSeconds = 0;
-          // Initialize PID control window starting time
-          windowStartTime = millis();
-          // Ramp up to minimum soaking temperature
-          setpoint = bakeTemp;
-          // Tell the PID to range between 0 and the full window size
-          reflowOvenPID.SetOutputLimits(0, windowSize);
-          reflowOvenPID.SetSampleTime(PID_SAMPLE_TIME);
-          // Turn the PID on
-          reflowOvenPID.SetMode(AUTOMATIC);
-          // Proceed to preheat stage
-          bakeState = BAKE_STATE_BAKE;
-        }
-      }
-      break;
-
-    case BAKE_STATE_BAKE:
-      activeStatus = "Baking";
-      reflowStatus = REFLOW_STATUS_ON;
-      float wantedTemp;
-      // If time for bake is runout, finish baking
-      if (currentBakeTime >= bakeTime)
-      {
-        // Retrieve current time for buzzer usage
-        buzzerPeriod = millis() + 1000;
-        // Turn on buzzer and green LED to indicate completion
-        digitalWrite(buzzerPin, HIGH);
-        // Turn off reflow process
-        reflowStatus = REFLOW_STATUS_OFF;
-        // Proceed to reflow Completion state
-        bakeState = BAKE_STATE_COMPLETE;
-      }
-      break;
-
-    case BAKE_STATE_COMPLETE:
-      activeStatus = "Complete";
-      if (millis() > buzzerPeriod)
-      {
-        // Turn off buzzer and green LED
-        digitalWrite(buzzerPin, LOW);
-        // Reflow process ended
-        reflowState = REFLOW_STATE_IDLE;
-        profileIsOn = 0;
-        disableMenu = 0;
-        Serial.println("Baking is OFF");
-      }
-      break;
-  }
-  // If switch 1 is pressed
-  if (switchStatus == SWITCH_1)
-  {
-    // If currently reflow process is on going
-    if (reflowStatus == REFLOW_STATUS_ON)
+    if (bakeState == BAKE_STATE_ERROR)
     {
-      // Button press is for cancelling
-      // Turn off reflow process
-      reflowStatus = REFLOW_STATUS_OFF;
-      // Reinitialize state machine
-      reflowState = REFLOW_STATE_IDLE;
+      // No thermocouple wire connected
+      Serial.println("TC Error!");
+      bakeStatus = BAKE_STATUS_OFF;
+    }
+
+  }
+
+  if (ovenMode != 0) {
+    // Reflow oven controller state machine
+    switch (reflowState)
+    {
+      case REFLOW_STATE_IDLE:
+        activeStatus = "Idle";
+        // If oven temperature is still above room temperature
+        if (input >= TEMPERATURE_ROOM)
+        {
+          reflowState = REFLOW_STATE_TOO_HOT;
+          Serial.println("Status: Too hot to start");
+        }
+        else
+        {
+          // If switch is pressed to start reflow process
+          if (profileIsOn != 0)
+          {
+            events.send(String(profileIsOn).c_str(), "showchart");
+            Serial.println("Sending start of the profile to the webserver!");
+            // Send header for CSV file
+            Serial.println("Time Setpoint Input Output");
+            // Intialize seconds timer for serial debug information
+            timerSeconds = 0;
+            // Initialize PID control window starting time
+            windowStartTime = millis();
+            // Ramp up to minimum soaking temperature
+            setpoint = paste_profile[profileUsed].stages_preheat_1;
+            // Tell the PID to range between 0 and the full window size
+            reflowOvenPID.SetOutputLimits(0, windowSize);
+            reflowOvenPID.SetSampleTime(PID_SAMPLE_TIME);
+            // Turn the PID on
+            reflowOvenPID.SetMode(AUTOMATIC);
+            // Proceed to preheat stage
+            reflowState = REFLOW_STATE_PREHEAT;
+          }
+        }
+        break;
+
+      case REFLOW_STATE_PREHEAT:
+        activeStatus = "Preheat";
+        reflowStatus = REFLOW_STATUS_ON;
+        // If minimum soak temperature is achieve
+        if (input >= paste_profile[profileUsed].stages_preheat_1)
+        {
+          // Chop soaking period into smaller sub-period
+          timerSoak = millis() + SOAK_MICRO_PERIOD;
+          // Set less agressive PID parameters for soaking ramp
+          reflowOvenPID.SetTunings(PID_KP_SOAK, PID_KI_SOAK, PID_KD_SOAK);
+          // Ramp up to first section of soaking temperature
+          setpoint = paste_profile[profileUsed].stages_preheat_1 + SOAK_TEMPERATURE_STEP;
+          // Proceed to soaking state
+          reflowState = REFLOW_STATE_SOAK;
+        }
+        break;
+
+      case REFLOW_STATE_SOAK:
+        activeStatus = "Soak";
+        // If micro soak temperature is achieved
+        if (millis() > timerSoak)
+        {
+          timerSoak = millis() + SOAK_MICRO_PERIOD;
+          // Increment micro setpoint
+          setpoint += SOAK_TEMPERATURE_STEP;
+          if (setpoint > paste_profile[profileUsed].stages_soak_1)
+          {
+            // Set agressive PID parameters for reflow ramp
+            reflowOvenPID.SetTunings(PID_KP_REFLOW, PID_KI_REFLOW, PID_KD_REFLOW);
+            // Ramp up to first section of soaking temperature
+            setpoint = paste_profile[profileUsed].stages_reflow_1;
+            // Proceed to reflowing state
+            reflowState = REFLOW_STATE_REFLOW;
+          }
+        }
+        break;
+
+      case REFLOW_STATE_REFLOW:
+        activeStatus = "Reflow";
+        // We need to avoid hovering at peak temperature for too long
+        // Crude method that works like a charm and safe for the components
+        if (input >= (paste_profile[profileUsed].stages_reflow_1 - 5))
+        {
+          // Set PID parameters for cooling ramp
+          reflowOvenPID.SetTunings(PID_KP_REFLOW, PID_KI_REFLOW, PID_KD_REFLOW);
+          // Ramp down to minimum cooling temperature
+          setpoint = TEMPERATURE_COOL_MIN;
+          // Proceed to cooling state
+          reflowState = REFLOW_STATE_COOL;
+        }
+        break;
+
+      case REFLOW_STATE_COOL:
+        activeStatus = "Cool";
+        // If minimum cool temperature is achieve
+        if (input <= TEMPERATURE_COOL_MIN)
+        {
+          // Retrieve current time for buzzer usage
+          buzzerPeriod = millis() + 1000;
+          // Turn on buzzer and green LED to indicate completion
+          digitalWrite(buzzerPin, HIGH);
+          // Turn off reflow process
+          reflowStatus = REFLOW_STATUS_OFF;
+          // Proceed to reflow Completion state
+          reflowState = REFLOW_STATE_COMPLETE;
+        }
+        break;
+
+      case REFLOW_STATE_COMPLETE:
+        activeStatus = "Complete";
+        if (millis() > buzzerPeriod)
+        {
+          // Turn off buzzer and green LED
+          digitalWrite(buzzerPin, LOW);
+          // Reflow process ended
+          reflowState = REFLOW_STATE_IDLE;
+          profileIsOn = 0;
+          disableMenu = 0;
+          Serial.println("Profile is OFF");
+        }
+        break;
+
+      case REFLOW_STATE_TOO_HOT:
+        // If oven temperature drops below room temperature
+        if (input < TEMPERATURE_ROOM)
+        {
+          // Ready to reflow
+          reflowState = REFLOW_STATE_IDLE;
+        }
+        break;
+
+      case REFLOW_STATE_ERROR:
+        // If thermocouple problem is still present
+
+        if (input == MAX31856_FAULT_CJRANGE)// || (input == FAULT_SHORT_GND) ||
+          //          (input == FAULT_SHORT_VCC))
+        {
+          // Wait until thermocouple wire is connected
+          reflowState = REFLOW_STATE_ERROR;
+        }
+        else
+        {
+          // Clear to perform reflow process
+          reflowState = REFLOW_STATE_IDLE;
+        }
+        break;
+
+    }
+  } else {
+    switch (bakeState) {
+
+      case BAKE_STATE_IDLE:
+        if (input >= TEMPERATURE_ROOM)
+        {
+          bakeState = BAKE_STATE_TOO_HOT;
+          Serial.println("Status: Too hot to start");
+        }
+        else
+        {
+          // If switch is pressed to start reflow process
+          if (profileIsOn != 0)
+          {
+            events.send(String(profileIsOn).c_str(), "showchart");
+            Serial.println("Sending start of the profile to the webserver!");
+            // Send header for CSV file
+            Serial.println("Time Setpoint Input Output");
+            // Intialize seconds timer for serial debug information
+            timerSeconds = 0;
+            // Initialize PID control window starting time
+            windowStartTime = millis();
+            // Ramp up to minimum soaking temperature
+            setpoint = bakeTemp;
+            // Tell the PID to range between 0 and the full window size
+            reflowOvenPID.SetOutputLimits(0, windowSize);
+            reflowOvenPID.SetSampleTime(PID_SAMPLE_TIME);
+            // Turn the PID on
+            reflowOvenPID.SetMode(AUTOMATIC);
+            // Proceed to preheat stage
+            bakeState = BAKE_STATE_BAKE;
+          }
+        }
+        break;
+
+      case BAKE_STATE_BAKE:
+        activeStatus = "Baking";
+        //bakeStatus = BAKE_STATUS_ON;
+        float wantedTemp;
+        // If time for bake is runout, finish baking
+        if (currentBakeTime >= bakeTime)
+        {
+          // Retrieve current time for buzzer usage
+          buzzerPeriod = millis() + 1000;
+          // Turn on buzzer and green LED to indicate completion
+          digitalWrite(buzzerPin, HIGH);
+          // Turn off reflow process
+          bakeStatus = BAKE_STATUS_OFF;
+          // Proceed to reflow Completion state
+          bakeState = BAKE_STATE_COMPLETE;
+        }
+        break;
+
+      case BAKE_STATE_COMPLETE:
+        activeStatus = "Complete";
+        if (millis() > buzzerPeriod)
+        {
+          // Turn off buzzer and green LED
+          digitalWrite(buzzerPin, LOW);
+          // Reflow process ended
+          bakeState = BAKE_STATE_IDLE;
+          profileIsOn = 0;
+          disableMenu = 0;
+          Serial.println("Baking is OFF");
+        }
+        break;
+
+      case BAKE_STATE_TOO_HOT:
+        // If oven temperature drops below room temperature
+        if (input < TEMPERATURE_ROOM)
+        {
+          // Ready to reflow
+          bakeState = BAKE_STATE_IDLE;
+        }
+        break;
+
+      case BAKE_STATE_ERROR:
+        // If thermocouple problem is still present
+
+        if (input == MAX31856_FAULT_CJRANGE)// || (input == FAULT_SHORT_GND) ||
+          //          (input == FAULT_SHORT_VCC))
+        {
+          // Wait until thermocouple wire is connected
+          bakeState = BAKE_STATE_ERROR;
+        }
+        else
+        {
+          // Clear to perform reflow process
+          bakeState = BAKE_STATE_IDLE;
+        }
+        break;
     }
   }
 
-  // Simple switch debounce state machine (for switch #1 (both analog & digital
-  // switch supported))
-  switch (debounceState)
-  {
-    case DEBOUNCE_STATE_IDLE:
-      // No valid switch press
-      switchStatus = SWITCH_NONE;
-      // If switch #1 is pressed
-      if (input == -1) // (AXIS_X.readAxis() == 1)
-      {
-        // Intialize debounce counter
-        lastDebounceTime = millis();
-        Serial.println("Switch pressed");
-        // Proceed to check validity of button press
-        debounceState = DEBOUNCE_STATE_CHECK;
-      }
-      break;
-
-    case DEBOUNCE_STATE_CHECK:
-      if (input == -1) // (AXIS_X.readAxis() == 1)
-      {
-        // If minimum debounce period is completed
-        if ((millis() - lastDebounceTime) > DEBOUNCE_PERIOD_MIN)
-        {
-          // Proceed to wait for button release
-          debounceState = DEBOUNCE_STATE_RELEASE;
-        }
-      }
-      // False trigger
-      else
-      {
-        // Reinitialize button debounce state machine
-        debounceState = DEBOUNCE_STATE_IDLE;
-      }
-      break;
-
-    case DEBOUNCE_STATE_RELEASE:
-      if (input == -1) // (AXIS_X.readAxis() > 0)
-      {
-        // Valid switch 1 press
-        switchStatus = SWITCH_1;
-        // Reinitialize button debounce state machine
-        debounceState = DEBOUNCE_STATE_IDLE;
-      }
-      break;
-  }
-
   // PID computation and SSR control
-  if (reflowStatus == REFLOW_STATUS_ON)
+  if ((reflowStatus == REFLOW_STATUS_ON) || (bakeStatus = BAKE_STATUS_ON))
   {
     now = millis();
 

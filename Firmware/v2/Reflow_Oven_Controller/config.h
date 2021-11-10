@@ -1,6 +1,6 @@
 //#define DEBUG
 
-#define VERBOSE 1 
+#define VERBOSE 1
 
 byte tempCorrection = 0;
 
@@ -17,7 +17,7 @@ byte tempCorrection = 0;
 //       Gnd      // Goes to TFT Gnd
 
 // MAX31856 pin definition
-#define max_cs  13  
+#define max_cs  13
 #define max_di  23
 #define max_do  19
 #define max_clk 18

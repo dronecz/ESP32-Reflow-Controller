@@ -162,7 +162,7 @@ void event1(int pin) {
         Serial.println("Settings pointer: " + String(settings_pointer));
         Serial.println("Previous settings pointer: " + String(previousSettingsPointer));
       }
-      if (state == 0) {
+      if (state == 0 ) {
         if (profileIsOn != 0)  {
           stopReflowScreen();
           activeStatus = "Idle";
@@ -182,7 +182,7 @@ void event1(int pin) {
             showSettingsScreen();
           } else if  (settings_pointer == 2) {
             showInfoScreen();
-          }else if (settings_pointer == 3 ) {
+          } else if (settings_pointer == 3 ) {
             updateFirmware();
           }
         } else {
@@ -297,7 +297,6 @@ void event1(int pin) {
         }
         //previousSettingsPointer = settings_pointer; //store previous position in menu
       } else if (state == 7) {
-        //reflowStatus = REFLOW_STATUS_ON;
         profileIsOn = 1;
         Serial.println("Profile is ON");
         disableMenu = 1;
@@ -310,9 +309,15 @@ void event1(int pin) {
         Serial.println("Sending end of the profile to the webserver!");
         // Button press is for cancelling
         // Turn off reflow process
-        reflowStatus = REFLOW_STATUS_OFF;
+
         // Reinitialize state machine
-        reflowState = REFLOW_STATE_IDLE;
+        if (ovenMode != 0) {
+          reflowState = REFLOW_STATE_IDLE;
+          reflowStatus = REFLOW_STATUS_OFF;
+        } else {
+          bakeState = BAKE_STATE_IDLE;
+          bakeStatus = BAKE_STATUS_OFF;
+        }
         loopScreen();
       } else if (state == 9) {
         //settings_pointer = 0; // clear pointer
@@ -455,7 +460,11 @@ void event1(int pin) {
         showSettingsScreen(tempPointer);
       } else {
         if (state > 0) {
-          settings_pointer = previousSettingsPointer;
+          if (ovenMode != 0) {
+            settings_pointer = previousSettingsPointer;
+          } else {
+            settings_pointer = 0;
+          }
           mainMenuScreen();
         }
       }

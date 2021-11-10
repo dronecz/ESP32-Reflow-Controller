@@ -4,7 +4,7 @@
   stages: start points for the stages preheat, soak, reflow and cool. The format of the point is [x, y], where x is the time value and y is the temperature value of the starting point of the stage
   profile: data points that make up the solder profile. The format of each point is [x, y], where x is the time value and y is the temperature value value of a point on the solder profile graph
 
-  Example of the profile JSON file (https://github.com/adafruit/Adafruit_Learning_System_Guides/blob/master/PyPortal_EZ_Make_Oven/profiles/sn63pb37.json): 
+  Example of the profile JSON file (https://github.com/adafruit/Adafruit_Learning_System_Guides/blob/master/PyPortal_EZ_Make_Oven/profiles/sn63pb37.json):
 
   {
   "title": "Lead 183",
@@ -34,7 +34,7 @@
     [240,183],
     [340,50]
   ]
-}
+  }
 */
 template <typename T> unsigned int convert_to_byte (const T& value, uint8_t output [sizeof(profile_t)], int multiplier) {
   const byte * p = (const byte*) &value;
@@ -102,7 +102,7 @@ void parseJsonProfile(fs::FS &fs, String someName, int num, profile_t* profile) 
   profile[num].profile_count    = profile_array.size();
   // TODO Check that array size is number of doublets
   // or divide by 2 if needed
-  for (int i=0; i < profile[num].profile_count; i++) {
+  for (int i = 0; i < profile[num].profile_count; i++) {
     profile[num].profile[num][0] = profile_array[num][0];
     profile[num].profile[num][1] = profile_array[num][1];
   }
@@ -145,7 +145,7 @@ void parseJsonProfile(fs::FS &fs, String someName, int num, profile_t* profile) 
   array.add(profile[num].stages_cool_0);
   array.add(profile[num].stages_cool_1);
   array.add(profile[num].profile_count);
-  for (int i=0; i < profile[num].profile_count; i++) {
+  for (int i = 0; i < profile[num].profile_count; i++) {
     array.add(profile[num].profile[num][0]);
     array.add(profile[num].profile[num][1]);
   }
