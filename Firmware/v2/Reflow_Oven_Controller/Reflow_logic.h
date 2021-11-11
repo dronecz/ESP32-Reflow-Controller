@@ -112,8 +112,7 @@ extern int profileUsed;
 // Newer board version starts from v1.60 using MAX31855KASA+ chip
 
 // ***** TYPE DEFINITIONS *****
-typedef enum REFLOW_STATE
-{
+typedef enum REFLOW_STATE {
   REFLOW_STATE_IDLE,
   REFLOW_STATE_PREHEAT,
   REFLOW_STATE_SOAK,
@@ -124,8 +123,7 @@ typedef enum REFLOW_STATE
   REFLOW_STATE_ERROR
 } reflowState_t;
 
-typedef enum BAKE_STATE
-{
+typedef enum BAKE_STATE {
   BAKE_STATE_IDLE,
   BAKE_STATE_BAKE,
   BAKE_STATE_COOL,
@@ -134,27 +132,23 @@ typedef enum BAKE_STATE
   BAKE_STATE_ERROR
 } bakeState_t;
 
-typedef enum REFLOW_STATUS
-{
+typedef enum REFLOW_STATUS {
   REFLOW_STATUS_OFF,
   REFLOW_STATUS_ON
 } reflowStatus_t;
 
-typedef enum BAKE_STATUS
-{
+typedef enum BAKE_STATUS {
   BAKE_STATUS_OFF,
   BAKE_STATUS_ON
 } bakeStatus_t;
 
-typedef  enum SWITCH
-{
+typedef enum SWITCH {
   SWITCH_NONE,
   SWITCH_1,
   SWITCH_2
 } switch_t;
 
-typedef enum DEBOUNCE_STATE
-{
+typedef enum DEBOUNCE_STATE {
   DEBOUNCE_STATE_IDLE,
   DEBOUNCE_STATE_CHECK,
   DEBOUNCE_STATE_RELEASE
@@ -229,11 +223,11 @@ void reflow_main() {
     // Read thermocouple next sampling period
     nextRead += SENSOR_SAMPLING_TIME;
     // Read current temperature
-    if (startTemp != 1) { // if we did not read temp yet
-      input = max31856.readThermocoupleTemperature(); // read temp for the first time after start
-      if (input >= 30) { //if temp of the oven is higher than 30°C
-        tempCorrection = input - 30; // than, subtract 30 degrees from actual temp to get error offset
-        startTemp = 1; // set bool variable so we will not do this again at  next read
+    if (startTemp != 1) {                              // if we did not read temp yet
+      input = max31856.readThermocoupleTemperature();  // read temp for the first time after start
+      if (input >= 30) {                               //if temp of the oven is higher than 30°C
+        tempCorrection = input - 30;                   // than, subtract 30 degrees from actual temp to get error offset
+        startTemp = 1;                                 // set bool variable so we will not do this again at  next read
         Serial.println("Temp correction value is: " + String(tempCorrection));
       }
     }
@@ -243,14 +237,14 @@ void reflow_main() {
     // Check and print any faults
     uint8_t fault = max31856.readFault();
     if (fault) {
-      if (fault & MAX31856_FAULT_CJRANGE) //Serial.println("Cold Junction Range Fault");
-        if (fault & MAX31856_FAULT_TCRANGE) //Serial.println("Thermocouple Range Fault");
-          if (fault & MAX31856_FAULT_CJHIGH)  //Serial.println("Cold Junction High Fault");
-            if (fault & MAX31856_FAULT_CJLOW)   //Serial.println("Cold Junction Low Fault");
-              if (fault & MAX31856_FAULT_TCHIGH)  //Serial.println("Thermocouple High Fault");
-                if (fault & MAX31856_FAULT_TCLOW)   //Serial.println("Thermocouple Low Fault");
+      if (fault & MAX31856_FAULT_CJRANGE)             //Serial.println("Cold Junction Range Fault");
+        if (fault & MAX31856_FAULT_TCRANGE)           //Serial.println("Thermocouple Range Fault");
+          if (fault & MAX31856_FAULT_CJHIGH)          //Serial.println("Cold Junction High Fault");
+            if (fault & MAX31856_FAULT_CJLOW)         //Serial.println("Cold Junction Low Fault");
+              if (fault & MAX31856_FAULT_TCHIGH)      //Serial.println("Thermocouple High Fault");
+                if (fault & MAX31856_FAULT_TCLOW)     //Serial.println("Thermocouple Low Fault");
                   if (fault & MAX31856_FAULT_OVUV)    //Serial.println("Over/Under Voltage Fault");
-                    if (fault & MAX31856_FAULT_OPEN)    //Serial.println("Thermocouple Open Fault");
+                    if (fault & MAX31856_FAULT_OPEN)  //Serial.println("Thermocouple Open Fault");
                       isFault = 1;
     }
     inputInt = input / 1;
@@ -287,8 +281,7 @@ void reflow_main() {
     // Check input in the next seconds
     nextCheck += 1000;
     // If reflow process is on going
-    if (reflowStatus == REFLOW_STATUS_ON)
-    {
+    if (reflowStatus == REFLOW_STATUS_ON) {
       // Toggle red LED as system heart beat
       digitalWrite(ledPin, !(digitalRead(ledPin)));
       // Increase seconds timer for reflow curve analysis
@@ -301,60 +294,53 @@ void reflow_main() {
       Serial.print(input);
       Serial.print(" ");
       Serial.println(output);
-    }
-    //     }else if (bakeStatus == BAKE_STATUS_ON){
-    // // Toggle red LED as system heart beat
-    //       digitalWrite(ledPin, !(digitalRead(ledPin)));
-    //       // Increase seconds timer for reflow curve analysis
-    //       timerSeconds++;
-    //       // Send temperature and time stamp to serial
-    //       Serial.print(timerSeconds);
-    //       Serial.print(" ");
-    //       Serial.print(setpoint);
-    //       Serial.print(" ");
-    //       Serial.print(input);
-    //       Serial.print(" ");
-    //       Serial.println(output);
-    //     }
-    else
-    {
+      //}
+    } else if (bakeStatus == BAKE_STATUS_ON) {
+      // Toggle red LED as system heart beat
+      digitalWrite(ledPin, !(digitalRead(ledPin)));
+      // Increase seconds timer for reflow curve analysis
+              if(input >= bakeTemp){
+      timerSeconds++;
+              }
+      // Send temperature and time stamp to serial
+      Serial.print(timerSeconds);
+      Serial.print(" ");
+      Serial.print(setpoint);
+      Serial.print(" ");
+      Serial.print(input);
+      Serial.print(" ");
+      Serial.println(output);
+      currentBakeTime = timerSeconds;
+    } else {
       // Turn off red LED
       digitalWrite(ledPin, LOW);
     }
     // If currently in error state
-    if (reflowState == REFLOW_STATE_ERROR)
-    {
+    if (reflowState == REFLOW_STATE_ERROR) {
       // No thermocouple wire connected
       Serial.println("TC Error!");
       reflowStatus = REFLOW_STATUS_OFF;
     }
 
-    if (bakeState == BAKE_STATE_ERROR)
-    {
+    if (bakeState == BAKE_STATE_ERROR) {
       // No thermocouple wire connected
       Serial.println("TC Error!");
       bakeStatus = BAKE_STATUS_OFF;
     }
-
   }
 
   if (ovenMode != 0) {
     // Reflow oven controller state machine
-    switch (reflowState)
-    {
+    switch (reflowState) {
       case REFLOW_STATE_IDLE:
         activeStatus = "Idle";
         // If oven temperature is still above room temperature
-        if (input >= TEMPERATURE_ROOM)
-        {
+        if (input >= TEMPERATURE_ROOM) {
           reflowState = REFLOW_STATE_TOO_HOT;
           Serial.println("Status: Too hot to start");
-        }
-        else
-        {
+        } else {
           // If switch is pressed to start reflow process
-          if (profileIsOn != 0)
-          {
+          if (profileIsOn != 0) {
             events.send(String(profileIsOn).c_str(), "showchart");
             Serial.println("Sending start of the profile to the webserver!");
             // Send header for CSV file
@@ -380,8 +366,7 @@ void reflow_main() {
         activeStatus = "Preheat";
         reflowStatus = REFLOW_STATUS_ON;
         // If minimum soak temperature is achieve
-        if (input >= paste_profile[profileUsed].stages_preheat_1)
-        {
+        if (input >= paste_profile[profileUsed].stages_preheat_1) {
           // Chop soaking period into smaller sub-period
           timerSoak = millis() + SOAK_MICRO_PERIOD;
           // Set less agressive PID parameters for soaking ramp
@@ -396,13 +381,11 @@ void reflow_main() {
       case REFLOW_STATE_SOAK:
         activeStatus = "Soak";
         // If micro soak temperature is achieved
-        if (millis() > timerSoak)
-        {
+        if (millis() > timerSoak) {
           timerSoak = millis() + SOAK_MICRO_PERIOD;
           // Increment micro setpoint
           setpoint += SOAK_TEMPERATURE_STEP;
-          if (setpoint > paste_profile[profileUsed].stages_soak_1)
-          {
+          if (setpoint > paste_profile[profileUsed].stages_soak_1) {
             // Set agressive PID parameters for reflow ramp
             reflowOvenPID.SetTunings(PID_KP_REFLOW, PID_KI_REFLOW, PID_KD_REFLOW);
             // Ramp up to first section of soaking temperature
@@ -417,8 +400,7 @@ void reflow_main() {
         activeStatus = "Reflow";
         // We need to avoid hovering at peak temperature for too long
         // Crude method that works like a charm and safe for the components
-        if (input >= (paste_profile[profileUsed].stages_reflow_1 - 5))
-        {
+        if (input >= (paste_profile[profileUsed].stages_reflow_1 - 5)) {
           // Set PID parameters for cooling ramp
           reflowOvenPID.SetTunings(PID_KP_REFLOW, PID_KI_REFLOW, PID_KD_REFLOW);
           // Ramp down to minimum cooling temperature
@@ -431,8 +413,7 @@ void reflow_main() {
       case REFLOW_STATE_COOL:
         activeStatus = "Cool";
         // If minimum cool temperature is achieve
-        if (input <= TEMPERATURE_COOL_MIN)
-        {
+        if (input <= TEMPERATURE_COOL_MIN) {
           // Retrieve current time for buzzer usage
           buzzerPeriod = millis() + 1000;
           // Turn on buzzer and green LED to indicate completion
@@ -446,8 +427,7 @@ void reflow_main() {
 
       case REFLOW_STATE_COMPLETE:
         activeStatus = "Complete";
-        if (millis() > buzzerPeriod)
-        {
+        if (millis() > buzzerPeriod) {
           // Turn off buzzer and green LED
           digitalWrite(buzzerPin, LOW);
           // Reflow process ended
@@ -460,8 +440,7 @@ void reflow_main() {
 
       case REFLOW_STATE_TOO_HOT:
         // If oven temperature drops below room temperature
-        if (input < TEMPERATURE_ROOM)
-        {
+        if (input < TEMPERATURE_ROOM) {
           // Ready to reflow
           reflowState = REFLOW_STATE_IDLE;
         }
@@ -470,34 +449,28 @@ void reflow_main() {
       case REFLOW_STATE_ERROR:
         // If thermocouple problem is still present
 
-        if (input == MAX31856_FAULT_CJRANGE)// || (input == FAULT_SHORT_GND) ||
-          //          (input == FAULT_SHORT_VCC))
+        if (input == MAX31856_FAULT_CJRANGE)  // || (input == FAULT_SHORT_GND) ||
+        //          (input == FAULT_SHORT_VCC))
         {
           // Wait until thermocouple wire is connected
           reflowState = REFLOW_STATE_ERROR;
-        }
-        else
-        {
+        } else {
           // Clear to perform reflow process
           reflowState = REFLOW_STATE_IDLE;
         }
         break;
-
     }
   } else {
     switch (bakeState) {
 
       case BAKE_STATE_IDLE:
-        if (input >= TEMPERATURE_ROOM)
-        {
+      activeStatus = "Idle";
+        if (input >= TEMPERATURE_ROOM) {
           bakeState = BAKE_STATE_TOO_HOT;
           Serial.println("Status: Too hot to start");
-        }
-        else
-        {
+        } else {
           // If switch is pressed to start reflow process
-          if (profileIsOn != 0)
-          {
+          if (profileIsOn != 0) {
             events.send(String(profileIsOn).c_str(), "showchart");
             Serial.println("Sending start of the profile to the webserver!");
             // Send header for CSV file
@@ -521,11 +494,10 @@ void reflow_main() {
 
       case BAKE_STATE_BAKE:
         activeStatus = "Baking";
-        //bakeStatus = BAKE_STATUS_ON;
+        bakeStatus = BAKE_STATUS_ON;
         float wantedTemp;
         // If time for bake is runout, finish baking
-        if (currentBakeTime >= bakeTime)
-        {
+        if (currentBakeTime >= bakeTime) {
           // Retrieve current time for buzzer usage
           buzzerPeriod = millis() + 1000;
           // Turn on buzzer and green LED to indicate completion
@@ -539,8 +511,7 @@ void reflow_main() {
 
       case BAKE_STATE_COMPLETE:
         activeStatus = "Complete";
-        if (millis() > buzzerPeriod)
-        {
+        if (millis() > buzzerPeriod) {
           // Turn off buzzer and green LED
           digitalWrite(buzzerPin, LOW);
           // Reflow process ended
@@ -553,8 +524,7 @@ void reflow_main() {
 
       case BAKE_STATE_TOO_HOT:
         // If oven temperature drops below room temperature
-        if (input < TEMPERATURE_ROOM)
-        {
+        if (input < TEMPERATURE_ROOM) {
           // Ready to reflow
           bakeState = BAKE_STATE_IDLE;
         }
@@ -563,14 +533,12 @@ void reflow_main() {
       case BAKE_STATE_ERROR:
         // If thermocouple problem is still present
 
-        if (input == MAX31856_FAULT_CJRANGE)// || (input == FAULT_SHORT_GND) ||
-          //          (input == FAULT_SHORT_VCC))
+        if (input == MAX31856_FAULT_CJRANGE)  // || (input == FAULT_SHORT_GND) ||
+        //          (input == FAULT_SHORT_VCC))
         {
           // Wait until thermocouple wire is connected
           bakeState = BAKE_STATE_ERROR;
-        }
-        else
-        {
+        } else {
           // Clear to perform reflow process
           bakeState = BAKE_STATE_IDLE;
         }
@@ -579,23 +547,21 @@ void reflow_main() {
   }
 
   // PID computation and SSR control
-  if ((reflowStatus == REFLOW_STATUS_ON) || (bakeStatus = BAKE_STATUS_ON))
-  {
+  if ((reflowStatus == REFLOW_STATUS_ON) || (bakeStatus == BAKE_STATUS_ON)) {
     now = millis();
 
     reflowOvenPID.Compute();
 
-    if ((now - windowStartTime) > windowSize)
-    {
+    if ((now - windowStartTime) > windowSize) {
       // Time to shift the Relay Window
       windowStartTime += windowSize;
     }
     if (output > (now - windowStartTime)) digitalWrite(ssrPin, HIGH);
-    else digitalWrite(ssrPin, LOW);
+    else
+      digitalWrite(ssrPin, LOW);
   }
   // Reflow oven process is off, ensure oven is off
-  else
-  {
+  else {
     digitalWrite(ssrPin, LOW);
   }
 }

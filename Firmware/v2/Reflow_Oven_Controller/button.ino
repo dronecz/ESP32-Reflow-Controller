@@ -309,7 +309,6 @@ void event1(int pin) {
         Serial.println("Sending end of the profile to the webserver!");
         // Button press is for cancelling
         // Turn off reflow process
-
         // Reinitialize state machine
         if (ovenMode != 0) {
           reflowState = REFLOW_STATE_IDLE;

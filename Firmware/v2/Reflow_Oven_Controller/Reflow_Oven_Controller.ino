@@ -85,7 +85,7 @@ long maxBakeTime = 10800; // 3 hours in seconds
 float minBakeTemp = 45; // 45 Degrees C
 float maxBakeTemp = 100; // 100 Degrees C
 int bakeTemp = 80;
-unsigned long bakeTime = 100;
+unsigned long bakeTime = 60;
 byte savedBakeTemp;
 unsigned long savedBakeTime;
 
