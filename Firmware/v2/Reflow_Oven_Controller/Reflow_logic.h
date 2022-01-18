@@ -299,9 +299,9 @@ void reflow_main() {
       // Toggle red LED as system heart beat
       digitalWrite(ledPin, !(digitalRead(ledPin)));
       // Increase seconds timer for reflow curve analysis
-              if(input >= bakeTemp){
-      timerSeconds++;
-              }
+      if(input >= bakeTemp){
+        timerSeconds++;
+      }
       // Send temperature and time stamp to serial
       Serial.print(timerSeconds);
       Serial.print(" ");
