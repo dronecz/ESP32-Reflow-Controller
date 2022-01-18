@@ -7,14 +7,10 @@
 #include <HTTPClient.h>
 #include <Preferences.h>
 #include <WiFi.h>
-#include <ESPAsyncWebServer.h>
-#include <WebSocketsServer.h>
-#include <DNSServer.h>
-#include <ESPmDNS.h>
 #include <Update.h>
 #include "FS.h"
 #include <SD.h>
-#include <wifiTool.h> //https://github.com/oferzv/wifiTool
+#include <WiFiManager.h>
 #include "SPI.h"
 #include "config.h"
 #include "Button.h"
@@ -34,10 +30,7 @@ Adafruit_ILI9341 display = Adafruit_ILI9341(display_cs, display_dc, display_rst)
 #define FORMAT_SPIFFS_IF_FAILED true
 
 Preferences preferences;
-AsyncWebServer server(80);
-DNSServer dns;
-WebSocketsServer webSocket = WebSocketsServer(1337);
-WifiTool wifiTool;
+WiFiManager wm;
 char msg_buf[10];
 
 #define DEBOUNCE_MS 100
@@ -200,7 +193,7 @@ void setup() {
     }
   }
 
-  wifiTool.begin();
+  wifiSetup();
 
   if (WiFi.status() == WL_CONNECTED) { // Wait for the Wi-Fi to connect: scan for Wi-Fi networks, and connect to the strongest of the networks above
     Serial.println("\nConnected to " + WiFi.SSID() + "; IP address: " + WiFi.localIP().toString()); // Report which SSID and IP is in use
@@ -210,43 +203,6 @@ void setup() {
       OTA();
     }
   }
-
-  // The logical name http://reflowserver.local will also access the device if you have 'Bonjour' running or your system supports multicast dns
-  if (!MDNS.begin("reflowserver")) {          // Set your preferred server name, if you use "myserver" the address would be http://myserver.local/
-    Serial.println(F("Error setting up MDNS responder!"));
-    ESP.restart();
-  }
-
-  /** webserver start**/
-
-  // On HTTP request for root, provide index.html file
-  //server.on("/", HTTP_GET, onIndexRequest);
-
-  // On HTTP request for style sheet, provide style.css
-  //server.on("/style.css", HTTP_GET, onCSSRequest);
-
-  // upload a file to /upload
-  //  server.on("/upload", HTTP_POST, [](AsyncWebServerRequest * request) {
-  //    request->send(200);
-  //  }, onUpload);
-  //
-  //  server.onFileUpload(onUpload);
-
-  // Handle requests for pages that do not exist
-  //server.onNotFound(onPageNotFound);
-
-  // Start web server
-  //server.begin();
-  //Serial.println("TCP server started");
-  /** webserver end**/
-
-  // Add service to MDNS-SD
-  MDNS.addService("ws", "tcp", 1337);
-
-  // Start WebSocket server and assign callback
-  webSocket.begin();
-  webSocket.onEvent(onWebSocketEvent);
-  Serial.println("HTTP server started");
 
   max31856.begin();
   max31856.setThermocoupleType(MAX31856_TCTYPE_K);
@@ -340,9 +296,6 @@ void loop() {
     reflow_main();
   }
   processButtons();
-  //server.handleClient(); // Listen for client connections
-  // Look for and handle WebSocket data
-  webSocket.loop();
 }
 
 void listDir(fs::FS &fs, const char * dirname, uint8_t levels) {
@@ -395,9 +348,8 @@ void readFile(fs::FS & fs, String path, const char * type) {
 }
 
 void wifiSetup() {
-  if (!wifiTool.wifiAutoConnect())
-  {
-    Serial.println("fail to connect to wifi!!!!");
-    wifiTool.runApPortal();
+  wm.setConfigPortalBlocking(false);
+  if (wm.autoConnect("ReflowOvenAP")) {
+    Serial.println("connected...yeey :)");
   }
 }
