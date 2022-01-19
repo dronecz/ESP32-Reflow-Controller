@@ -292,6 +292,7 @@ void processButtons() {
 }
 
 void loop() {
+  wm.process();
   if (state != 9) { // if we are in test menu, disable LED & SSR control in loop
     reflow_main();
   }
@@ -351,5 +352,8 @@ void wifiSetup() {
   wm.setConfigPortalBlocking(false);
   if (wm.autoConnect("ReflowOvenAP")) {
     Serial.println("connected...yeey :)");
+  }
+  else {
+    Serial.println("Configportal running");
   }
 }
