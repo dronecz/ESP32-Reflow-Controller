@@ -7,19 +7,14 @@
 #include <HTTPClient.h>
 #include <Preferences.h>
 #include <WiFi.h>
-#include <WebServer.h>
-#include <ESPmDNS.h>
 #include <Update.h>
 #include "FS.h"
 #include <SD.h>
-#include <WiFiManager.h>          //https://github.com/tzapu/WiFiManager (development branch) -> download ZIP file -> Arduino IDE -> Project -> Add library -> Add library from ZIP file -> select downloaded file
+#include <WiFiManager.h>
 #include "SPI.h"
 #include "config.h"
-//#include "LCD.h"
 #include "Button.h"
-#include "reflow_logic.h"
-//#include "OTA.h"
-#include "webserver.h"
+#include <SPIFFS.h>
 
 HTTPClient http;
 
@@ -32,8 +27,11 @@ Adafruit_MAX31856 max31856 = Adafruit_MAX31856(max_cs);
 Adafruit_ILI9341 display = Adafruit_ILI9341(display_cs, display_dc, display_rst);
 //Adafruit_ILI9341 display = Adafruit_ILI9341(display_cs, display_dc, display_mosi, display_sclk, display_rst);
 
+#define FORMAT_SPIFFS_IF_FAILED true
+
 Preferences preferences;
-WebServer server(80);
+WiFiManager wm;
+char msg_buf[10];
 
 #define DEBOUNCE_MS 100
 Button AXIS_Y = Button(BUTTON_AXIS_Y, true, DEBOUNCE_MS);
@@ -63,6 +61,7 @@ bool disableMenu = 0;
 bool profileIsOn = 0;
 bool updataAvailable = 0;
 bool testState = 0;
+bool useSPIFFS = 0 ;
 
 // Button variables
 int buttonVal[numDigButtons] = {0};                            // value read from button
@@ -84,11 +83,42 @@ byte previousSettingsPointer = 0;
 bool   SD_present = false;
 //char* json = "";
 int profileNum = 0;
-#define numOfProfiles 6
+#define numOfProfiles 10
 String jsonName[numOfProfiles];
 char json;
+int profileUsed = 0;
+char spaceName[] = "profile00";
 
-WiFiManager wm;
+// Structure for paste profiles
+typedef struct {
+  char      title[20];         // "Lead 183"
+  char      alloy[20];         // "Sn63/Pb37"
+  uint16_t  melting_point;     // 183
+
+  uint16_t  temp_range_0;      // 30
+  uint16_t  temp_range_1;      // 235
+
+  uint16_t  time_range_0;      // 0
+  uint16_t  time_range_1;      // 340
+
+  char      reference[100];    // "https://www.chipquik.com/datasheets/TS391AX50.pdf"
+
+  uint16_t  stages_preheat_0;  // 30
+  uint16_t  stages_preheat_1;  // 100
+
+  uint16_t  stages_soak_0;     // 120
+  uint16_t  stages_soak_1;     // 150
+
+  uint16_t  stages_reflow_0;   // 150
+  uint16_t  stages_reflow_1;   // 183
+
+  uint16_t  stages_cool_0;     // 240
+  uint16_t  stages_cool_1;     // 183
+} profile_t;
+
+profile_t paste_profile[numOfProfiles]; //declaration of struct type array
+
+#include "reflow_logic.h"
 
 void setup() {
   WiFi.mode(WIFI_STA); // explicitly set mode, esp defaults to STA+AP
@@ -105,7 +135,8 @@ void setup() {
   horizontal = preferences.getBool("horizontal", 0);
   buzzer = preferences.getBool("buzzer", 0);
   useOTA = preferences.getBool("useOTA", 0);
-
+  profileUsed = preferences.getInt("profileUsed", 0);
+  useSPIFFS = preferences.getBool("useSPIFFS", 0);
   preferences.end();
 
   Serial.println();
@@ -114,20 +145,18 @@ void setup() {
   Serial.println("Horizontal: " + String(horizontal));
   Serial.println("Buzzer: " + String(buzzer));
   Serial.println("OTA: " + String(useOTA));
+  Serial.println("Used profile: " + String(profileUsed));
   Serial.println();
-
+  // load profiles from ESP32 memory
+  for (int i = 0; i < numOfProfiles; i++) {
+    loadProfiles(i);
+  }
   display.begin();
   startScreen();
 
-  //reset settings - wipe credentials for testing
-  //wm.resetSettings();
-
-  wm.setConfigPortalBlocking(false);
-  if (wm.autoConnect("ReflowOvenAP")) {
-    Serial.println("connected...yeey :)");
-  }
-  else {
-    Serial.println("Configportal running");
+  if ( !SPIFFS.begin(FORMAT_SPIFFS_IF_FAILED)) {
+    Serial.println("Error mounting SPIFFS");
+    return;
   }
 
   // SSR pin initialization to ensure reflow oven is off
@@ -164,9 +193,9 @@ void setup() {
     }
   }
 
-  Serial.println("Connecting ...");
+  wifiSetup();
+
   if (WiFi.status() == WL_CONNECTED) { // Wait for the Wi-Fi to connect: scan for Wi-Fi networks, and connect to the strongest of the networks above
-    //delay(250); Serial.print('.');
     Serial.println("\nConnected to " + WiFi.SSID() + "; IP address: " + WiFi.localIP().toString()); // Report which SSID and IP is in use
     connected = 1;
 
@@ -174,23 +203,6 @@ void setup() {
       OTA();
     }
   }
-
-  // The logical name http://reflowserver.local will also access the device if you have 'Bonjour' running or your system supports multicast dns
-  if (!MDNS.begin("reflowserver")) {          // Set your preferred server name, if you use "myserver" the address would be http://myserver.local/
-    Serial.println(F("Error setting up MDNS responder!"));
-    ESP.restart();
-  }
-
-  ///////////////////////////// Server Commands
-  server.on("/",         HomePage);
-  server.on("/download", File_Download);
-  server.on("/upload",   File_Upload);
-  server.on("/fupload",  HTTP_POST, []() {
-    server.send(200);
-  }, handleFileUpload);
-  ///////////////////////////// End of Request commands
-  server.begin();
-  Serial.println("HTTP server started");
 
   max31856.begin();
   max31856.setThermocoupleType(MAX31856_TCTYPE_K);
@@ -202,22 +214,52 @@ void setup() {
   // Initialize thermocouple reading variable
   nextRead = millis();
 
-  Serial.print(F("Initializing SD card..."));
-  if (!SD.begin(SD_CS_pin)) { // see if the card is present and can be initialised. Wemos SD-Card CS uses D8
-    Serial.println(F("Card failed or not present, no SD Card data logging possible..."));
-    SD_present = false;
+  if (useSPIFFS != 0) {
+    profileNum = 0;
+    listDir(SPIFFS, "/profiles", 0);
   } else {
-    Serial.println(F("Card initialised... file access enabled..."));
-    SD_present = true;
-
-    listDir(SD, "/profiles", 0);
-  }
-  if (SD_present == true) {
-    for (int i = 0; i < profileNum; i++) {
-      parseJsonProfile(jsonName[i]);
+    Serial.print(F("Initializing SD card..."));
+    if (!SD.begin(SD_CS_pin)) { // see if the card is present and can be initialised. Wemos SD-Card CS uses D8
+      Serial.println(F("Card failed or not present, no SD Card data logging possible..."));
+      SD_present = false;
+    } else {
+      Serial.println(F("Card initialised... file access enabled..."));
+      SD_present = true;
+      // Reset number of profiles for fresh load from SD card
+      profileNum = 0;
+      listDir(SD, "/profiles", 0);
     }
   }
-  Serial.println("Number of profiles: " + profileNum);
+  // Load data from selected storage
+  if ((SD_present == true) || (useSPIFFS != 0)) {
+    profile_t paste_profile_load[numOfProfiles];
+    // Scan all profiles from source
+
+    for (int i = 0; i < profileNum; i++) {
+      if (useSPIFFS != 0) {
+        parseJsonProfile(SPIFFS, jsonName[i], i, paste_profile_load);
+      } else {
+        parseJsonProfile(SD, jsonName[i], i, paste_profile_load);
+      }
+    }
+    //Compare profiles, if they are already in memory
+    for (int i = 0; i < profileNum; i++) {
+      compareProfiles(paste_profile_load[i], paste_profile[i], i);
+    }
+  }
+
+  Serial.println();
+  Serial.print("Number of profiles: ");
+  Serial.println(profileNum);
+
+  Serial.println("Titles and alloys: ");
+  for (int i = 0; i < profileNum; i++) {
+    Serial.print((String)i + ". ");
+    Serial.print(paste_profile[i].title);
+    Serial.print(", ");
+    Serial.println(paste_profile[i].alloy);
+  }
+  Serial.println();
 }
 
 void updatePreferences() {
@@ -227,6 +269,7 @@ void updatePreferences() {
   preferences.putBool("horizontal", horizontal);
   preferences.putBool("buzzer", buzzer);
   preferences.putBool("useOTA", useOTA);
+  preferences.putBool("useSPIFFS", useSPIFFS);
   preferences.end();
 
   if (verboseOutput != 0) {
@@ -235,6 +278,7 @@ void updatePreferences() {
     Serial.println("Fan is: " + String(fan));
     Serial.println("Horizontal is: " + String(horizontal));
     Serial.println("OTA is : " + String(useOTA));
+    Serial.println("Use SPIFFS is : " + String(useSPIFFS));
     Serial.println("Buzzer is: " + String(buzzer));
     Serial.println();
   }
@@ -253,11 +297,10 @@ void loop() {
     reflow_main();
   }
   processButtons();
-  server.handleClient(); // Listen for client connections
 }
 
-void listDir(fs::FS & fs, const char * dirname, uint8_t levels) {
-  Serial.printf("Listing directory: %s\n", dirname);
+void listDir(fs::FS &fs, const char * dirname, uint8_t levels) {
+  Serial.printf("Listing directory: %s\r\n", dirname);
 
   File root = fs.open(dirname);
   if (!root) {
@@ -303,4 +346,14 @@ void readFile(fs::FS & fs, String path, const char * type) {
     Serial.write(file.read());
   }
   file.close();
+}
+
+void wifiSetup() {
+  wm.setConfigPortalBlocking(false);
+  if (wm.autoConnect("ReflowOvenAP")) {
+    Serial.println("connected...yeey :)");
+  }
+  else {
+    Serial.println("Configportal running");
+  }
 }

@@ -105,104 +105,104 @@ void ShowMenuOptions( bool clearAll )
   display.setTextColor( ILI9341_WHITE, ILI9341_BLACK );
   display.setTextSize(2);
 
-  if ( state == 1 || state == 5)
+  if ( state >= 1 || state <= 9)
   {
 
     UpdateSettingsPointer();
   }
-  else if ( state == 11 )
-  {
-    // button 0
-    display.fillRect( display.width() - 100,  buttonPosY[0] - 2, 100, buttonHeight + 4, ILI9341_BLACK );
-    display.fillRect( display.width() - 5,  buttonPosY[0], buttonWidth, buttonHeight, ILI9341_GREEN );
-    switch ( settings_pointer )
-    {
-
-      case 1:
-      case 2:
-      case 3:
-      case 4:
-      case 5:
-        //println_Right( display, "CHANGE", display.width() - 27, buttonPosY[0] + 8 );
-        break;
-
-      default:
-        //println_Right( display, "SELECT", display.width() - 27, buttonPosY[0] + 8 );
-        break;
-    }
-
-    // button 1
-    display.fillRect( display.width() - 5,  buttonPosY[1], buttonWidth, buttonHeight, ILI9341_RED );
-    //println_Right( display, "BACK", display.width() - 27, buttonPosY[1] + 8 );
-
-    // button 2
-    display.fillRect( display.width() - 5,  buttonPosY[2], buttonWidth, buttonHeight, ILI9341_BLUE );
-    //println_Right( display, "/\\", display.width() - 27, buttonPosY[2] + 8 );
-
-    // button 3
-    display.fillRect( display.width() - 5,  buttonPosY[3], buttonWidth, buttonHeight, ILI9341_YELLOW );
-    //println_Right( display, "\\/", display.width() - 27, buttonPosY[3] + 8 );
-
-    UpdateSettingsPointer();
-  }
-  else if ( state == 12 )
-  {
-    // button 0
-    display.fillRect( display.width() - 5,  buttonPosY[0], buttonWidth, buttonHeight, ILI9341_GREEN );
-    //println_Right( display, "SELECT", display.width() - 27, buttonPosY[0] + 8 );
-
-    // button 1
-    display.fillRect( display.width() - 5,  buttonPosY[1], buttonWidth, buttonHeight, ILI9341_RED );
-    //println_Right( display, "BACK", display.width() - 27, buttonPosY[1] + 8 );
-
-    // button 2
-    display.fillRect( display.width() - 5,  buttonPosY[2], buttonWidth, buttonHeight, ILI9341_BLUE );
-    //println_Right( display, "/\\", display.width() - 27, buttonPosY[2] + 8 );
-
-    // button 3
-    display.fillRect( display.width() - 5,  buttonPosY[3], buttonWidth, buttonHeight, ILI9341_YELLOW );
-    //println_Right( display, "\\/", display.width() - 27, buttonPosY[3] + 8 );
-
-    UpdateSettingsPointer();
-  }
-  else if ( state == 13 ) // restore settings to default
-  {
-    // button 0
-    display.fillRect( display.width() - 5,  buttonPosY[0], buttonWidth, buttonHeight, ILI9341_GREEN );
-    //println_Right( display, "YES", display.width() - 27, buttonPosY[0] + 8 );
-
-    // button 1
-    display.fillRect( display.width() - 5,  buttonPosY[1], buttonWidth, buttonHeight, ILI9341_RED );
-    //println_Right( display, "NO", display.width() - 27, buttonPosY[1] + 8 );
-  }
-  else if ( state == 1 || state == 2 || state == 16 ) // warmup, reflow, calibration
-  {
-    // button 0
-    display.fillRect( display.width() - 5,  buttonPosY[0], buttonWidth, buttonHeight, ILI9341_GREEN );
-    //println_Right( display, "ABORT", display.width() - 27, buttonPosY[0] + 8 );
-  }
-  else if ( state == 3 ) // Finished
-  {
-    display.fillRect( display.width() - 100,  buttonPosY[0] - 2, 100, buttonHeight + 4, ILI9341_BLACK );
-
-    // button 0
-    display.fillRect( display.width() - 5,  buttonPosY[0], buttonWidth, buttonHeight, ILI9341_GREEN );
-    //println_Right( display, "MENU", display.width() - 27, buttonPosY[0] + 8 );
-  }
-  else if ( state == 15 )
-  {
-    // button 0
-    display.fillRect( display.width() - 5,  buttonPosY[0], buttonWidth, buttonHeight, ILI9341_GREEN );
-    //println_Right( display, "START", display.width() - 27, buttonPosY[0] + 8 );
-
-    // button 1
-    display.fillRect( display.width() - 5,  buttonPosY[1], buttonWidth, buttonHeight, ILI9341_RED );
-    //println_Right( display, "BACK", display.width() - 27, buttonPosY[1] + 8 );
-  }
+  //  else if ( state == 11 )
+  //  {
+  //    // button 0
+  //    display.fillRect( display.width() - 100,  buttonPosY[0] - 2, 100, buttonHeight + 4, ILI9341_BLACK );
+  //    display.fillRect( display.width() - 5,  buttonPosY[0], buttonWidth, buttonHeight, ILI9341_GREEN );
+  //    switch ( settings_pointer )
+  //    {
+  //
+  //      case 1:
+  //      case 2:
+  //      case 3:
+  //      case 4:
+  //      case 5:
+  //        //println_Right( display, "CHANGE", display.width() - 27, buttonPosY[0] + 8 );
+  //        break;
+  //
+  //      default:
+  //        //println_Right( display, "SELECT", display.width() - 27, buttonPosY[0] + 8 );
+  //        break;
+  //    }
+  //
+  //    // button 1
+  //    display.fillRect( display.width() - 5,  buttonPosY[1], buttonWidth, buttonHeight, ILI9341_RED );
+  //    //println_Right( display, "BACK", display.width() - 27, buttonPosY[1] + 8 );
+  //
+  //    // button 2
+  //    display.fillRect( display.width() - 5,  buttonPosY[2], buttonWidth, buttonHeight, ILI9341_BLUE );
+  //    //println_Right( display, "/\\", display.width() - 27, buttonPosY[2] + 8 );
+  //
+  //    // button 3
+  //    display.fillRect( display.width() - 5,  buttonPosY[3], buttonWidth, buttonHeight, ILI9341_YELLOW );
+  //    //println_Right( display, "\\/", display.width() - 27, buttonPosY[3] + 8 );
+  //
+  //    UpdateSettingsPointer();
+  //  }
+  //  else if ( state == 12 )
+  //  {
+  //    // button 0
+  //    display.fillRect( display.width() - 5,  buttonPosY[0], buttonWidth, buttonHeight, ILI9341_GREEN );
+  //    //println_Right( display, "SELECT", display.width() - 27, buttonPosY[0] + 8 );
+  //
+  //    // button 1
+  //    display.fillRect( display.width() - 5,  buttonPosY[1], buttonWidth, buttonHeight, ILI9341_RED );
+  //    //println_Right( display, "BACK", display.width() - 27, buttonPosY[1] + 8 );
+  //
+  //    // button 2
+  //    display.fillRect( display.width() - 5,  buttonPosY[2], buttonWidth, buttonHeight, ILI9341_BLUE );
+  //    //println_Right( display, "/\\", display.width() - 27, buttonPosY[2] + 8 );
+  //
+  //    // button 3
+  //    display.fillRect( display.width() - 5,  buttonPosY[3], buttonWidth, buttonHeight, ILI9341_YELLOW );
+  //    //println_Right( display, "\\/", display.width() - 27, buttonPosY[3] + 8 );
+  //
+  //    UpdateSettingsPointer();
+  //  }
+  //  else if ( state == 13 ) // restore settings to default
+  //  {
+  //    // button 0
+  //    display.fillRect( display.width() - 5,  buttonPosY[0], buttonWidth, buttonHeight, ILI9341_GREEN );
+  //    //println_Right( display, "YES", display.width() - 27, buttonPosY[0] + 8 );
+  //
+  //    // button 1
+  //    display.fillRect( display.width() - 5,  buttonPosY[1], buttonWidth, buttonHeight, ILI9341_RED );
+  //    //println_Right( display, "NO", display.width() - 27, buttonPosY[1] + 8 );
+  //  }
+  //  else if ( state == 1 || state == 2 || state == 16 ) // warmup, reflow, calibration
+  //  {
+  //    // button 0
+  //    display.fillRect( display.width() - 5,  buttonPosY[0], buttonWidth, buttonHeight, ILI9341_GREEN );
+  //    //println_Right( display, "ABORT", display.width() - 27, buttonPosY[0] + 8 );
+  //  }
+  //  else if ( state == 3 ) // Finished
+  //  {
+  //    display.fillRect( display.width() - 100,  buttonPosY[0] - 2, 100, buttonHeight + 4, ILI9341_BLACK );
+  //
+  //    // button 0
+  //    display.fillRect( display.width() - 5,  buttonPosY[0], buttonWidth, buttonHeight, ILI9341_GREEN );
+  //    //println_Right( display, "MENU", display.width() - 27, buttonPosY[0] + 8 );
+  //  }
+  //  else if ( state == 15 )
+  //  {
+  //    // button 0
+  //    display.fillRect( display.width() - 5,  buttonPosY[0], buttonWidth, buttonHeight, ILI9341_GREEN );
+  //    //println_Right( display, "START", display.width() - 27, buttonPosY[0] + 8 );
+  //
+  //    // button 1
+  //    display.fillRect( display.width() - 5,  buttonPosY[1], buttonWidth, buttonHeight, ILI9341_RED );
+  //    //println_Right( display, "BACK", display.width() - 27, buttonPosY[1] + 8 );
+  //  }
 }
 
 void UpdateSettingsPointer() {
-  if ( state == 1 ) {
+  if ( state == 1 ) { // main menu
     //    if (settings_pointer >= 0 && settings_pointer <= 4) {
     display.setTextColor( ILI9341_WHITE, ILI9341_BLACK );
     display.setTextSize(1);
@@ -250,9 +250,24 @@ void UpdateSettingsPointer() {
     display.setTextSize(2);
     previousSettingsPointer = settings_pointer;
   }
+  else if (state == 2) { // select profile
+    display.setTextColor( ILI9341_WHITE, ILI9341_BLACK );
+    display.setTextSize(1);
+    display.fillRect( 0, 40, 20, display.height() - 20, ILI9341_BLACK );
+    display.setCursor( 10, ( 54 + ( 40 * settings_pointer ) ) );
+    display.println(">");
 
-  else if ( state == 5 )
-  {
+    display.setTextSize(0);
+    display.setTextColor( ILI9341_GREEN, ILI9341_BLACK );
+    display.fillRect( 0, display.height() - 50, display.width(), 40, ILI9341_BLACK );
+    switch ( settings_pointer )
+    {
+      case 0:
+        centeredText("Set buzzer on/off.", ILI9341_GREEN, 300);
+        break;
+    }
+  }
+  else if ( state == 5 ) { //settings menu
     display.setTextColor( ILI9341_WHITE, ILI9341_BLACK );
     display.setTextSize(1);
     display.fillRect( 0, 40, 20, display.height() - 20, ILI9341_BLACK );
@@ -281,24 +296,31 @@ void UpdateSettingsPointer() {
         centeredText("Set Yes if you have them.", ILI9341_GREEN, 300);
         break;
       case 4:
+        centeredText("Set Yes to use SPIFFS", ILI9341_GREEN, 280);
+        centeredText("for profiles.", ILI9341_GREEN, 300);
+        break;
+      case 5:
         if (buttons != 0) {
           centeredText("Set Yes to use fan.", ILI9341_GREEN, 300);
+        } else {
+          centeredText("WiFi Setup", ILI9341_GREEN, 300);
+        }
+        break;
+      case 6:
+        if (buttons != 0) {
+          centeredText("WiFi Setup", ILI9341_GREEN, 300);
         } else {
           centeredText("Enter Test menu.", ILI9341_GREEN, 300);
         }
         break;
-      case 5:
+      case 7:
         if (buttons != 0) {
           centeredText("Enter Test menu.", ILI9341_GREEN, 300);
         }
         break;
-        //      case 4:
-        //        centeredText("Show info menu", ILI9341_GREEN, 300);
-        //        break;
     }
   }
-  else if ( state == 9 )
-  {
+  else if ( state == 9 ) { //settings/test menu
     display.setTextColor( ILI9341_WHITE, ILI9341_BLACK );
     display.setTextSize(1);
     display.fillRect( 0, 40, 20, display.height() - 20, ILI9341_BLACK );
@@ -331,20 +353,12 @@ void UpdateSettingsPointer() {
 
 void infoScreen() {
   display.fillScreen(ILI9341_BLACK);
-  //display.setRotation(2);
   display.setFont(&FreeSans9pt7b);
-  //display.setFont(&FreeSans9pt7b);
   display.setTextColor(ILI9341_WHITE);
   display.setTextSize(1);
-  //  display.setCursor(0, 15);
-  //  display.print("WIFI: ");
-  //  display.print(WiFi.SSID());
   display.setCursor(5, 15);
   display.print("IP: ");
   display.println(WiFi.localIP());
-  //  display.setCursor(80, 275);
-  //  display.print("Temp: ");
-  //  display.println(input);
   display.setCursor(5, 315);
   display.print("FW: ");
   display.println(fwVersion);
@@ -407,7 +421,7 @@ void loopScreen() {
     centeredText("!UPDATE AVAILABLE!", ILI9341_GREEN, 10);
   }
   if (horizontal != 0) {
-    int tempTextPos = 200;
+    int tempTextPos = 180;
     int infoText = 30;
     centeredText("Status:", ILI9341_WHITE, infoText);
     display.setTextSize(2);
@@ -417,6 +431,10 @@ void loopScreen() {
     if (isFault != 0) {
       display.setTextSize(1);
       centeredText("Thermocouple error", ILI9341_RED, tempTextPos);
+    } else if (inputInt == 1372) {
+      display.setTextSize(1);
+      centeredText("Thermocouple not", ILI9341_RED, tempTextPos);
+      centeredText("connected", ILI9341_RED, tempTextPos + 20);
     } else if (inputInt < 50) {
       centeredText(temp, ILI9341_GREEN, tempTextPos);
     } else if ((inputInt > 50) && (inputInt < 100)) {
@@ -424,6 +442,8 @@ void loopScreen() {
     } else if (inputInt > 100) {
       centeredText(temp, ILI9341_RED, tempTextPos);
     }
+    display.setTextSize(1);
+    centeredText("Profile in use:" + String(paste_profile[profileUsed].title), ILI9341_WHITE, tempTextPos + 50);
 #ifdef DEBUG
     Serial.println(temp);
 #endif
@@ -438,6 +458,10 @@ void loopScreen() {
     if (isFault != 0) {
       display.setTextSize(1);
       centeredText("Thermocouple error", ILI9341_RED, tempTextPos);
+    } else if (inputInt == 1372) {
+      display.setTextSize(1);
+      centeredText("Thermocouple not", ILI9341_RED, tempTextPos);
+      centeredText("connected", ILI9341_RED, tempTextPos + 20);
     } else if (inputInt < 50) {
       centeredText(temp, ILI9341_GREEN, tempTextPos);
     } else if ((inputInt > 50) && (inputInt < 100)) {
@@ -445,6 +469,8 @@ void loopScreen() {
     } else if (inputInt > 100) {
       centeredText(temp, ILI9341_RED, tempTextPos);
     }
+    display.setTextSize(1);
+    centeredText("Profile in use:" + String(paste_profile[profileUsed].title), ILI9341_WHITE, tempTextPos + 50);
 #ifdef DEBUG
     Serial.println(temp);
 #endif
@@ -536,6 +562,7 @@ void showSelectProfile() {
   state = 2;
   int y = 55; //from left side of the LCD
   int h = 20;
+  numOfPointers = profileNum;
 #ifdef DEBUG
   Serial.println("State is :" + String(state));
 #endif
@@ -551,12 +578,18 @@ void showSelectProfile() {
   } else {
     display.fillRect(0, 28, 240, 3, ILI9341_WHITE );
   }
+  for (int i = 0; i < profileNum; i++) {
+    if (i == profileUsed) {
+      leftText(paste_profile[i].title, ILI9341_YELLOW, y);
+    } else {
+      leftText(paste_profile[i].title, ILI9341_WHITE, y);
+    }
+    y += h;
+    leftText(paste_profile[i].alloy, ILI9341_BLUE, y, +15);
+    y += h;
+  }
 
-  //  String tempName = array[0];
-  //  leftText(tempName, ILI9341_WHITE, y);
-  //  String tempAlloy = array[1];
-  //  y += h;
-  //  leftText(tempAlloy, ILI9341_BLUE, y, +15);
+  ShowMenuOptions(true);
 }
 
 void showChangeProfile() {
@@ -601,7 +634,15 @@ void showAddProfile() {
   }
 }
 
-void showSettings() {
+void wifiSetupShow(int y) {
+  display.fillRect( 30, y - 18, 200, 20, ILI9341_BLACK );
+  display.setTextColor(ILI9341_WHITE);
+  display.setTextSize(1);
+  display.setCursor(30, y);
+  display.print("Setup WiFi");
+}
+
+void showSettings(byte pointer = 0) {
   previousState = state;
   state = 5;
   numOfPointers = 0;
@@ -640,11 +681,19 @@ void showSettings() {
   y += h;
   numOfPointers++;
 
+  setStorage(y);
+  y += h;
+  numOfPointers++;
+
   if (buttons != 0) {
     setFan(y);
     y += h;
     numOfPointers++;
   }
+
+  wifiSetupShow(y);
+  y += h;
+  numOfPointers++;
 
   leftText("Test outputs", ILI9341_WHITE, y); rightText("->", ILI9341_WHITE, y);
   //y += h;
@@ -745,6 +794,19 @@ void setOTA (int y) {
   }
 }
 
+void setStorage (int y) {
+  display.fillRect( 30, y - 18, 200, 20, ILI9341_BLACK );
+  display.setTextColor(ILI9341_WHITE);
+  display.setTextSize(1);
+  display.setCursor(30, y);
+  display.print("Use SPIFFS: ");
+  if (useSPIFFS != 0) {
+    display.println("Yes");
+  } else {
+    display.println("No");
+  }
+}
+
 void startUpdateScreen() {
   display.fillScreen(ILI9341_BLACK);
   int y;
@@ -824,6 +886,7 @@ void testOutputs() {
   testLED(y);
   //  y += h;
   //  numOfPointers++;
+  ShowMenuOptions(true);
 }
 
 void testBuzzer(int y) {
