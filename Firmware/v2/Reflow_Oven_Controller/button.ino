@@ -163,7 +163,7 @@ void event1(int pin) {
           stopReflowScreen();
           activeStatus = "Idle";
         } else {
-          startReflowScreen();       
+          startReflowScreen();
         }
       }
       else if (state == 1) { // main menu
@@ -189,7 +189,6 @@ void event1(int pin) {
         saveSelectedProfile(settings_pointer);
         showSelectProfile();
       } else if (state == 5) { // settings
-        //settings_pointer = 0; // clear pointer
         if (settings_pointer == 0) {
           buzzer = !buzzer;
           if (verboseOutput != 0) {
@@ -229,7 +228,7 @@ void event1(int pin) {
           }
           setStorage(135);
           updatePreferences();
-        } else if  (settings_pointer == 5) {
+        } else if (settings_pointer == 5) {
           if (buttons != 0) {
             fan = !fan;
             if (verboseOutput != 0) {
@@ -238,18 +237,60 @@ void event1(int pin) {
             setFan(155);
             updatePreferences();
           } else {
-            testOutputs();
-          }
-        } else if  (settings_pointer == 6) {
-          if (buttons != 0) {
-            if (verboseOutput != 0) {
-              Serial.println("Calling WiFi setup function");
+            if (wifiConfigured != 1) {
+              if (verboseOutput != 0) {
+                Serial.println("Calling WiFi setup function");
+              }
+              wifiSetupShow(175);
+              wifiSetup();
+            } else {
+              if (verboseOutput != 0) {
+                Serial.println("Starting up WiFi..");
+              }
+              wifiRunning = !wifiRunning;
+              if (wifiRunning != 0) {
+                connectWiFi();
+              } else {
+                disconnectWiFi();
+              }
+              setWiFi(175);
+              showSettings();
             }
-            wifiSetup();
+          }
+        } else if (settings_pointer == 6) {
+          if (buttons != 0) {
+            if (wifiConfigured != 1) {
+              if (verboseOutput != 0) {
+                Serial.println("Calling WiFi setup function");
+              }
+              wifiSetupShow(175);
+              wifiSetup();
+            } else {
+              if (verboseOutput != 0) {
+                Serial.println("Starting up WiFi..");
+              }
+              wifiRunning = !wifiRunning;
+              if (wifiRunning != 0) {
+                connectWiFi();
+              } else {
+                disconnectWiFi();
+              }
+              setWiFi(175);
+              showSettings();
+            }
           } else {
             testOutputs();
           }
         } else if  (settings_pointer == 7) {
+          if (buttons != 0) {
+            if (wifiRunning != 0) {
+              webserverRunning = !webserverRunning;
+              setWebserver(195);
+            }
+          } else {
+            testOutputs();
+          }
+        } else if (settings_pointer == 8) {
           testOutputs();
         }
         //previousSettingsPointer = settings_pointer; //store previous position in menu

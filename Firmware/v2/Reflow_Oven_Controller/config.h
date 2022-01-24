@@ -1,7 +1,3 @@
-#define DEBUG
-
-#define VERBOSE 1 
-
 // LCD pin definition
 
 #define display_cs   5  // goes to TFT CS
@@ -40,7 +36,7 @@ int fanPin = 12 ; // pin 25 -> pin is still high (need to solve this)
 
 // FW info
 
-const String fwVersion = "0.3.0.0";
+const String fwVersion = "0.3.1.0";
 #define ServerVersion "1.0"
 #define projectName "ESP32 Reflow Oven Controller"
 #define WMManager

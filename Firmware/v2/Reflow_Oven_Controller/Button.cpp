@@ -76,9 +76,7 @@ uint8_t Button::read(void)
             _changed = 0;
         }
         return _state;
-        #ifdef DEBUG
-        Serial.println("State is: " + _state);
-        #endif
+
     }
 }
 
@@ -94,15 +92,9 @@ uint8_t Button::readAxis()
     if (val > 3900) {
         pinVal = 1;
         _axis = DPAD_V_FULL;
-        #ifdef DEBUG
-        Serial.println("Value is: " + val);
-        #endif
     } else if (val > 1500 && val < 2000) {
         pinVal = 1;
         _axis = DPAD_V_HALF;
-        #ifdef DEBUG
-        Serial.println("Value is: " + val);
-        #endif
     } else {
         pinVal = 0;
         _axis = DPAD_V_NONE;

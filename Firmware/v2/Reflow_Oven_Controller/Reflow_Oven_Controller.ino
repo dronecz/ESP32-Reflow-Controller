@@ -7,6 +7,7 @@
 #include <HTTPClient.h>
 #include <Preferences.h>
 #include <WiFi.h>
+#include <WebServer.h>
 #include <Update.h>
 #include "FS.h"
 #include <SD.h>
@@ -31,7 +32,7 @@ Adafruit_ILI9341 display = Adafruit_ILI9341(display_cs, display_dc, display_rst)
 
 Preferences preferences;
 WiFiManager wm;
-char msg_buf[10];
+WebServer server(80);
 
 #define DEBOUNCE_MS 100
 Button AXIS_Y = Button(BUTTON_AXIS_Y, true, DEBOUNCE_MS);
@@ -49,7 +50,7 @@ unsigned long debounceDelay = 200;    // the debounce time; increase if the outp
 String activeStatus = "";
 bool menu = 0;
 bool isFault = 0;
-bool connected = 0;
+bool WiFiConnected = 0;
 bool horizontal = 0;
 bool fan = 0;
 bool buttons = 0;
@@ -61,7 +62,10 @@ bool disableMenu = 0;
 bool profileIsOn = 0;
 bool updataAvailable = 0;
 bool testState = 0;
-bool useSPIFFS = 0 ;
+bool useSPIFFS = 0;
+bool wifiConfigured = 0;
+bool wifiRunning = 0;
+bool webserverRunning = 0;
 
 // Button variables
 int buttonVal[numDigButtons] = {0};                            // value read from button
@@ -137,6 +141,7 @@ void setup() {
   useOTA = preferences.getBool("useOTA", 0);
   profileUsed = preferences.getInt("profileUsed", 0);
   useSPIFFS = preferences.getBool("useSPIFFS", 0);
+  wifiConfigured = preferences.getBool("wifiConfigured", 0);
   preferences.end();
 
   Serial.println();
@@ -146,7 +151,10 @@ void setup() {
   Serial.println("Buzzer: " + String(buzzer));
   Serial.println("OTA: " + String(useOTA));
   Serial.println("Used profile: " + String(profileUsed));
+  Serial.println("Use SPIFFS: " + String(useSPIFFS));
+  Serial.println("Wifi is (not configured = 0, configured = 1): " + String(wifiConfigured));
   Serial.println();
+  
   // load profiles from ESP32 memory
   for (int i = 0; i < numOfProfiles; i++) {
     loadProfiles(i);
@@ -157,6 +165,8 @@ void setup() {
   if ( !SPIFFS.begin(FORMAT_SPIFFS_IF_FAILED)) {
     Serial.println("Error mounting SPIFFS");
     return;
+  }else{
+    Serial.println("SPIFFS was mounted");
   }
 
   // SSR pin initialization to ensure reflow oven is off
@@ -190,17 +200,6 @@ void setup() {
       pinMode(digitalButtonPins[i], INPUT_PULLUP);
       digitalWrite(digitalButtonPins[i], LOW  );
       Serial.println(digitalButtonPins[i]);
-    }
-  }
-
-  wifiSetup();
-
-  if (WiFi.status() == WL_CONNECTED) { // Wait for the Wi-Fi to connect: scan for Wi-Fi networks, and connect to the strongest of the networks above
-    Serial.println("\nConnected to " + WiFi.SSID() + "; IP address: " + WiFi.localIP().toString()); // Report which SSID and IP is in use
-    connected = 1;
-
-    if (useOTA != 0) {
-      OTA();
     }
   }
 
@@ -270,6 +269,7 @@ void updatePreferences() {
   preferences.putBool("buzzer", buzzer);
   preferences.putBool("useOTA", useOTA);
   preferences.putBool("useSPIFFS", useSPIFFS);
+  preferences.putBool("wifiConfigured", wifiConfigured);
   preferences.end();
 
   if (verboseOutput != 0) {
@@ -280,6 +280,7 @@ void updatePreferences() {
     Serial.println("OTA is : " + String(useOTA));
     Serial.println("Use SPIFFS is : " + String(useSPIFFS));
     Serial.println("Buzzer is: " + String(buzzer));
+    Serial.println("Wifi is (not configured = 0, configured = 1): " + String(wifiConfigured));
     Serial.println();
   }
 }
@@ -297,6 +298,7 @@ void loop() {
     reflow_main();
   }
   processButtons();
+  server.handleClient(); // Listen for client connections
 }
 
 void listDir(fs::FS &fs, const char * dirname, uint8_t levels) {
@@ -349,11 +351,60 @@ void readFile(fs::FS & fs, String path, const char * type) {
 }
 
 void wifiSetup() {
+  bool result;
   wm.setConfigPortalBlocking(false);
-  if (wm.autoConnect("ReflowOvenAP")) {
+  result = wm.autoConnect("ReflowOvenAP");
+  if (result){
     Serial.println("connected...yeey :)");
+    if (wifiConfigured != 1) {
+      wifiConfigured = 1;
+      preferences.begin("store", false);
+      preferences.putBool("wifiConfigured", wifiConfigured);
+      preferences.end();
+      Serial.println("Wifi configuration was saved.");
+    }
+    WiFiConnected = 1;
   }
   else {
     Serial.println("Configportal running");
   }
+}
+
+void turnOnWebserver() {
+  server.on("/",         HomePage);
+  server.on("/download", File_Download);
+  server.on("/upload",   File_Upload);
+  server.on("/fupload",  HTTP_POST, []() {
+    server.send(200);
+  }, handleFileUpload);
+
+  server.begin();
+  Serial.println("HTTP server started");
+  webserverRunning = 1;
+}
+
+void turnOffWebserver() {
+  server.stop();
+  Serial.println("HTTP server was turned off");
+  webserverRunning = 0;
+}
+
+void connectWiFi() {
+  WiFi.begin();
+  if (WiFi.status() == WL_CONNECTED) { // Wait for the Wi-Fi to connect: scan for Wi-Fi networks, and connect to the strongest of the networks above
+    Serial.println("\nConnected to " + WiFi.SSID() + "; IP address: " + WiFi.localIP().toString()); // Report which SSID and IP is in use
+    WiFiConnected = 1;
+    wifiRunning = 1;
+
+    if (useOTA != 0) {
+      OTA();
+    }
+  }
+}
+
+void disconnectWiFi() {
+  turnOffWebserver();
+  WiFi.disconnect();
+  wifiRunning = 0;
+  Serial.println("WiFi was turned off");
 }

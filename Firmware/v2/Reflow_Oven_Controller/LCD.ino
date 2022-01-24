@@ -1,36 +1,5 @@
-
 extern JsonArray array;
-//extern byte menuSelectLine;
-#define ARROW 0x7e
 
-
-void processMenu() {
-  if (state == 0) { // home screen
-    //loopScreen();
-    return;
-  } else if (state == 1) { // main menu
-    //mainMenuScreen();
-    return;
-  } else if (state == 2) { // select profile
-
-  } else if (state == 3) { // change profile
-
-  } else if (state == 4) { // add profile
-
-  } else if (state == 5) { // settings
-
-  } else if (state == 6) { // info
-
-  } else {
-
-  }
-  //return;
-}
-
-//extern int inputInt;
-
-//extern bool menu;
-//#define font &FreeSans9pt7b
 char *menuItems[] = {"Select profile", "Change profile", "Add profile", "Settings", "Info"};
 #define menuItemsSize sizeof(menuItems)
 int activeMenu = 0;
@@ -47,13 +16,13 @@ void centeredText(String text, uint16_t color, int yCord, int xCord = 0) {
   uint16_t w, h;
   int offSet = 10;
   display.getTextBounds(string2char(text), 0, 0, &x1, &y1, &w, &h);
-#ifdef DEBUG
-  Serial.print("Text bounds for: \"" + text + "\"");
-  Serial.print(" x1:");  Serial.print(x1);
-  Serial.print(" y1:");  Serial.print(y1);
-  Serial.print(" w:");  Serial.print(w);
-  Serial.print(" h:");  Serial.println(h);
-#endif
+  if (verboseOutput != 0) {
+    Serial.print("Text bounds for: \"" + text + "\"");
+    Serial.print(" x1:");  Serial.print(x1);
+    Serial.print(" y1:");  Serial.print(y1);
+    Serial.print(" w:");  Serial.print(w);
+    Serial.print(" h:");  Serial.println(h);
+  }
   display.setTextColor(color);
   display.fillRect(((display.width() - w) / 2), (yCord - (h / 2)), (w + offSet) , (h + offSet), ILI9341_BLACK);
   display.setCursor(((display.width() - w) / 2), (yCord + (h / 2)));
@@ -65,13 +34,13 @@ void rightText(String text, uint16_t color, int yCord, int xCord = 0) {
   uint16_t w, h;
   int offSet = 10;
   display.getTextBounds(string2char(text), 0, 0, &x1, &y1, &w, &h);
-#ifdef DEBUG
-  Serial.print("Text bounds for: \"" + text + "\"");
-  Serial.print(" x1:");  Serial.print(x1);
-  Serial.print(" y1:");  Serial.print(y1);
-  Serial.print(" w:");  Serial.print(w);
-  Serial.print(" h:");  Serial.println(h);
-#endif
+  if (verboseOutput != 0) {
+    Serial.print("Text bounds for: \"" + text + "\"");
+    Serial.print(" x1:");  Serial.print(x1);
+    Serial.print(" y1:");  Serial.print(y1);
+    Serial.print(" w:");  Serial.print(w);
+    Serial.print(" h:");  Serial.println(h);
+  }
   display.setTextColor(color);
   //display.fillRect(((display.width() - w) / 2), (yCord - (h / 2)), (w + offSet) , (h + offSet), ILI9341_BLACK);//
   display.setCursor(((display.width() - w) - 10), yCord/*(yCord + (h /2))*/); //
@@ -83,13 +52,13 @@ void leftText(String text, uint16_t color, int yCord, int xCord = 0) {
   uint16_t w, h;
   int offSet = 10;
   display.getTextBounds(string2char(text), 0, 0, &x1, &y1, &w, &h);
-#ifdef DEBUG
-  Serial.print("Text bounds for: \"" + text + "\"");
-  Serial.print(" x1:");  Serial.print(x1);
-  Serial.print(" y1:");  Serial.print(y1);
-  Serial.print(" w:");  Serial.print(w);
-  Serial.print(" h:");  Serial.println(h);
-#endif
+  if (verboseOutput != 0) {
+    Serial.print("Text bounds for: \"" + text + "\"");
+    Serial.print(" x1:");  Serial.print(x1);
+    Serial.print(" y1:");  Serial.print(y1);
+    Serial.print(" w:");  Serial.print(w);
+    Serial.print(" h:");  Serial.println(h);
+  }
   display.setTextColor(color);
   //display.fillRect(((display.width() - w) / 2), (yCord - (h / 2)), (w + offSet) , (h + offSet), ILI9341_BLACK);//
   display.setCursor(xCord + 30, yCord/*(yCord + (h /2))*/); //
@@ -107,98 +76,8 @@ void ShowMenuOptions( bool clearAll )
 
   if ( state >= 1 || state <= 9)
   {
-
     UpdateSettingsPointer();
   }
-  //  else if ( state == 11 )
-  //  {
-  //    // button 0
-  //    display.fillRect( display.width() - 100,  buttonPosY[0] - 2, 100, buttonHeight + 4, ILI9341_BLACK );
-  //    display.fillRect( display.width() - 5,  buttonPosY[0], buttonWidth, buttonHeight, ILI9341_GREEN );
-  //    switch ( settings_pointer )
-  //    {
-  //
-  //      case 1:
-  //      case 2:
-  //      case 3:
-  //      case 4:
-  //      case 5:
-  //        //println_Right( display, "CHANGE", display.width() - 27, buttonPosY[0] + 8 );
-  //        break;
-  //
-  //      default:
-  //        //println_Right( display, "SELECT", display.width() - 27, buttonPosY[0] + 8 );
-  //        break;
-  //    }
-  //
-  //    // button 1
-  //    display.fillRect( display.width() - 5,  buttonPosY[1], buttonWidth, buttonHeight, ILI9341_RED );
-  //    //println_Right( display, "BACK", display.width() - 27, buttonPosY[1] + 8 );
-  //
-  //    // button 2
-  //    display.fillRect( display.width() - 5,  buttonPosY[2], buttonWidth, buttonHeight, ILI9341_BLUE );
-  //    //println_Right( display, "/\\", display.width() - 27, buttonPosY[2] + 8 );
-  //
-  //    // button 3
-  //    display.fillRect( display.width() - 5,  buttonPosY[3], buttonWidth, buttonHeight, ILI9341_YELLOW );
-  //    //println_Right( display, "\\/", display.width() - 27, buttonPosY[3] + 8 );
-  //
-  //    UpdateSettingsPointer();
-  //  }
-  //  else if ( state == 12 )
-  //  {
-  //    // button 0
-  //    display.fillRect( display.width() - 5,  buttonPosY[0], buttonWidth, buttonHeight, ILI9341_GREEN );
-  //    //println_Right( display, "SELECT", display.width() - 27, buttonPosY[0] + 8 );
-  //
-  //    // button 1
-  //    display.fillRect( display.width() - 5,  buttonPosY[1], buttonWidth, buttonHeight, ILI9341_RED );
-  //    //println_Right( display, "BACK", display.width() - 27, buttonPosY[1] + 8 );
-  //
-  //    // button 2
-  //    display.fillRect( display.width() - 5,  buttonPosY[2], buttonWidth, buttonHeight, ILI9341_BLUE );
-  //    //println_Right( display, "/\\", display.width() - 27, buttonPosY[2] + 8 );
-  //
-  //    // button 3
-  //    display.fillRect( display.width() - 5,  buttonPosY[3], buttonWidth, buttonHeight, ILI9341_YELLOW );
-  //    //println_Right( display, "\\/", display.width() - 27, buttonPosY[3] + 8 );
-  //
-  //    UpdateSettingsPointer();
-  //  }
-  //  else if ( state == 13 ) // restore settings to default
-  //  {
-  //    // button 0
-  //    display.fillRect( display.width() - 5,  buttonPosY[0], buttonWidth, buttonHeight, ILI9341_GREEN );
-  //    //println_Right( display, "YES", display.width() - 27, buttonPosY[0] + 8 );
-  //
-  //    // button 1
-  //    display.fillRect( display.width() - 5,  buttonPosY[1], buttonWidth, buttonHeight, ILI9341_RED );
-  //    //println_Right( display, "NO", display.width() - 27, buttonPosY[1] + 8 );
-  //  }
-  //  else if ( state == 1 || state == 2 || state == 16 ) // warmup, reflow, calibration
-  //  {
-  //    // button 0
-  //    display.fillRect( display.width() - 5,  buttonPosY[0], buttonWidth, buttonHeight, ILI9341_GREEN );
-  //    //println_Right( display, "ABORT", display.width() - 27, buttonPosY[0] + 8 );
-  //  }
-  //  else if ( state == 3 ) // Finished
-  //  {
-  //    display.fillRect( display.width() - 100,  buttonPosY[0] - 2, 100, buttonHeight + 4, ILI9341_BLACK );
-  //
-  //    // button 0
-  //    display.fillRect( display.width() - 5,  buttonPosY[0], buttonWidth, buttonHeight, ILI9341_GREEN );
-  //    //println_Right( display, "MENU", display.width() - 27, buttonPosY[0] + 8 );
-  //  }
-  //  else if ( state == 15 )
-  //  {
-  //    // button 0
-  //    display.fillRect( display.width() - 5,  buttonPosY[0], buttonWidth, buttonHeight, ILI9341_GREEN );
-  //    //println_Right( display, "START", display.width() - 27, buttonPosY[0] + 8 );
-  //
-  //    // button 1
-  //    display.fillRect( display.width() - 5,  buttonPosY[1], buttonWidth, buttonHeight, ILI9341_RED );
-  //    //println_Right( display, "BACK", display.width() - 27, buttonPosY[1] + 8 );
-  //  }
 }
 
 void UpdateSettingsPointer() {
@@ -303,20 +182,37 @@ void UpdateSettingsPointer() {
         if (buttons != 0) {
           centeredText("Set Yes to use fan.", ILI9341_GREEN, 300);
         } else {
-          centeredText("WiFi Setup", ILI9341_GREEN, 300);
+          if (wifiConfigured != 1) {
+            centeredText("Turn On/off Wifi", ILI9341_GREEN, 300);
+          } else {
+            centeredText("WiFi Setup", ILI9341_GREEN, 300);
+          }
         }
         break;
       case 6:
         if (buttons != 0) {
-          centeredText("WiFi Setup", ILI9341_GREEN, 300);
+          if (wifiConfigured != 1) {
+            centeredText("Turn On/off Wifi", ILI9341_GREEN, 300);
+          } else {
+            centeredText("WiFi Setup", ILI9341_GREEN, 300);
+          }
         } else {
           centeredText("Enter Test menu.", ILI9341_GREEN, 300);
         }
         break;
       case 7:
         if (buttons != 0) {
-          centeredText("Enter Test menu.", ILI9341_GREEN, 300);
+          if (wifiRunning != 0) {
+            centeredText("Turn On/off Webserver", ILI9341_GREEN, 300);
+          } else {
+            centeredText("Enter Test menu.", ILI9341_GREEN, 300);
+          }
         }
+        break;
+      case 8:
+      if (buttons != 0) {
+        centeredText("Enter Test menu.", ILI9341_GREEN, 300);
+      }
         break;
     }
   }
@@ -410,9 +306,9 @@ void startScreen() {
 
 void loopScreen() {
   state = 0;
-#ifdef DEBUG
-  Serial.println("State is :" + String(state));
-#endif
+  if (verboseOutput != 0) {
+    Serial.println("State is :" + String(state));
+  }
   display.fillScreen(ILI9341_BLACK);
 
   display.setFont(&FreeSans9pt7b);
@@ -444,9 +340,9 @@ void loopScreen() {
     }
     display.setTextSize(1);
     centeredText("Profile in use:" + String(paste_profile[profileUsed].title), ILI9341_WHITE, tempTextPos + 50);
-#ifdef DEBUG
-    Serial.println(temp);
-#endif
+    if (verboseOutput != 0) {
+      Serial.println(temp);
+    }
   } else {
     int tempTextPos = 240;
     int infoText = 50;
@@ -471,18 +367,18 @@ void loopScreen() {
     }
     display.setTextSize(1);
     centeredText("Profile in use:" + String(paste_profile[profileUsed].title), ILI9341_WHITE, tempTextPos + 50);
-#ifdef DEBUG
-    Serial.println(temp);
-#endif
+    if (verboseOutput != 0) {
+      Serial.println(temp);
+    }
   }
 }
 
 void startReflowScreen() {
   previousState = state;
   state = 7;
-#ifdef DEBUG
-  Serial.println("State is :" + String(state));
-#endif
+  if (verboseOutput != 0) {
+    Serial.println("State is :" + String(state));
+  }
   display.fillScreen(ILI9341_BLACK);
   int tempTextPos = 240;
   int infoText = 50;
@@ -497,9 +393,9 @@ void startReflowScreen() {
 void stopReflowScreen() {
   previousState = state;
   state = 8;
-#ifdef DEBUG
-  Serial.println("State is :" + String(state));
-#endif
+  if (verboseOutput != 0) {
+    Serial.println("State is :" + String(state));
+  }
   display.fillScreen(ILI9341_BLACK);
   int tempTextPos = 240;
   int infoText = 50;
@@ -515,9 +411,9 @@ void mainMenuScreen() {
   previousState = state;
   state = 1;
   numOfPointers = 0;
-#ifdef DEBUG
-  Serial.println("State is :" + String(state));
-#endif
+  if (verboseOutput != 0) {
+    Serial.println("State is :" + String(state));
+  }
   int y = 55;
   int h = 20;
   display.setFont(&FreeSans9pt7b);
@@ -563,9 +459,9 @@ void showSelectProfile() {
   int y = 55; //from left side of the LCD
   int h = 20;
   numOfPointers = profileNum;
-#ifdef DEBUG
-  Serial.println("State is :" + String(state));
-#endif
+  if (verboseOutput != 0) {
+    Serial.println("State is :" + String(state));
+  }
   display.fillScreen(ILI9341_BLACK);
   //display.setRotation(2);
   display.setFont(&FreeSans9pt7b);
@@ -595,9 +491,9 @@ void showSelectProfile() {
 void showChangeProfile() {
   previousState = state;
   state = 3;
-#ifdef DEBUG
-  Serial.println("State is :" + String(state));
-#endif
+  if (verboseOutput != 0) {
+    Serial.println("State is :" + String(state));
+  }
   int y = 55; //from left side of the LCD
   int h = 20;
   display.setFont(&FreeSans9pt7b);
@@ -616,9 +512,9 @@ void showChangeProfile() {
 void showAddProfile() {
   previousState = state;
   state = 4;
-#ifdef DEBUG
-  Serial.println("State is :" + String(state));
-#endif
+  if (verboseOutput != 0) {
+    Serial.println("State is :" + String(state));
+  }
   int y = 55; //from left side of the LCD
   int h = 20;
   display.setFont(&FreeSans9pt7b);
@@ -634,22 +530,14 @@ void showAddProfile() {
   }
 }
 
-void wifiSetupShow(int y) {
-  display.fillRect( 30, y - 18, 200, 20, ILI9341_BLACK );
-  display.setTextColor(ILI9341_WHITE);
-  display.setTextSize(1);
-  display.setCursor(30, y);
-  display.print("Setup WiFi");
-}
-
 void showSettings(byte pointer = 0) {
   previousState = state;
   state = 5;
   numOfPointers = 0;
   settings_pointer = 0; // clear pointer
-#ifdef DEBUG
-  Serial.println("State is :" + String(state));
-#endif
+  if (verboseOutput != 0) {
+    Serial.println("State is :" + String(state));
+  }
   int y = 55; //from left side of the LCD
   int h = 20;
   display.setFont(&FreeSans9pt7b);
@@ -691,9 +579,21 @@ void showSettings(byte pointer = 0) {
     numOfPointers++;
   }
 
-  wifiSetupShow(y);
-  y += h;
-  numOfPointers++;
+  if (wifiConfigured != 1) {
+    wifiSetupShow(y);
+    y += h;
+    numOfPointers++;
+  } else {
+    setWiFi(y);
+    y += h;
+    numOfPointers++;
+  }
+
+  if (wifiRunning != 0) {
+    setWebserver(y);
+    y += h;
+    numOfPointers++;
+  }
 
   leftText("Test outputs", ILI9341_WHITE, y); rightText("->", ILI9341_WHITE, y);
   //y += h;
@@ -705,9 +605,9 @@ void showSettings(byte pointer = 0) {
 void showInfo() {
   previousState = state;
   state = 6;
-#ifdef DEBUG
-  Serial.println("State is :" + String(state));
-#endif
+  if (verboseOutput != 0) {
+    Serial.println("State is :" + String(state));
+  }
   int y = 55; //from left side of the LCD
   int h = 20;
   display.setFont(&FreeSans9pt7b);
@@ -722,7 +622,7 @@ void showInfo() {
     display.fillRect(0, 28, 240, 3, ILI9341_WHITE );
   }
   leftText("- FW version: " + fwVersion, ILI9341_WHITE, y, -15);
-  if (connected != 0) {
+  if (WiFiConnected != 0) {
     String ipAddress = WiFi.localIP().toString();
     leftText("- WiFi: " + String(WiFi.SSID()), ILI9341_WHITE, y + h, -15);
     leftText("- IP: " + ipAddress, ILI9341_WHITE, y + h * 2, -15);
@@ -807,6 +707,45 @@ void setStorage (int y) {
   }
 }
 
+void wifiSetupShow(int y) {
+  display.fillRect( 30, y - 18, 200, 20, ILI9341_BLACK );
+  display.setTextColor(ILI9341_WHITE);
+  display.setTextSize(1);
+  display.setCursor(30, y);
+  display.print("Setup WiFi");
+  //  if (wifiConfigured != 1) {
+  //    wifiSetup();
+  //  }
+}
+
+void setWiFi (int y) {
+  display.fillRect( 30, y - 18, 200, 20, ILI9341_BLACK );
+  display.setTextColor(ILI9341_WHITE);
+  display.setTextSize(1);
+  display.setCursor(30, y);
+  display.print("WiFi: ");
+  if (wifiRunning != 0) {
+    display.println("On");
+  } else {
+    display.println("Off");
+  }
+}
+
+void setWebserver (int y) {
+  display.fillRect( 30, y - 18, 200, 20, ILI9341_BLACK );
+  display.setTextColor(ILI9341_WHITE);
+  display.setTextSize(1);
+  display.setCursor(30, y);
+  display.print("Webserver: ");
+  if (webserverRunning != 0) {
+    display.println("On");
+    turnOnWebserver();
+  } else {
+    display.println("Off");
+    turnOffWebserver();
+  }
+}
+
 void startUpdateScreen() {
   display.fillScreen(ILI9341_BLACK);
   int y;
@@ -853,9 +792,9 @@ void testOutputs() {
   state = 9;
   numOfPointers = 0;
   settings_pointer = 0; // clear pointer
-#ifdef DEBUG
-  Serial.println("State is :" + String(state));
-#endif
+  if (verboseOutput != 0) {
+    Serial.println("State is :" + String(state));
+  }
   int y = 55; //from left side of the LCD
   int h = 20;
   display.setFont(&FreeSans9pt7b);
