@@ -154,7 +154,7 @@ void setup() {
   Serial.println("Use SPIFFS: " + String(useSPIFFS));
   Serial.println("Wifi is (not configured = 0, configured = 1): " + String(wifiConfigured));
   Serial.println();
-  
+
   // load profiles from ESP32 memory
   for (int i = 0; i < numOfProfiles; i++) {
     loadProfiles(i);
@@ -165,7 +165,7 @@ void setup() {
   if ( !SPIFFS.begin(FORMAT_SPIFFS_IF_FAILED)) {
     Serial.println("Error mounting SPIFFS");
     return;
-  }else{
+  } else {
     Serial.println("SPIFFS was mounted");
   }
 
@@ -213,10 +213,7 @@ void setup() {
   // Initialize thermocouple reading variable
   nextRead = millis();
 
-  if (useSPIFFS != 0) {
-    profileNum = 0;
-    listDir(SPIFFS, "/profiles", 0);
-  } else {
+  if (useSPIFFS != 1) {
     Serial.print(F("Initializing SD card..."));
     if (!SD.begin(SD_CS_pin)) { // see if the card is present and can be initialised. Wemos SD-Card CS uses D8
       Serial.println(F("Card failed or not present, no SD Card data logging possible..."));
@@ -224,41 +221,10 @@ void setup() {
     } else {
       Serial.println(F("Card initialised... file access enabled..."));
       SD_present = true;
-      // Reset number of profiles for fresh load from SD card
-      profileNum = 0;
-      listDir(SD, "/profiles", 0);
-    }
-  }
-  // Load data from selected storage
-  if ((SD_present == true) || (useSPIFFS != 0)) {
-    profile_t paste_profile_load[numOfProfiles];
-    // Scan all profiles from source
-
-    for (int i = 0; i < profileNum; i++) {
-      if (useSPIFFS != 0) {
-        parseJsonProfile(SPIFFS, jsonName[i], i, paste_profile_load);
-      } else {
-        parseJsonProfile(SD, jsonName[i], i, paste_profile_load);
-      }
-    }
-    //Compare profiles, if they are already in memory
-    for (int i = 0; i < profileNum; i++) {
-      compareProfiles(paste_profile_load[i], paste_profile[i], i);
     }
   }
 
-  Serial.println();
-  Serial.print("Number of profiles: ");
-  Serial.println(profileNum);
-
-  Serial.println("Titles and alloys: ");
-  for (int i = 0; i < profileNum; i++) {
-    Serial.print((String)i + ". ");
-    Serial.print(paste_profile[i].title);
-    Serial.print(", ");
-    Serial.println(paste_profile[i].alloy);
-  }
-  Serial.println();
+  scanForProfiles();
 }
 
 void updatePreferences() {
@@ -350,11 +316,55 @@ void readFile(fs::FS & fs, String path, const char * type) {
   file.close();
 }
 
+void scanForProfiles() {
+  if (useSPIFFS != 0) {
+    profileNum = 0;
+    //    listDir(SPIFFS, "/profiles", 0);
+    listDir(SPIFFS, "/", 0);
+  } else {
+    // Reset number of profiles for fresh load from SD card
+    profileNum = 0;
+    //      listDir(SD, "/profiles", 0);
+    listDir(SD, "/", 0);
+  }
+
+  // Load data from selected storage
+  if ((SD_present == true) || (useSPIFFS != 0)) {
+    profile_t paste_profile_load[numOfProfiles];
+    // Scan all profiles from source
+
+    for (int i = 0; i < profileNum; i++) {
+      if (useSPIFFS != 0) {
+        parseJsonProfile(SPIFFS, jsonName[i], i, paste_profile_load);
+      } else {
+        parseJsonProfile(SD, jsonName[i], i, paste_profile_load);
+      }
+    }
+    //Compare profiles, if they are already in memory
+    for (int i = 0; i < profileNum; i++) {
+      compareProfiles(paste_profile_load[i], paste_profile[i], i);
+    }
+  }
+
+  Serial.println();
+  Serial.print("Number of profiles: ");
+  Serial.println(profileNum);
+
+  Serial.println("Titles and alloys: ");
+  for (int i = 0; i < profileNum; i++) {
+    Serial.print((String)i + ". ");
+    Serial.print(paste_profile[i].title);
+    Serial.print(", ");
+    Serial.println(paste_profile[i].alloy);
+  }
+  Serial.println();
+}
+
 void wifiSetup() {
   bool result;
   wm.setConfigPortalBlocking(false);
   result = wm.autoConnect("ReflowOvenAP");
-  if (result){
+  if (result) {
     Serial.println("connected...yeey :)");
     if (wifiConfigured != 1) {
       wifiConfigured = 1;

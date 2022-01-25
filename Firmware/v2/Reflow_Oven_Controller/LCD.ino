@@ -183,36 +183,37 @@ void UpdateSettingsPointer() {
           centeredText("Set Yes to use fan.", ILI9341_GREEN, 300);
         } else {
           if (wifiConfigured != 1) {
-            centeredText("Turn On/off Wifi", ILI9341_GREEN, 300);
-          } else {
             centeredText("WiFi Setup", ILI9341_GREEN, 300);
+          } else {
+            centeredText("Turn On/off Wifi", ILI9341_GREEN, 300);
           }
         }
         break;
       case 6:
         if (buttons != 0) {
           if (wifiConfigured != 1) {
-            centeredText("Turn On/off Wifi", ILI9341_GREEN, 300);
-          } else {
             centeredText("WiFi Setup", ILI9341_GREEN, 300);
+          } else {
+            centeredText("Turn On/Off Wifi", ILI9341_GREEN, 300);
           }
         } else {
-          centeredText("Enter Test menu.", ILI9341_GREEN, 300);
-        }
-        break;
-      case 7:
-        if (buttons != 0) {
           if (wifiRunning != 0) {
-            centeredText("Turn On/off Webserver", ILI9341_GREEN, 300);
+            centeredText("Turn On/Off Webserver", ILI9341_GREEN, 300);
           } else {
             centeredText("Enter Test menu.", ILI9341_GREEN, 300);
           }
         }
         break;
-      case 8:
-      if (buttons != 0) {
-        centeredText("Enter Test menu.", ILI9341_GREEN, 300);
-      }
+      case 7:
+        if (buttons != 0) {
+          if (wifiRunning != 0) {
+            centeredText("Turn On/Off Webserver", ILI9341_GREEN, 300);
+          } else {
+            centeredText("Enter Test menu.", ILI9341_GREEN, 300);
+          }
+        }else{
+          centeredText("Enter Test menu.", ILI9341_GREEN, 300);
+        }
         break;
     }
   }
@@ -723,11 +724,11 @@ void setWiFi (int y) {
   display.setTextColor(ILI9341_WHITE);
   display.setTextSize(1);
   display.setCursor(30, y);
-  display.print("WiFi: ");
+  display.print("Turn WiFi ");
   if (wifiRunning != 0) {
-    display.println("On");
+    display.println("off");
   } else {
-    display.println("Off");
+    display.println("on");
   }
 }
 
@@ -736,13 +737,11 @@ void setWebserver (int y) {
   display.setTextColor(ILI9341_WHITE);
   display.setTextSize(1);
   display.setCursor(30, y);
-  display.print("Webserver: ");
+  display.print("Turn webserver ");
   if (webserverRunning != 0) {
-    display.println("On");
-    turnOnWebserver();
+    display.println("off");
   } else {
-    display.println("Off");
-    turnOffWebserver();
+    display.println("on");
   }
 }
 

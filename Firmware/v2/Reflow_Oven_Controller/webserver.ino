@@ -18,7 +18,7 @@ void append_page_header() {
   webpage += F("section {font-size:0.88em;}");
   webpage += F("h1{color:white;border-radius:0.5em;font-size:1em;padding:0.2em 0.2em;background:#558ED5;}");
   webpage += F("h2{color:orange;font-size:1.0em;}");
-  webpage += F("h3{font-size:0.8em;}");
+  webpage += F("h3{color:red;font-size:0.8em;}");
   webpage += F("table{font-family:arial,sans-serif;font-size:0.9em;border-collapse:collapse;width:85%;}");
   webpage += F("th,td {border:0.06em solid #dddddd;text-align:left;padding:0.3em;border-bottom:0.06em solid #dddddd;}");
   webpage += F("tr:nth-child(odd) {background-color:#eeeeee;}");
@@ -43,12 +43,9 @@ void append_page_header() {
 void append_page_footer() { // Saves repeating many lines of code for HTML page footers
   webpage += F("<ul>");
   webpage += F("<li><a href='/'>Home</a></li>"); // Lower Menu bar command entries
-  webpage += F("<li><a href='/download'>Download</a></li>");
+//  webpage += F("<li><a href='/download'>Download</a></li>");
   webpage += F("<li><a href='/upload'>Upload</a></li>");
   webpage += F("</ul>");
-  //  webpage += "<footer>&copy;" + String(char(byte(0x40 >> 1))) + String(char(byte(0x88 >> 1))) + String(char(byte(0x5c >> 1))) + String(char(byte(0x98 >> 1))) + String(char(byte(0x5c >> 1)));
-  //  webpage += String(char((0x84 >> 1))) + String(char(byte(0xd2 >> 1))) + String(char(0xe4 >> 1)) + String(char(0xc8 >> 1)) + String(char(byte(0x40 >> 1)));
-  //  webpage += String(char(byte(0x64 / 2))) + String(char(byte(0x60 >> 1))) + String(char(byte(0x62 >> 1))) + String(char(0x70 >> 1)) + "</footer>";
   webpage += F("</body></html>");
 }
 
@@ -57,11 +54,11 @@ void append_page_footer() { // Saves repeating many lines of code for HTML page 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 void HomePage() {
   SendHTML_Header();
-  //  webpage += F("<a href='/download'><button>Download</button></a>");
+  webpage += F("<a href='/download'><button>Download</button></a>");
   webpage += F("<a href='/upload'><button>Upload</button></a>");
-  webpage += F("<h3>Temp is: ");
-  webpage += String(inputInt);
-  webpage += F("</h3>");
+  //  webpage += F("<h3>Temp is: ");
+  //  webpage += String(inputInt);
+  //  webpage += F("</h3>");
   append_page_footer();
   SendHTML_Content();
   SendHTML_Stop(); // Stop is needed because no content length was sent
@@ -111,10 +108,10 @@ void handleFileUpload() { // upload a new file to the Filing system
     Serial.print("Upload File Name: "); Serial.println(filename);
     if (useSPIFFS != 1) {
       SD.remove(filename);                         // Remove a previous version, otherwise data is appended the file again
-      UploadFile = SD.open(filename, FILE_WRITE);  // Open the file for writing in SPIFFS (create it, if doesn't exist)
+      UploadFile = SD.open(filename, "w");  // Open the file for writing in SPIFFS (create it, if doesn't exist)
     } else {
       SPIFFS.remove(filename);                         // Remove a previous version, otherwise data is appended the file again
-      UploadFile = SPIFFS.open(filename, FILE_WRITE);  // Open the file for writing in SPIFFS (create it, if doesn't exist)
+      UploadFile = SPIFFS.open(filename, "w");  // Open the file for writing in SPIFFS (create it, if doesn't exist)
     }
     filename = String();
   }
@@ -135,6 +132,7 @@ void handleFileUpload() { // upload a new file to the Filing system
       webpage += F("<h2>File Size: "); webpage += file_size(uploadfile.totalSize) + "</h2><br>";
       append_page_footer();
       server.send(200, "text/html", webpage);
+      scanForProfiles();
     }
     else
     {
@@ -196,7 +194,7 @@ void ReportFileNotPresent(String target) {
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 void ReportCouldNotCreateFile(String target) {
   SendHTML_Header();
-  webpage += F("<h3>Could Not Create Uploaded File (write-protected?)</h3>");
+  webpage += F("<h3>Could Not Create Uploaded File (NOT inserted SD card or NOT \"Use SPIFFS:Yes\" in Settings?)</h3>");
   webpage += F("<a href='/"); webpage += target + "'>[Back]</a><br><br>";
   append_page_footer();
   SendHTML_Content();

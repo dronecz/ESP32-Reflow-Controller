@@ -279,19 +279,32 @@ void event1(int pin) {
               showSettings();
             }
           } else {
-            testOutputs();
+            if (wifiRunning != 0) {
+              //webserverRunning = !webserverRunning;
+              if (webserverRunning != 0) {
+                turnOffWebserver();
+              } else {
+                turnOnWebserver();
+              }
+              setWebserver(175);
+            } else {
+              testOutputs();
+            }
           }
         } else if  (settings_pointer == 7) {
           if (buttons != 0) {
             if (wifiRunning != 0) {
               webserverRunning = !webserverRunning;
+              if (webserverRunning != 0) {
+                turnOffWebserver();
+              } else {
+                turnOnWebserver();
+              }
               setWebserver(195);
             }
           } else {
             testOutputs();
           }
-        } else if (settings_pointer == 8) {
-          testOutputs();
         }
         //previousSettingsPointer = settings_pointer; //store previous position in menu
       } else if (state == 7) {
