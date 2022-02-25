@@ -276,28 +276,7 @@ void UpdateSettingsPointer() { // this function shows help text at the bottom of
     display.fillRect( 0, 40, 20, display.height() - 20, ILI9341_BLACK );
     display.setCursor( 10, ( 250 + ( 20 * settings_pointer ) ) );
     display.println(">");
-  }else if (state == 11){
-        display.setTextColor( ILI9341_WHITE, ILI9341_BLACK );
-    display.setTextSize(1);
-    display.fillRect( 0, 40, 20, display.height() - 20, ILI9341_BLACK );
-    display.setCursor( 10, ( 54 + ( 40 * settings_pointer ) ) );
-    display.println(">");
-
-    display.setTextSize(0);
-    display.setTextColor( ILI9341_GREEN, ILI9341_BLACK );
-    display.fillRect( 0, display.height() - 50, display.width(), 50, ILI9341_BLACK );
-    switch ( settings_pointer )
-    {
-      case 0:
-        centeredText("Set bake temperature.", ILI9341_GREEN, 300);
-        break;
-
-      case 1:
-        centeredText("Set bake time.", ILI9341_GREEN, 300);
-        break;
-    }
   }
-
 }
 
 void infoScreen() {
@@ -757,8 +736,9 @@ void showSelectBakeSettingsScreen() {
   numOfPointers++; //0
 
   setBakeDuration(y);
+  y += 2 * h;
+  numOfPointers++; //1
 
-  ShowMenuOptions(true);
 }
 
 void startUpdateScreen() {
@@ -842,7 +822,8 @@ void testOutputsScreen() {
   numOfPointers++;
 
   testLED(y);
-
+  //  y += h;
+  //  numOfPointers++;
   ShowMenuOptions(true);
 }
 
@@ -1338,14 +1319,12 @@ void testLED(int y) {
 
 void setBakeTemp(int y) {
   int h = 20;
-  display.fillRect( 30, y - 18, 200, 20, ILI9341_BLACK );
+  //display.fillRect( 30, y - 18, 200, 20, ILI9341_BLACK );
   display.setTextColor(ILI9341_WHITE);
   display.setTextSize(1);
   display.setCursor(30, y);
-  //display.println("Bake temperature: ");
-  //rightText(String(savedBakeTemp) + " C", ILI9341_WHITE, y += h, 30);
-  display.print("Bake temperature: ");
-  display.println(String(savedBakeTemp) + " C");
+  display.println("Bake temperature: ");
+  rightText("80 C", ILI9341_WHITE, y += h, 30);
   // if (testState != LOW) {
   //   display.println("On");
   //   digitalWrite(ledPin, HIGH);

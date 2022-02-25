@@ -437,12 +437,6 @@ void event1(int pin) {
           changeValues("setupDone", setupDone, 0);
           changeValues("useWebserver", useWebserver, 0);
         }
-      }else if(state == 11){
-        if (settings_pointer == 0) {
-          setBakeTempValue();
-        }else if (settings_pointer == 1) {
-          setBakeTimeValue();
-        }  
       }
       if (verboseOutput != 0) {
         Serial.println("Select");

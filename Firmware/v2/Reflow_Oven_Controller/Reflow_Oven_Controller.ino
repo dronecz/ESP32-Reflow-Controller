@@ -19,8 +19,6 @@
 #include "Button.h"
 #include <SPIFFS.h>
 #include <esp_wifi.h>
-#include <WiFiManager.h>
-//#include <Webserver.h>
 
 HTTPClient http;
 
@@ -36,28 +34,26 @@ Adafruit_ILI9341 display = Adafruit_ILI9341(display_cs, display_dc, display_rst)
 #define FORMAT_SPIFFS_IF_FAILED true
 
 Preferences preferences;
-WiFiServer server(80);
-AsyncWebServer asyncserver(80);
+AsyncWebServer server(80);
 AsyncEventSource events("/events");
 DNSServer dns;
-WiFiManager wm;
 char msg_buf[10];
 
 #define DEBOUNCE_MS 100
 Button AXIS_Y = Button(BUTTON_AXIS_Y, true, DEBOUNCE_MS);
 Button AXIS_X = Button(BUTTON_AXIS_X, true, DEBOUNCE_MS);
 
-int digitalButtonPins[] = { BUTTON_SELECT, BUTTON_MENU, BUTTON_BACK };
+int digitalButtonPins[] = {BUTTON_SELECT, BUTTON_MENU, BUTTON_BACK};
 
 #define numDigButtons sizeof(digitalButtonPins)
 
-int buttonState;  // the current reading from the input pin
+int buttonState;             // the current reading from the input pin
 int lastButtonState = LOW;
 unsigned long lastDebounceTime_ = 0;  // the last time the output pin was toggled
 unsigned long debounceDelay = 200;    // the debounce time; increase if the output flicker
 
 String activeStatus = "Idle";
-bool ovenMode = 0;  // 0 - bake, 1 - reflow
+bool ovenMode = 0; // 0 - bake, 1 - reflow
 bool isFault = 0;
 bool connected = 0;
 bool horizontal = 0;
@@ -75,31 +71,31 @@ bool testState = 0;
 bool useSPIFFS = 1;
 bool setupDone = 0;
 bool useWebserver = 0;
-bool portalRunning = false;
-bool startAP = true;         // start AP and webserver if true, else start only webserver
-unsigned int timeout = 120;  // seconds to run for
-unsigned int startTime = millis();
+bool portalRunning      = false;
+bool startAP            = true; // start AP and webserver if true, else start only webserver
+unsigned int  timeout   = 120; // seconds to run for
+unsigned int  startTime = millis();
 
 // Bake variables = borrowed from Unexpected Maker fw (https://github.com/UnexpectedMaker/ReflowMaster/blob/master/Code/Reflow_Master_v2/Reflow_Master_v2.ino#L159)
-long currentBakeTime = 0;  // Used to countdown the bake time
+long currentBakeTime = 0; // Used to countdown the bake time
 byte currentBakeTimeCounter = 0;
 int lastTempDirection = 0;
-long minBakeTime = 600;    // 10 mins in seconds
-long maxBakeTime = 10800;  // 3 hours in seconds
-float minBakeTemp = 45;    // 45 Degrees C
-float maxBakeTemp = 100;   // 100 Degrees C
-int bakeTemp = 60;
+long minBakeTime = 600; // 10 mins in seconds
+long maxBakeTime = 10800; // 3 hours in seconds
+float minBakeTemp = 45; // 45 Degrees C
+float maxBakeTemp = 100; // 100 Degrees C
+int bakeTemp = 80;
 unsigned long bakeTime = 60;
 byte savedBakeTemp;
 unsigned long savedBakeTime;
 
 // Button variables
-int buttonVal[numDigButtons] = { 0 };         // value read from button
-int buttonLast[numDigButtons] = { 0 };        // buffered value of the button's previous state
-long btnDnTime[numDigButtons];                // time the button was pressed down
-long btnUpTime[numDigButtons];                // time the button was released
-boolean ignoreUp[numDigButtons] = { false };  // whether to ignore the button release because the click+hold was triggered
-boolean menuMode[numDigButtons] = { false };  // whether menu mode has been activated or not
+int buttonVal[numDigButtons] = {0};                            // value read from button
+int buttonLast[numDigButtons] = {0};                           // buffered value of the button's previous state
+long btnDnTime[numDigButtons];                               // time the button was pressed down
+long btnUpTime[numDigButtons];                               // time the button was released
+boolean ignoreUp[numDigButtons] = {false};                     // whether to ignore the button release because the click+hold was triggered
+boolean menuMode[numDigButtons] = {false};                     // whether menu mode has been activated or not
 int debounce = 50;
 int holdTime = 1000;
 int oldTemp = 0;
@@ -107,13 +103,13 @@ int bakeTempOffset = 3;
 
 
 byte numOfPointers = 0;
-int state = 0;  // 0 = boot, 1 = main menu, 2 = select profile, 3 = change profile, 4 = add profile, 5 = settings, 6 = info, 7 = start reflow, 8 = stop reflow, 9 = test outputs , 10 = setup, 11 = bake mode setup
+int state = 0; // 0 = boot, 1 = main menu, 2 = select profile, 3 = change profile, 4 = add profile, 5 = settings, 6 = info, 7 = start reflow, 8 = stop reflow, 9 = test outputs , 10 = setup, 11 = bake mode setup
 byte previousState = 0;
 
 byte settings_pointer = 0;
 byte previousSettingsPointer = 0;
 byte tempPointer = 0;
-bool SD_present = false;
+bool   SD_present = false;
 //char* json = "";
 int profileNum = 0;
 #define numOfProfiles 10
@@ -123,49 +119,49 @@ int profileUsed = 0;
 char spaceName[] = "profile00";
 String profileNames = "";
 String usedProfileName = "";
-const char *PARAM_INPUT_1 = "output";
-const char *PARAM_INPUT_2 = "state";
+const char* PARAM_INPUT_1 = "output";
+const char* PARAM_INPUT_2 = "state";
 String inputMessage1;
 int inputMessage2;
 String settingsValues;
 String setSettingsValue;
 //unsigned long startTime = 0; //variable to store millis from start
-String apName;  // variable to store SSID for flash memory
+String apName; // variable to store SSID for flash memory
 int tempInt = -1;
 int numOfRecords;
 String serialMessages;
 
 // Structure for paste profiles
 typedef struct {
-  char title[20];          // "Lead 183"
-  char alloy[20];          // "Sn63/Pb37"
-  uint16_t melting_point;  // 183
+  char      title[20];         // "Lead 183"
+  char      alloy[20];         // "Sn63/Pb37"
+  uint16_t  melting_point;     // 183
 
-  uint16_t temp_range_0;  // 30
-  uint16_t temp_range_1;  // 235
+  uint16_t  temp_range_0;      // 30
+  uint16_t  temp_range_1;      // 235
 
-  uint16_t time_range_0;  // 0
-  uint16_t time_range_1;  // 340
+  uint16_t  time_range_0;      // 0
+  uint16_t  time_range_1;      // 340
 
-  char reference[100];  // "https://www.chipquik.com/datasheets/TS391AX50.pdf"
+  char      reference[100];    // "https://www.chipquik.com/datasheets/TS391AX50.pdf"
 
-  uint16_t stages_preheat_0;  // 30
-  uint16_t stages_preheat_1;  // 100
+  uint16_t  stages_preheat_0;  // 30
+  uint16_t  stages_preheat_1;  // 100
 
-  uint16_t stages_soak_0;  // 120
-  uint16_t stages_soak_1;  // 150
+  uint16_t  stages_soak_0;     // 120
+  uint16_t  stages_soak_1;     // 150
 
-  uint16_t stages_reflow_0;  // 150
-  uint16_t stages_reflow_1;  // 183
+  uint16_t  stages_reflow_0;   // 150
+  uint16_t  stages_reflow_1;   // 183
 
-  uint16_t stages_cool_0;  // 240
-  uint16_t stages_cool_1;  // 183
+  uint16_t  stages_cool_0;     // 240
+  uint16_t  stages_cool_1;     // 183
 
-  uint16_t profile_count;   // max. 30
-  uint16_t profile[32][2];  // {{0,30}, {20,90}, ...}, maximum -> profile_countc
+  uint16_t  profile_count;     // max. 30
+  uint16_t  profile[32][2];    // {{0,30}, {20,90}, ...}, maximum -> profile_countc
 } profile_t;
 
-profile_t paste_profile[numOfProfiles];  //declaration of struct type array
+profile_t paste_profile[numOfProfiles]; //declaration of struct type array
 
 #include "reflow_logic.h"
 
@@ -230,7 +226,7 @@ void changeValues(String variable, bool value, bool sendUpdate = 1) {
 
 
 void setup() {
-  WiFi.mode(WIFI_STA);  // explicitly set mode, esp defaults to STA+AP
+  WiFi.mode(WIFI_STA); // explicitly set mode, esp defaults to STA+AP
 
   Serial.begin(115200);
 
@@ -239,7 +235,7 @@ void setup() {
   Serial.println("FW version is: " + String(fwVersion) + "_&_" + String(__DATE__) + "_&_" + String(__TIME__));
 
   preferences.begin("store", false);
-  buttons = preferences.getBool("buttons", buttons);  //bool Preferences::getBool(const char* key, const bool defaultValue)
+  buttons = preferences.getBool("buttons", buttons); //bool Preferences::getBool(const char* key, const bool defaultValue)
   fan = preferences.getBool("fan", fan);
   horizontal = preferences.getBool("horizontal", horizontal);
   buzzer = preferences.getBool("buzzer", buzzer);
@@ -275,11 +271,10 @@ void setup() {
     loadProfiles(i);
   }
 
-  setupDone = 0;
   display.begin();
   startScreen();
 
-  if (!SPIFFS.begin(FORMAT_SPIFFS_IF_FAILED)) {
+  if ( !SPIFFS.begin(FORMAT_SPIFFS_IF_FAILED)) {
     Serial.println("Error mounting SPIFFS");
     return;
   }
@@ -288,11 +283,9 @@ void setup() {
 
   // SSR pin initialization to ensure reflow oven is off
 
-  //pinMode(ssrPin, OUTPUT);
-  //digitalWrite(ssrPin, LOW);
-  ledcSetup(0, 100, 8);
-  ledcAttachPin(ssrPin, 0);
-  ledcWrite(0, 0);
+  pinMode(ssrPin, OUTPUT);
+  digitalWrite(ssrPin, LOW);
+
   // Buzzer pin initialization to ensure annoying buzzer is off
   digitalWrite(buzzerPin, LOW);
   pinMode(buzzerPin, OUTPUT);
@@ -313,17 +306,17 @@ void setup() {
   pinMode(BUTTON_AXIS_Y, INPUT_PULLDOWN);
   pinMode(BUTTON_AXIS_X, INPUT_PULLDOWN);
 
-  for (byte i = 0; i < numDigButtons - 1; i++) {
+  for (byte i = 0; i < numDigButtons - 1 ; i++) {
     // Set button input pin
-    if (digitalButtonPins[i] > 20 && digitalButtonPins[i] < 40) {
+    if (digitalButtonPins[i] > 20  && digitalButtonPins[i] < 40) {
       pinMode(digitalButtonPins[i], INPUT_PULLUP);
-      digitalWrite(digitalButtonPins[i], LOW);
+      digitalWrite(digitalButtonPins[i], LOW  );
       Serial.println(digitalButtonPins[i]);
     }
   }
 
-  if (WiFi.status() == WL_CONNECTED) {                                                               // Wait for the Wi-Fi to connect: scan for Wi-Fi networks, and connect to the strongest of the networks above
-    Serial.println("\nConnected to " + WiFi.SSID() + "; IP address: " + WiFi.localIP().toString());  // Report which SSID and IP is in use
+  if (WiFi.status() == WL_CONNECTED) { // Wait for the Wi-Fi to connect: scan for Wi-Fi networks, and connect to the strongest of the networks above
+    Serial.println("\nConnected to " + WiFi.SSID() + "; IP address: " + WiFi.localIP().toString()); // Report which SSID and IP is in use
     connected = 1;
 
     if (useOTA != 0) {
@@ -332,7 +325,6 @@ void setup() {
   }
 
   if (setupDone != 1) {
-    wm.resetSettings();
   }
 
   if (useWebserver != 0) {
@@ -353,9 +345,10 @@ void setup() {
     profileNum = 0;
     listDir(SPIFFS, "/", 0);
     Serial.print(F("Using SPIFFS..."));
-  } else {
+  }
+  else {
     Serial.print(F("Initializing SD card..."));
-    if (!SD.begin(SD_CS_pin)) {  // see if the card is present and can be initialised. Wemos SD-Card CS uses D8
+    if (!SD.begin(SD_CS_pin)) { // see if the card is present and can be initialised. Wemos SD-Card CS uses D8
       Serial.println(F("Card failed or not present, no SD Card data logging possible..."));
       SD_present = false;
     } else {
@@ -422,7 +415,7 @@ void processButtons() {
 
 void loop() {
   checkDeviceSetup();
-  if (state != 9) {  // if we are in test menu, disable LED & SSR control in loop
+  if (state != 9) { // if we are in test menu, disable LED & SSR control in loop
     reflow_main();
   }
   processButtons();
@@ -434,7 +427,7 @@ void loop() {
 
 //***********************************//
 
-void listDir(fs::FS &fs, const char *dirname, uint8_t levels) {
+void listDir(fs::FS &fs, const char * dirname, uint8_t levels) {
   Serial.printf("Listing directory: %s\r\n", dirname);
 
   File root = fs.open(dirname);
@@ -459,7 +452,7 @@ void listDir(fs::FS &fs, const char *dirname, uint8_t levels) {
     } else {
       tempFileName = file.name();
       if (tempFileName.endsWith("json")) {
-        Serial.println("Find this JSON file: " + tempFileName);
+        Serial.println("Find this JSON file: "  + tempFileName);
         jsonName[profileNum] = tempFileName;
         profileNum++;
       }
@@ -468,7 +461,7 @@ void listDir(fs::FS &fs, const char *dirname, uint8_t levels) {
   }
 }
 
-void readFile(fs::FS &fs, String path, const char *type) {
+void readFile(fs::FS & fs, String path, const char * type) {
   Serial.printf("Reading file: %s\n", path);
 
   File file = fs.open(path);
@@ -483,57 +476,12 @@ void readFile(fs::FS &fs, String path, const char *type) {
   file.close();
 }
 
-// void wifiSetup() {
-//   Serial.println(F("Running AP.."));
-//   WiFi.mode(WIFI_AP);
-//   WiFi.softAPConfig(IPAddress(192, 168, 4, 1), IPAddress(192, 168, 4, 1), IPAddress(255, 255, 255, 0));
-//   WiFi.softAP("ReflowOvenAP");
-//   webserverFunc();
-// }
-
 void wifiSetup() {
-  //
-  //    // check for timeout
-  //    if ((millis() - startTime) > (timeout * 1000)) {
-  //      Serial.println("portaltimeout");
-  //      portalRunning = false;
-  //      if (startAP) {
-  //        wm.stopConfigPortal();
-  //      }
-  //      else {
-  //        wm.stopWebPortal();
-  //      }
-  //    }
-  //  }
-  //
-  //  // is configuration portal requested?
-  //  if (!portalRunning) {
-  //    if (startAP) {
-  //      Serial.println("Button Pressed, Starting Config Portal");
-  //      //      wm.setConfigPortalBlocking(false);
-  //      //      wm.startConfigPortal();
-  //      wm.startConfigPortal("ReflowOvenAP");
-  //    }
-  //    else {
-  //      Serial.println("Button Pressed, Starting Web Portal");
-  //      wm.startWebPortal();
-  //    }
-  //    portalRunning = true;
-  //    startTime = millis();
-  //  }
-  asyncserver.end();
-  //  int timeout = 120; // seconds to run for
-  //  wm.setConfigPortalTimeout(timeout);
-  //  wm.DEBUG_WM(DEBUG_MAX);
-  WiFi.mode(WIFI_STA);  // explicitly set mode, esp defaults to STA+AP
-  wm.setConfigPortalBlocking(false);
-  wm.startConfigPortal("ReflowOvenAP");
-  //  if (wm.startConfigPortal("ReflowOvenAP")) {
-  //    Serial.println("connected...yeey :)");
-  //  }
-  //  else {
-  //    Serial.println("Configportal running");
-  //  }
+  Serial.println(F("Running AP.."));
+  WiFi.mode(WIFI_AP);
+  WiFi.softAPConfig(IPAddress(192, 168, 4, 1), IPAddress(192, 168, 4, 1), IPAddress(255, 255, 255, 0));
+  WiFi.softAP("ReflowOvenAP");
+  webserverFunc();
 }
 
 
@@ -541,7 +489,7 @@ void checkDeviceSetup() {
   if (state == 103) {
     wifi_config_t conf;
     esp_wifi_get_config(WIFI_IF_STA, &conf);
-    apName = String(reinterpret_cast<const char *>(conf.sta.ssid));
+    apName = String(reinterpret_cast<const char*>(conf.sta.ssid));
     if (apName != NULL) {
       Serial.println("Registered new SSID: " + apName);
       startTime = millis();
@@ -550,9 +498,10 @@ void checkDeviceSetup() {
       } else {
         //if we did not get IP address, we have to clear SSID
         //        WiFi.disconnect(true);
-        wifi_init_config_t cfg = WIFI_INIT_CONFIG_DEFAULT();  //load the flash-saved configs
-        esp_wifi_init(&cfg);                                  //initiate and allocate wifi resources (does not matter if connection fails)
-        if (esp_wifi_restore() != ESP_OK) {
+        wifi_init_config_t cfg = WIFI_INIT_CONFIG_DEFAULT(); //load the flash-saved configs
+        esp_wifi_init(&cfg); //initiate and allocate wifi resources (does not matter if connection fails)
+        if (esp_wifi_restore() != ESP_OK)
+        {
           Serial.println("WiFi is not initialized by esp_wifi_init ");
         } else {
           Serial.println("WiFi Configurations Cleared!");
@@ -705,12 +654,12 @@ String getProfile(int Id) {
 
 bool getFiles(String address, String fileName, String dir = "/") {
   // create buffer for read
-  uint8_t buff[128] = { 0 };  // 2048
+  uint8_t buff[128] = {0}; // 2048
   int fileSize;
   bool compareStat = 0;
   String url;
   url += address;
-  url += fileName;  //.substring(1);
+  url += fileName; //.substring(1);
   Serial.println("Address of the file is: " + url);
   dir += "/";
   dir += fileName;
@@ -764,7 +713,8 @@ bool getFiles(String address, String fileName, String dir = "/") {
   if (fileSize == f.size()) {
     compareStat = 1;
     Serial.println("Size of downloaded file is equal to expected!");
-  } else {
+  }
+  else {
     Serial.println("Size of downloaded file is NOT equal to expected!");
     Serial.println("File size in SPIFFS is: " + String(f.size()));
   }
@@ -791,14 +741,4 @@ void sendDebug() {
       events.send(serialMessages.c_str(), "serialMess");
     }
   }
-}
-
-void setBakeTempValue() {
-  if (savedBakeTemp == 0) {
-    savedBakeTemp = minBakeTemp;
-  }
-  setBakeTemp(55);
-}
-
-void setBakeTimeValue() {
 }

@@ -8,40 +8,40 @@ void webserverFunc() {
   /** webserver start**/
 
   // Route for root / web page
-  asyncserver.on("/", HTTP_GET, [](AsyncWebServerRequest * request) {
+  server.on("/", HTTP_GET, [](AsyncWebServerRequest * request) {
     request->send(SPIFFS, "/index.html", "text/html");
   });
 
-  asyncserver.on("/src/jquery.min.js", HTTP_GET, [](AsyncWebServerRequest * request) {
+  server.on("/src/jquery.min.js", HTTP_GET, [](AsyncWebServerRequest * request) {
     request->send(SPIFFS, "/src/jquery.min.js", "text/javascript");
   });
 
-  asyncserver.on("/src/bootstrap.bundle.min.js", HTTP_GET, [](AsyncWebServerRequest * request) {
+  server.on("/src/bootstrap.bundle.min.js", HTTP_GET, [](AsyncWebServerRequest * request) {
     request->send(SPIFFS, "/src/bootstrap.bundle.min.js", "text/javascript");
   });
 
 
-  asyncserver.on("/src/bootstrap.min.css", HTTP_GET, [](AsyncWebServerRequest * request) {
+  server.on("/src/bootstrap.min.css", HTTP_GET, [](AsyncWebServerRequest * request) {
     request->send(SPIFFS, "/src/bootstrap.min.css", "text/css");
   });
 
-  asyncserver.on("/src/simple-sidebar.css", HTTP_GET, [](AsyncWebServerRequest * request) {
+  server.on("/src/simple-sidebar.css", HTTP_GET, [](AsyncWebServerRequest * request) {
     request->send(SPIFFS, "/src/simple-sidebar.css", "text/css");
   });
 
-  asyncserver.on("/temperature", HTTP_GET, [](AsyncWebServerRequest * request) {
+  server.on("/temperature", HTTP_GET, [](AsyncWebServerRequest * request) {
     request->send_P(200, "text/plain", webTemp().c_str());
   });
 
-  asyncserver.on("/showchart", HTTP_GET, [](AsyncWebServerRequest * request) {
+  server.on("/showchart", HTTP_GET, [](AsyncWebServerRequest * request) {
     request->send_P(200, "text/plain", profileInt().c_str());
   });
 
-  asyncserver.on("/profileNames", HTTP_GET, [](AsyncWebServerRequest * request) {
+  server.on("/profileNames", HTTP_GET, [](AsyncWebServerRequest * request) {
     request->send_P(200, "text/plain", profileNames.c_str());
   });
 
-  asyncserver.on("/getProfile", HTTP_GET, [](AsyncWebServerRequest * request) {
+  server.on("/getProfile", HTTP_GET, [](AsyncWebServerRequest * request) {
     String inputId;
     // GET input1 value on <ESP_IP>/update?output=<inputMessage1>&state=<inputMessage2>
     if (request->hasParam("id")) {
@@ -58,24 +58,24 @@ void webserverFunc() {
     }
   });
 
-  asyncserver.on("/usedProfile", HTTP_GET, [](AsyncWebServerRequest * request) {
+  server.on("/usedProfile", HTTP_GET, [](AsyncWebServerRequest * request) {
     request->send_P(200, "text/plain", usedProfileName.c_str());
   });
 
-  asyncserver.on("/getSettings", HTTP_GET, [](AsyncWebServerRequest * request) {
+  server.on("/getSettings", HTTP_GET, [](AsyncWebServerRequest * request) {
     request->send_P(200, "text/plain", settingsValues.c_str());
   });
 
-  asyncserver.on("/setSettings", HTTP_GET, [](AsyncWebServerRequest * request) {
+  server.on("/setSettings", HTTP_GET, [](AsyncWebServerRequest * request) {
     request->send_P(200, "text/plain", setSettingsValue.c_str());
   });
 
-  asyncserver.on("/serialMess", HTTP_GET, [](AsyncWebServerRequest * request) {
+  server.on("/serialMess", HTTP_GET, [](AsyncWebServerRequest * request) {
     request->send_P(200, "text/plain", serialMessages.c_str());
   });
 
   // Send a GET request to <ESP_IP>/update?output=<inputMessage1>&state=<inputMessage2>
-  asyncserver.on("/update", HTTP_GET, [] (AsyncWebServerRequest * request) {
+  server.on("/update", HTTP_GET, [] (AsyncWebServerRequest * request) {
     // GET input1 value on <ESP_IP>/update?output=<inputMessage1>&state=<inputMessage2>
     String tempString;
     if (request->hasParam(PARAM_INPUT_1) && request->hasParam(PARAM_INPUT_2)) {
@@ -104,9 +104,9 @@ void webserverFunc() {
     //    client->send(profileNames, NULL, NULL, NULL);
   });
 
-  asyncserver.addHandler(&events);
+  server.addHandler(&events);
   // Start server
-  asyncserver.begin();
+  server.begin();
   /** webserver end**/
 
   Serial.println("HTTP server started");
