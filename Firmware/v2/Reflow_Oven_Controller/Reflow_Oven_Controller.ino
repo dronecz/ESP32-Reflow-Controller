@@ -16,6 +16,7 @@
 #include "config.h"
 #include "Button.h"
 #include <SPIFFS.h>
+#include <Ticker.h>
 
 HTTPClient http;
 
@@ -33,6 +34,7 @@ Adafruit_ILI9341 display = Adafruit_ILI9341(display_cs, display_dc, display_rst)
 Preferences preferences;
 WiFiManager wm;
 WebServer server(80);
+Ticker wifiChecker;
 
 #define DEBOUNCE_MS 100
 Button AXIS_Y = Button(BUTTON_AXIS_Y, true, DEBOUNCE_MS);
@@ -66,6 +68,7 @@ bool useSPIFFS = 0;
 bool wifiConfigured = 0;
 bool wifiRunning = 0;
 bool webserverRunning = 0;
+bool wmRunning;
 
 // Button variables
 int buttonVal[numDigButtons] = {0};                            // value read from button
@@ -259,7 +262,9 @@ void processButtons() {
 }
 
 void loop() {
-  wm.process();
+  if (wmRunning != 0) {
+    wm.process();
+  }
   if (state != 9) { // if we are in test menu, disable LED & SSR control in loop
     reflow_main();
   }
@@ -361,22 +366,33 @@ void scanForProfiles() {
 }
 
 void wifiSetup() {
-  bool result;
+  setupWiFiScreen();
+  wmRunning = 1;
   wm.setConfigPortalBlocking(false);
-  result = wm.autoConnect("ReflowOvenAP");
-  if (result) {
-    Serial.println("connected...yeey :)");
-    if (wifiConfigured != 1) {
-      wifiConfigured = 1;
-      preferences.begin("store", false);
-      preferences.putBool("wifiConfigured", wifiConfigured);
-      preferences.end();
-      Serial.println("Wifi configuration was saved.");
-    }
+  wm.startConfigPortal("ReflowOvenAP");
+  wifiChecker.attach(10, checkWiFi);
+}
+
+void wifiSetupCancel(){
+  wm.stopConfigPortal();
+//  showSettings();
+}
+
+void checkWiFi() {
+  if (WiFi.status() == WL_CONNECTED) {
+    setupWiFiScreenDone();
+    wifiConfigured = 1;
     WiFiConnected = 1;
-  }
-  else {
-    Serial.println("Configportal running");
+    preferences.begin("store", false);
+    preferences.putBool("wifiConfigured", wifiConfigured);
+    preferences.end();
+    Serial.println("Wifi configuration was saved.");
+    wifiChecker.detach();
+    wmRunning = 0;
+    Ticker onceTicker;
+//    onceTicker.once(10, showSettings();
+  } else {
+    Serial.println("WiFi not setup yet! Keep waiting..");
   }
 }
 

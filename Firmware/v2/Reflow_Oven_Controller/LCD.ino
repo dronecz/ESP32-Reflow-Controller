@@ -603,6 +603,59 @@ void showSettings(byte pointer = 0) {
   ShowMenuOptions(true);
 }
 
+void setupWiFiScreen() {
+  previousState = state;
+  state = 51;
+  numOfPointers = 0;
+  //  settings_pointer = 0; // clear pointer
+#ifdef DEBUG
+  Serial.println("State is :" + String(state));
+#endif
+  int y = 55; //from left side of the LCD
+  int h = 20;
+  display.setRotation(2);
+  display.setFont(&FreeSans9pt7b);
+  display.fillScreen(ILI9341_BLACK);
+  display.setTextColor(ILI9341_WHITE);
+  display.setTextSize(1);
+  display.setCursor(0, 4);
+  centeredText("Please connect to", ILI9341_WHITE, y);
+  centeredText("ReflowOvenAP", ILI9341_BLUE, y += h);
+  centeredText("open browser and ", ILI9341_WHITE, y += h);
+  centeredText("type in this", ILI9341_WHITE, y += h);
+  centeredText("address:", ILI9341_WHITE, y += h);
+  centeredText(" ", ILI9341_WHITE, y += h);
+  centeredText("192.168.4.1", ILI9341_RED, y += h);
+
+  display.setTextSize(1);
+  y = 250;
+  leftText(" skip wifi setup", ILI9341_GREEN, y);
+  ShowMenuOptions(true);
+}
+
+void setupWiFiScreenDone() {
+  String ipAddress = WiFi.localIP().toString();
+  previousState = state;
+  state = 52;
+  numOfPointers = 0;
+  //  settings_pointer = 0; // clear pointer
+#ifdef DEBUG
+  Serial.println("State is :" + String(state));
+#endif
+  int y = 85; //from left side of the LCD
+  int h = 20;
+  display.setRotation(2);
+  display.setFont(&FreeSans9pt7b);
+  display.fillScreen(ILI9341_BLACK);
+  display.setTextColor(ILI9341_WHITE);
+  display.setTextSize(1);
+  display.setCursor(0, 4);
+  centeredText("WiFi setup", ILI9341_GREEN, y);
+  centeredText("successful! ", ILI9341_GREEN, y += h);
+  centeredText("IP adress is:", ILI9341_GREEN, y += h);
+  centeredText(ipAddress, ILI9341_BLUE, y += h);
+}
+
 void showInfo() {
   previousState = state;
   state = 6;

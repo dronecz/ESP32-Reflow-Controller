@@ -307,7 +307,11 @@ void event1(int pin) {
           }
         }
         //previousSettingsPointer = settings_pointer; //store previous position in menu
-      } else if (state == 7) {
+      }else if (state == 51){
+         if (settings_pointer == 0){
+          wifiSetupCancel();
+         }
+      }else if (state == 7) {
         //reflowStatus = REFLOW_STATUS_ON;
         profileIsOn = 1;
         Serial.println("Profile is ON");
