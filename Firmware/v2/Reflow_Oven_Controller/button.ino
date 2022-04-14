@@ -184,134 +184,97 @@ void event1(int pin) {
         } else if (settings_pointer == 5 ) {
           updateFirmware();
         }
-        //previousSettingsPointer = settings_pointer;
       } else if (state == 2) { // select profile
         saveSelectedProfile(settings_pointer);
         showSelectProfile();
       } else if (state == 5) { // settings
-        if (settings_pointer == 0) {
-          buzzer = !buzzer;
-          if (verboseOutput != 0) {
-            Serial.println("Buzzer value is: " + String(buzzer));
-          }
-          setBuzzer(55);
-          updatePreferences();
-        } else if (settings_pointer == 1) {
-          horizontal = !horizontal;
-          if (verboseOutput != 0) {
-            Serial.println("Display value is: " + String(horizontal));
-          }
-          setDisplay(75);
-          updatePreferences();
-          previousSettingsPointer, settings_pointer = 0;
-          startScreen();
-        } else if  (settings_pointer == 2) {
-          useOTA = !useOTA;
-          if (verboseOutput != 0) {
-            Serial.println("Download FW by OTA: " + String(useOTA));
-          }
-          setOTA(95);
-          updatePreferences();
-        }
-        else if (settings_pointer == 3) {
-          buttons = !buttons;
-          if (verboseOutput != 0) {
-            Serial.println("Buttons value is: " + String(buttons));
-          }
-          setButtons(115);
-          updatePreferences();
-          showSettings();
-        } else if (settings_pointer == 4) {
-          useSPIFFS = !useSPIFFS;
-          if (verboseOutput != 0) {
-            Serial.println("Use SPIFFS: " + String(useSPIFFS));
-          }
-          setStorage(135);
-          updatePreferences();
-        } else if (settings_pointer == 5) {
-          if (buttons != 0) {
+        if (buttons != 0) {
+          if (settings_pointer == 0) {
+            buttons = !buttons;
+            if (verboseOutput != 0) {
+              Serial.println("Buttons value is: " + String(buttons));
+            }
+            setButtons(55);
+            updatePreferences();
+            showSettings();
+          } else if (settings_pointer == 1) {
             fan = !fan;
             if (verboseOutput != 0) {
               Serial.println("Fan value is: " + String(fan));
             }
-            setFan(155);
+            setFan(75);
             updatePreferences();
-          } else {
-            if (wifiConfigured != 1) {
-              if (verboseOutput != 0) {
-                Serial.println("Calling WiFi setup function");
-              }
-              wifiSetupShow(175);
-              wifiSetup();
-            } else {
-              if (verboseOutput != 0) {
-                Serial.println("Starting up WiFi..");
-              }
-              wifiRunning = !wifiRunning;
-              if (wifiRunning != 0) {
-                connectWiFi();
-              } else {
-                disconnectWiFi();
-              }
-              setWiFi(175);
-              showSettings();
+          } else if (settings_pointer == 2) {
+            horizontal = !horizontal;
+            if (verboseOutput != 0) {
+              Serial.println("Display value is: " + String(horizontal));
             }
-          }
-        } else if (settings_pointer == 6) {
-          if (buttons != 0) {
-            if (wifiConfigured != 1) {
-              if (verboseOutput != 0) {
-                Serial.println("Calling WiFi setup function");
-              }
-              wifiSetupShow(175);
-              wifiSetup();
-            } else {
-              if (verboseOutput != 0) {
-                Serial.println("Starting up WiFi..");
-              }
-              wifiRunning = !wifiRunning;
-              if (wifiRunning != 0) {
-                connectWiFi();
-              } else {
-                disconnectWiFi();
-              }
-              setWiFi(175);
-              showSettings();
+            setDisplayOrientation(95);
+            updatePreferences();
+            previousSettingsPointer, settings_pointer = 0;
+            startScreen();
+          } else if (settings_pointer == 3) {
+            buzzer = !buzzer;
+            if (verboseOutput != 0) {
+              Serial.println("Buzzer value is: " + String(buzzer));
             }
-          } else {
-            if (wifiRunning != 0) {
-              //webserverRunning = !webserverRunning;
-              if (webserverRunning != 0) {
-                turnOffWebserver();
-              } else {
-                turnOnWebserver();
-              }
-              setWebserver(175);
-            } else {
-              testOutputs();
+            setBuzzer(115);
+            updatePreferences();
+          } else if (settings_pointer == 4) {
+            useSPIFFS = !useSPIFFS;
+            if (verboseOutput != 0) {
+              Serial.println("Use SPIFFS: " + String(useSPIFFS));
             }
-          }
-        } else if  (settings_pointer == 7) {
-          if (buttons != 0) {
-            if (wifiRunning != 0) {
-              webserverRunning = !webserverRunning;
-              if (webserverRunning != 0) {
-                turnOffWebserver();
-              } else {
-                turnOnWebserver();
-              }
-              setWebserver(195);
-            }
-          } else {
+            setStorage(135);
+            updatePreferences();
+          } else if (settings_pointer == 5) {
             testOutputs();
+          } else {
+            wifiSettingsScreen();
+          }
+        } else {
+          if (settings_pointer == 0) {
+            buttons = !buttons;
+            if (verboseOutput != 0) {
+              Serial.println("Buttons value is: " + String(buttons));
+            }
+            setButtons(55);
+            updatePreferences();
+            showSettings();
+          } else if (settings_pointer == 1) {
+            horizontal = !horizontal;
+            if (verboseOutput != 0) {
+              Serial.println("Display value is: " + String(horizontal));
+            }
+            setDisplayOrientation(75);
+            updatePreferences();
+            previousSettingsPointer, settings_pointer = 0;
+            startScreen();
+          } else if (settings_pointer == 2) {
+            buzzer = !buzzer;
+            if (verboseOutput != 0) {
+              Serial.println("Buzzer value is: " + String(buzzer));
+            }
+            setBuzzer(95);
+            updatePreferences();
+          } else if (settings_pointer == 3) {
+            useSPIFFS = !useSPIFFS;
+            if (verboseOutput != 0) {
+              Serial.println("Use SPIFFS: " + String(useSPIFFS));
+            }
+            setStorage(115);
+            updatePreferences();
+          } else if (settings_pointer == 4) {
+            testOutputs();
+          } else {
+            wifiSettingsScreen();
           }
         }
-        //previousSettingsPointer = settings_pointer; //store previous position in menu
-      }else if (state == 51){
-         if (settings_pointer == 0){
+      } else if (state == 51) {
+        if (settings_pointer == 0) {
           wifiSetupCancel();
-         }
-      }else if (state == 7) {
+        }
+      } else if (state == 7) {
         //reflowStatus = REFLOW_STATUS_ON;
         profileIsOn = 1;
         Serial.println("Profile is ON");
@@ -367,6 +330,35 @@ void event1(int pin) {
         //          updatePreferences();
         //        }
         //previousSettingsPointer = settings_pointer; //store previous position in menu
+      } else if (state == 10) {
+        if (settings_pointer == 0) {
+          useOTA = !useOTA;
+          if (verboseOutput != 0) {
+            Serial.println("Download FW by OTA: " + String(useOTA));
+          }
+          setOTA(55);
+          updatePreferences();
+        } else if (settings_pointer == 1) {
+          if (wifiConfigured != 0) {
+            if (verboseOutput != 0) {
+              Serial.println("Starting up WiFi..");
+            }
+            wifiRunning = !wifiRunning;
+            if (wifiRunning != 0) {
+              connectWiFi();
+            } else {
+              disconnectWiFi();
+            }
+            setWiFi(55);
+            showSettings();
+          } else {
+            if (verboseOutput != 0) {
+              Serial.println("Calling WiFi setup function");
+            }
+            wifiSetupShow(75);
+            wifiSetup();
+          }
+        }
       }
       if (verboseOutput != 0) {
         Serial.println("Select");
@@ -387,9 +379,19 @@ void event1(int pin) {
       if (state == 1 || state == 7 || state == 8) {
         loopScreen();
         settings_pointer = 0;
-      } else if (state == 9) {
+      } else if (state == 9 )  { //test menu
         settings_pointer = previousSettingsPointer;
         showSettings();
+      } else if (state == 10 )  { // wifi menu
+        settings_pointer = previousSettingsPointer;
+        showSettings();
+      } else if (state == 51 )  { // wifi setup screen
+        settings_pointer = previousSettingsPointer;
+        showSettings();
+        wifiSetupCancel();
+      } else if (state == 52 )  { // wifi setup confirm screen
+        settings_pointer = previousSettingsPointer;
+        wifiSettingsScreen();
       } else {
         if (state > 0) {
           settings_pointer = previousSettingsPointer;

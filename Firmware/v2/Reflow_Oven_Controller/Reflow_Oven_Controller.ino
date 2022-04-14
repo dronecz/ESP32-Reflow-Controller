@@ -62,6 +62,7 @@ bool debug = 0;
 bool verboseOutput = 1;
 bool disableMenu = 0;
 bool profileIsOn = 0;
+bool noThermocouple = 0;
 bool updataAvailable = 0;
 bool testState = 0;
 bool useSPIFFS = 0;
@@ -82,7 +83,7 @@ int holdTime = 1000;
 int oldTemp = 0;
 
 byte numOfPointers = 0;
-byte state = 0; // 0 = boot, 1 = main menu, 2 = select profile, 3 = change profile, 4 = add profile, 5 = settings, 6 = info, 7 = start reflow, 8 = stop reflow, 9 = test outputs
+byte state = 0; // 0 = boot, 1 = main menu, 2 = select profile, 3 = change profile, 4 = add profile, 5 = settings, 6 = info, 7 = start reflow, 8 = stop reflow, 9 = test outputs, 10 = WiFi & Webserver
 byte previousState = 0;
 
 byte settings_pointer = 0;
@@ -152,9 +153,9 @@ void setup() {
   Serial.println("Fan is: " + String(fan));
   Serial.println("Horizontal: " + String(horizontal));
   Serial.println("Buzzer: " + String(buzzer));
+  Serial.println("Use SPIFFS: " + String(useSPIFFS));
   Serial.println("OTA: " + String(useOTA));
   Serial.println("Used profile: " + String(profileUsed));
-  Serial.println("Use SPIFFS: " + String(useSPIFFS));
   Serial.println("Wifi is (not configured = 0, configured = 1): " + String(wifiConfigured));
   Serial.println();
 
@@ -243,13 +244,18 @@ void updatePreferences() {
 
   if (verboseOutput != 0) {
     Serial.println();
+    Serial.println("** updatePreferences start **");
     Serial.println("Buttons is: " + String(buttons));
-    Serial.println("Fan is: " + String(fan));
+    if (buttons != 0) {
+      Serial.println("Fan is: " + String(fan));
+    }
     Serial.println("Horizontal is: " + String(horizontal));
-    Serial.println("OTA is : " + String(useOTA));
-    Serial.println("Use SPIFFS is : " + String(useSPIFFS));
     Serial.println("Buzzer is: " + String(buzzer));
+    Serial.println("Use SPIFFS is : " + String(useSPIFFS));
+    Serial.println();
+    Serial.println("OTA is : " + String(useOTA));
     Serial.println("Wifi is (not configured = 0, configured = 1): " + String(wifiConfigured));
+    Serial.println("** updatePreferences end **");
     Serial.println();
   }
 }
@@ -373,9 +379,9 @@ void wifiSetup() {
   wifiChecker.attach(10, checkWiFi);
 }
 
-void wifiSetupCancel(){
+void wifiSetupCancel() {
   wm.stopConfigPortal();
-//  showSettings();
+  wifiChecker.detach();
 }
 
 void checkWiFi() {
@@ -389,8 +395,6 @@ void checkWiFi() {
     Serial.println("Wifi configuration was saved.");
     wifiChecker.detach();
     wmRunning = 0;
-    Ticker onceTicker;
-//    onceTicker.once(10, showSettings();
   } else {
     Serial.println("WiFi not setup yet! Keep waiting..");
   }

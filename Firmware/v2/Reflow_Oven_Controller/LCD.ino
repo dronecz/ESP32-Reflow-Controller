@@ -74,7 +74,7 @@ void ShowMenuOptions( bool clearAll )
   display.setTextColor( ILI9341_WHITE, ILI9341_BLACK );
   display.setTextSize(2);
 
-  if ( state >= 1 || state <= 9)
+  if ( state >= 1 || state <= 10)
   {
     UpdateSettingsPointer();
   }
@@ -128,8 +128,7 @@ void UpdateSettingsPointer() {
     }
     display.setTextSize(2);
     previousSettingsPointer = settings_pointer;
-  }
-  else if (state == 2) { // select profile
+  } else if (state == 2) { // select profile
     display.setTextColor( ILI9341_WHITE, ILI9341_BLACK );
     display.setTextSize(1);
     display.fillRect( 0, 40, 20, display.height() - 20, ILI9341_BLACK );
@@ -145,8 +144,7 @@ void UpdateSettingsPointer() {
         centeredText("Set buzzer on/off.", ILI9341_GREEN, 300);
         break;
     }
-  }
-  else if ( state == 5 ) { //settings menu
+  } else if ( state == 5 ) { //settings menu
     display.setTextColor( ILI9341_WHITE, ILI9341_BLACK );
     display.setTextSize(1);
     display.fillRect( 0, 40, 20, display.height() - 20, ILI9341_BLACK );
@@ -156,68 +154,68 @@ void UpdateSettingsPointer() {
     display.setTextSize(0);
     display.setTextColor( ILI9341_GREEN, ILI9341_BLACK );
     display.fillRect( 0, display.height() - 50, display.width(), 40, ILI9341_BLACK );
-    switch ( settings_pointer )
-    {
-      case 0:
-        centeredText("Set buzzer on/off.", ILI9341_GREEN, 300);
-        break;
+    if (buttons != 0) {
+      switch ( settings_pointer ) {
+        case 0:
+          centeredText("Set Yes if you have them.", ILI9341_GREEN, 300);
+          break;
 
-      case 1:
-        centeredText("Orientation of the screen.", ILI9341_GREEN, 300);
-        break;
-
-      case 2:
-        centeredText("Set Yes if you want to", ILI9341_GREEN, 280);
-        centeredText("use FW updates from web.", ILI9341_GREEN, 300);
-        break;
-
-      case 3:
-        centeredText("Set Yes if you have them.", ILI9341_GREEN, 300);
-        break;
-      case 4:
-        centeredText("Set Yes to use SPIFFS", ILI9341_GREEN, 280);
-        centeredText("for profiles.", ILI9341_GREEN, 300);
-        break;
-      case 5:
-        if (buttons != 0) {
+        case 1:
           centeredText("Set Yes to use fan.", ILI9341_GREEN, 300);
-        } else {
-          if (wifiConfigured != 1) {
-            centeredText("WiFi Setup", ILI9341_GREEN, 300);
-          } else {
-            centeredText("Turn On/off Wifi", ILI9341_GREEN, 300);
-          }
-        }
-        break;
-      case 6:
-        if (buttons != 0) {
-          if (wifiConfigured != 1) {
-            centeredText("WiFi Setup", ILI9341_GREEN, 300);
-          } else {
-            centeredText("Turn On/Off Wifi", ILI9341_GREEN, 300);
-          }
-        } else {
-          if (wifiRunning != 0) {
-            centeredText("Turn On/Off Webserver", ILI9341_GREEN, 300);
-          } else {
-            centeredText("Enter Test menu.", ILI9341_GREEN, 300);
-          }
-        }
-        break;
-      case 7:
-        if (buttons != 0) {
-          if (wifiRunning != 0) {
-            centeredText("Turn On/Off Webserver", ILI9341_GREEN, 300);
-          } else {
-            centeredText("Enter Test menu.", ILI9341_GREEN, 300);
-          }
-        }else{
+          break;
+
+        case 2:
+          centeredText("Orientation of the screen.", ILI9341_GREEN, 300);
+          break;
+
+        case 3:
+          centeredText("Set buzzer on/off.", ILI9341_GREEN, 300);
+          break;
+
+        case 4:
+          centeredText("Set Yes to use SPIFFS", ILI9341_GREEN, 280);
+          centeredText("for profiles.", ILI9341_GREEN, 300);
+          break;
+
+        case 5:
           centeredText("Enter Test menu.", ILI9341_GREEN, 300);
-        }
-        break;
+          break;
+
+        case 6:
+          centeredText("Enter WiFi Settings", ILI9341_GREEN, 280);
+          centeredText("menu.", ILI9341_GREEN, 300);
+          break;
+      }
+    } else {
+      switch ( settings_pointer ) {
+        case 0:
+          centeredText("Set Yes if you have them.", ILI9341_GREEN, 300);
+          break;
+
+        case 1:
+          centeredText("Orientation of the screen.", ILI9341_GREEN, 300);
+          break;
+
+        case 2:
+          centeredText("Set buzzer on/off.", ILI9341_GREEN, 300);
+          break;
+
+        case 3:
+          centeredText("Set Yes to use SPIFFS", ILI9341_GREEN, 280);
+          centeredText("for profiles.", ILI9341_GREEN, 300);
+          break;
+
+        case 4:
+          centeredText("Enter Test menu.", ILI9341_GREEN, 300);
+          break;
+
+        case 5:
+          centeredText("Enter WiFi Settings", ILI9341_GREEN, 280);
+          centeredText("menu.", ILI9341_GREEN, 300);
+          break;
+      }
     }
-  }
-  else if ( state == 9 ) { //settings/test menu
+  } else if ( state == 9 ) { //settings/test menu
     display.setTextColor( ILI9341_WHITE, ILI9341_BLACK );
     display.setTextSize(1);
     display.fillRect( 0, 40, 20, display.height() - 20, ILI9341_BLACK );
@@ -244,6 +242,41 @@ void UpdateSettingsPointer() {
       case 3:
         centeredText("Test LED.", ILI9341_GREEN, 300);
         break;
+    }
+  } else if ( state == 10 ) { //settings/wifi menu
+    display.setTextColor( ILI9341_WHITE, ILI9341_BLACK );
+    display.setTextSize(1);
+    display.fillRect( 0, 40, 20, display.height() - 20, ILI9341_BLACK );
+    display.setCursor( 10, ( 54 + ( 20 * settings_pointer ) ) );
+    display.println(">");
+
+    display.setTextSize(0);
+    display.setTextColor( ILI9341_GREEN, ILI9341_BLACK );
+    display.fillRect( 0, display.height() - 50, display.width(), 40, ILI9341_BLACK );
+    switch ( settings_pointer )
+    {
+      case 0:
+        centeredText("Set Yes if you want to", ILI9341_GREEN, 280);
+        centeredText("use FW updates from web.", ILI9341_GREEN, 300);
+        break;
+
+      case 1:
+        if (wifiConfigured != 0) {
+          centeredText("Connect to your WiFi.", ILI9341_GREEN, 300);
+        } else {
+          centeredText("Setup your WiFi.", ILI9341_GREEN, 300);
+        }
+        break;
+
+      case 2:
+        if (wifiConfigured != 0) {
+          centeredText("Turn on/off Webserver.", ILI9341_GREEN, 300);
+        }
+        break;
+
+        //      case 3:
+        //        centeredText("Test LED.", ILI9341_GREEN, 300);
+        //        break;
     }
   }
 }
@@ -273,6 +306,7 @@ void infoScreen() {
   //    display.print("Offline");
   //  }
 }
+
 void startScreen() {
   display.fillScreen(ILI9341_BLACK);
   int y;
@@ -332,7 +366,9 @@ void loopScreen() {
       display.setTextSize(1);
       centeredText("Thermocouple not", ILI9341_RED, tempTextPos);
       centeredText("connected", ILI9341_RED, tempTextPos + 20);
+      noThermocouple = 1;
     } else if (inputInt < 50) {
+      noThermocouple = 0;
       centeredText(temp, ILI9341_GREEN, tempTextPos);
     } else if ((inputInt > 50) && (inputInt < 100)) {
       centeredText(temp, ILI9341_ORANGE, tempTextPos);
@@ -359,7 +395,9 @@ void loopScreen() {
       display.setTextSize(1);
       centeredText("Thermocouple not", ILI9341_RED, tempTextPos);
       centeredText("connected", ILI9341_RED, tempTextPos + 20);
+      noThermocouple = 1;
     } else if (inputInt < 50) {
+      noThermocouple = 0;
       centeredText(temp, ILI9341_GREEN, tempTextPos);
     } else if ((inputInt > 50) && (inputInt < 100)) {
       centeredText(temp, ILI9341_ORANGE, tempTextPos);
@@ -375,20 +413,24 @@ void loopScreen() {
 }
 
 void startReflowScreen() {
-  previousState = state;
-  state = 7;
-  if (verboseOutput != 0) {
+  if (noThermocouple != 1) {
+    previousState = state;
+    state = 7;
+#ifdef DEBUG
     Serial.println("State is :" + String(state));
+#endif
+    display.fillScreen(ILI9341_BLACK);
+    int tempTextPos = 240;
+    int infoText = 50;
+    display.setFont(&FreeSans9pt7b);
+    display.setTextSize(2);
+    centeredText("Start reflow?", ILI9341_RED, infoText);
+    display.setTextSize(1);
+    centeredText("Yes = Select", ILI9341_WHITE, infoText + 32);
+    centeredText("No = Back", ILI9341_WHITE, infoText + 64);
+  } else {
+    noThermocoupleScreen();
   }
-  display.fillScreen(ILI9341_BLACK);
-  int tempTextPos = 240;
-  int infoText = 50;
-  display.setFont(&FreeSans9pt7b);
-  display.setTextSize(2);
-  centeredText("Start reflow?", ILI9341_RED, infoText);
-  display.setTextSize(1);
-  centeredText("Yes = Select", ILI9341_WHITE, infoText + 32);
-  centeredText("No = Back", ILI9341_WHITE, infoText + 64);
 }
 
 void stopReflowScreen() {
@@ -406,6 +448,21 @@ void stopReflowScreen() {
   display.setTextSize(1);
   centeredText("Yes = Select", ILI9341_WHITE, infoText + 32);
   centeredText("No = Back", ILI9341_WHITE, infoText + 64);
+}
+
+void noThermocoupleScreen() {
+#ifdef DEBUG
+  Serial.println("Can not start reflow profile as here is no thermocouple connnected!");
+#endif
+  display.fillScreen(ILI9341_BLACK);
+  int infoText = 100;
+  display.setFont(&FreeSans9pt7b);
+  display.setTextSize(1);
+  centeredText("Can not start reflow", ILI9341_RED, infoText);
+  centeredText("profile as there is no", ILI9341_RED, infoText + 20);
+  centeredText("thermocouple connnected!", ILI9341_RED, infoText + 40);
+  delay(5000);
+  loopScreen();
 }
 
 void mainMenuScreen() {
@@ -519,6 +576,7 @@ void showAddProfile() {
   int y = 55; //from left side of the LCD
   int h = 20;
   display.setFont(&FreeSans9pt7b);
+
   display.fillScreen(ILI9341_BLACK);
   display.setTextColor(ILI9341_WHITE);
   display.setTextSize(1);
@@ -554,23 +612,8 @@ void showSettings(byte pointer = 0) {
   }
   display.setCursor(30, y);
 
-  setBuzzer(y); //y == 55;
-  y += h;
-  numOfPointers++;
-
-  setDisplay(y);
-  y += h;
-  numOfPointers++;
-
-  setOTA(y);
-  y += h;
-  numOfPointers++;
-
+  //y == 55;
   setButtons(y);
-  y += h;
-  numOfPointers++;
-
-  setStorage(y);
   y += h;
   numOfPointers++;
 
@@ -580,25 +623,24 @@ void showSettings(byte pointer = 0) {
     numOfPointers++;
   }
 
-  if (wifiConfigured != 1) {
-    wifiSetupShow(y);
-    y += h;
-    numOfPointers++;
-  } else {
-    setWiFi(y);
-    y += h;
-    numOfPointers++;
-  }
+  setDisplayOrientation(y);
+  y += h;
+  numOfPointers++;
 
-  if (wifiRunning != 0) {
-    setWebserver(y);
-    y += h;
-    numOfPointers++;
-  }
+  setBuzzer(y);
+  y += h;
+  numOfPointers++;
+
+
+  setStorage(y);
+  y += h;
+  numOfPointers++;
 
   leftText("Test outputs", ILI9341_WHITE, y); rightText("->", ILI9341_WHITE, y);
-  //y += h;
-  //numOfPointers++;
+  y += h;
+  numOfPointers++;
+
+  leftText("WiFi Settings", ILI9341_WHITE, y); rightText("->", ILI9341_WHITE, y);
 
   ShowMenuOptions(true);
 }
@@ -628,8 +670,8 @@ void setupWiFiScreen() {
   centeredText("192.168.4.1", ILI9341_RED, y += h);
 
   display.setTextSize(1);
-  y = 250;
-  leftText(" skip wifi setup", ILI9341_GREEN, y);
+  centeredText("Press back button", ILI9341_RED, 280);
+  centeredText("to cancel setup.", ILI9341_RED, 300);
   ShowMenuOptions(true);
 }
 
@@ -654,6 +696,11 @@ void setupWiFiScreenDone() {
   centeredText("successful! ", ILI9341_GREEN, y += h);
   centeredText("IP adress is:", ILI9341_GREEN, y += h);
   centeredText(ipAddress, ILI9341_BLUE, y += h);
+
+  display.setTextSize(1);
+  display.setTextColor(ILI9341_RED);
+  centeredText("Press back button", ILI9341_GREEN, 280);
+  centeredText("to go to WiFi settings.", ILI9341_GREEN, 300);
 }
 
 void showInfo() {
@@ -722,7 +769,7 @@ void setFan (int y) {
   }
 }
 
-void setDisplay (int y) {
+void setDisplayOrientation (int y) {
   display.fillRect( 30, y - 18, 200, 20, ILI9341_BLACK );
   display.setTextColor(ILI9341_WHITE);
   display.setTextSize(1);
@@ -877,6 +924,52 @@ void testOutputs() {
   testLED(y);
   //  y += h;
   //  numOfPointers++;
+  ShowMenuOptions(true);
+}
+
+void wifiSettingsScreen() {
+  previousState = state;
+  state = 10;
+  numOfPointers = 0;
+  settings_pointer = 0; // clear pointer
+  if (verboseOutput != 0) {
+    Serial.println("State is :" + String(state));
+  }
+  int y = 55; //from left side of the LCD
+  int h = 20;
+  display.setFont(&FreeSans9pt7b);
+  display.fillScreen(ILI9341_BLACK);
+  display.setTextColor(ILI9341_WHITE);
+  display.setTextSize(1);
+  display.setCursor(0, 4);
+  centeredText("WiFi Settings", ILI9341_WHITE, 10);
+  if (horizontal != 0) {
+    display.fillRect(0, 28, 320, 3, ILI9341_WHITE );
+  } else {
+    display.fillRect(0, 28, 240, 3, ILI9341_WHITE );
+  }
+  display.setCursor(30, y);
+
+  setOTA(y);
+  y += h;
+  numOfPointers++;
+
+  if (wifiConfigured != 1) {
+    wifiSetupShow(y);
+    y += h;
+    numOfPointers++;
+  } else {
+    setWiFi(y);
+    y += h;
+    numOfPointers++;
+  }
+
+  if (wifiRunning != 0) {
+    setWebserver(y);
+    y += h;
+    numOfPointers++;
+  }
+
   ShowMenuOptions(true);
 }
 
