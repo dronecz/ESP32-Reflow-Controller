@@ -354,9 +354,9 @@ void loopScreen() {
   if (horizontal != 0) {
     int tempTextPos = 180;
     int infoText = 30;
-    centeredText("Status:", ILI9341_WHITE, infoText);
-    display.setTextSize(2);
-    centeredText(activeStatus, ILI9341_WHITE, infoText + 32);
+
+    updateStatus(infoText);
+
     String temp = ("Temp : " + String(inputInt));
 
     if (isFault != 0) {
@@ -376,16 +376,18 @@ void loopScreen() {
       centeredText(temp, ILI9341_RED, tempTextPos);
     }
     display.setTextSize(1);
-    centeredText("Profile in use:" + String(paste_profile[profileUsed].title), ILI9341_WHITE, tempTextPos + 50);
+    if (noThermocouple != 1) {
+      centeredText("Profile in use:" + String(paste_profile[profileUsed].title), ILI9341_WHITE, tempTextPos + 50);
+    }
     if (verboseOutput != 0) {
       Serial.println(temp);
     }
   } else {
     int tempTextPos = 240;
     int infoText = 50;
-    centeredText("Status:", ILI9341_WHITE, infoText);
-    display.setTextSize(2);
-    centeredText(activeStatus, ILI9341_WHITE, infoText + 32);
+
+    updateStatus(infoText);
+
     String temp = ("Temp : " + String(inputInt));
 
     if (isFault != 0) {
@@ -405,11 +407,25 @@ void loopScreen() {
       centeredText(temp, ILI9341_RED, tempTextPos);
     }
     display.setTextSize(1);
-    centeredText("Profile in use:" + String(paste_profile[profileUsed].title), ILI9341_WHITE, tempTextPos + 50);
+    if (noThermocouple != 1) {
+      centeredText("Profile in use:" + String(paste_profile[profileUsed].title), ILI9341_WHITE, tempTextPos + 50);
+    }
     if (verboseOutput != 0) {
       Serial.println(temp);
     }
   }
+}
+
+void updateStatus(int yCord) {
+  if (noThermocouple != 1) {
+    centeredText("Status:", ILI9341_WHITE, yCord);
+    display.setTextSize(2);
+    centeredText(activeStatus, ILI9341_WHITE, yCord + 32);
+  }
+}
+
+void updateSchowTemp() {
+
 }
 
 void startReflowScreen() {
@@ -565,6 +581,9 @@ void showChangeProfile() {
   } else {
     display.fillRect(0, 28, 240, 3, ILI9341_WHITE );
   }
+
+  y = 120;
+  centeredText("Not implemented yet.", ILI9341_BLUE, y);
 }
 
 void showAddProfile() {
@@ -587,6 +606,9 @@ void showAddProfile() {
   } else {
     display.fillRect(0, 28, 240, 3, ILI9341_WHITE );
   }
+
+  y = 120;
+  centeredText("Not implemented yet.", ILI9341_BLUE, y);
 }
 
 void showSettings(byte pointer = 0) {
@@ -814,9 +836,6 @@ void wifiSetupShow(int y) {
   display.setTextSize(1);
   display.setCursor(30, y);
   display.print("Setup WiFi");
-  //  if (wifiConfigured != 1) {
-  //    wifiSetup();
-  //  }
 }
 
 void setWiFi (int y) {
@@ -971,6 +990,45 @@ void wifiSettingsScreen() {
   }
 
   ShowMenuOptions(true);
+}
+
+void wifiConnectionScreen(int i) {
+  previousState = state;
+  state = 101;
+  numOfPointers = 0;
+  settings_pointer = 0; // clear pointer
+  if (verboseOutput != 0) {
+    Serial.println("State is :" + String(state));
+  }
+  int y = 55; //from left side of the LCD
+  int h = 20;
+  display.setFont(&FreeSans9pt7b);
+  display.fillScreen(ILI9341_BLACK);
+  display.setTextColor(ILI9341_WHITE);
+  display.setTextSize(1);
+  display.setCursor(0, 4);
+  centeredText("WiFi Connection", ILI9341_WHITE, 10);
+  if (horizontal != 0) {
+    display.fillRect(0, 28, 320, 3, ILI9341_WHITE );
+  } else {
+    display.fillRect(0, 28, 240, 3, ILI9341_WHITE );
+  }
+
+  y = 120;
+  //display.setCursor(30, y);
+  display.setFont(&FreeSans9pt7b);
+  display.setTextSize(1);
+  if (i == 0) {
+    centeredText("Connecting...", ILI9341_WHITE, y);
+  } else if (i == 1) {
+    centeredText("No AP found!", ILI9341_RED, y);
+  } else if (i == 2) {
+    centeredText("Connection failed!", ILI9341_RED, y);
+  } else if (i == 3) {
+    centeredText("Connection successful.", ILI9341_GREEN, y);
+  }
+  centeredText("Press Back to cancel", ILI9341_BLUE, 280);
+  centeredText("/go back ", ILI9341_BLUE, 300);
 }
 
 void testBuzzer(int y) {

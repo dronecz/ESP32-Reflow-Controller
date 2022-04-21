@@ -343,14 +343,15 @@ void event1(int pin) {
             if (verboseOutput != 0) {
               Serial.println("Starting up WiFi..");
             }
-            wifiRunning = !wifiRunning;
-            if (wifiRunning != 0) {
+            //wifiRunning = !wifiRunning;
+            if (wifiRunning != 1) {
               connectWiFi();
             } else {
               disconnectWiFi();
             }
             setWiFi(55);
-            showSettings();
+            //wifiSettingsScreen();
+            wifiConnectionScreen(0);
           } else {
             if (verboseOutput != 0) {
               Serial.println("Calling WiFi setup function");
@@ -390,6 +391,9 @@ void event1(int pin) {
         showSettings();
         wifiSetupCancel();
       } else if (state == 52 )  { // wifi setup confirm screen
+        settings_pointer = previousSettingsPointer;
+        wifiSettingsScreen();
+      } else if (state == 101 )  { // wifi connection screen
         settings_pointer = previousSettingsPointer;
         wifiSettingsScreen();
       } else {

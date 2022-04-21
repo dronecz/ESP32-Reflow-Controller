@@ -36,6 +36,8 @@ WiFiManager wm;
 WebServer server(80);
 Ticker wifiChecker;
 
+extern void wifiConnectionScreen();
+
 #define DEBOUNCE_MS 100
 Button AXIS_Y = Button(BUTTON_AXIS_Y, true, DEBOUNCE_MS);
 Button AXIS_X = Button(BUTTON_AXIS_X, true, DEBOUNCE_MS);
@@ -385,18 +387,43 @@ void wifiSetupCancel() {
 }
 
 void checkWiFi() {
-  if (WiFi.status() == WL_CONNECTED) {
-    setupWiFiScreenDone();
-    wifiConfigured = 1;
-    WiFiConnected = 1;
-    preferences.begin("store", false);
-    preferences.putBool("wifiConfigured", wifiConfigured);
-    preferences.end();
-    Serial.println("Wifi configuration was saved.");
-    wifiChecker.detach();
-    wmRunning = 0;
+  if (wifiConfigured != 1) {
+    if (WiFi.status() == WL_CONNECTED) {
+      setupWiFiScreenDone();
+      wifiConfigured = 1;
+      WiFiConnected = 1;
+      preferences.begin("store", false);
+      preferences.putBool("wifiConfigured", wifiConfigured);
+      preferences.end();
+      Serial.println("Wifi configuration was saved.");
+      wifiChecker.detach();
+      wmRunning = 0;
+    } else {
+      Serial.println("WiFi not setup yet! Keep waiting..");
+    }
   } else {
-    Serial.println("WiFi not setup yet! Keep waiting..");
+    if (WiFi.status() == WL_NO_SSID_AVAIL) {
+      Serial.println("No know network found!");
+      wifiConnectionScreen(1);
+      wifiChecker.detach();
+      WiFi.disconnect();
+    } else if (WiFi.status() == WL_CONNECT_FAILED) {
+      Serial.println("Connection to AP failed!");
+      wifiConnectionScreen(2);
+      wifiChecker.detach();
+      WiFi.disconnect();
+    } else if (WiFi.status() == WL_CONNECTED) {
+      wifiConnectionScreen(3);
+      Serial.println("\nConnected to " + WiFi.SSID() + "; IP address: " + WiFi.localIP().toString()); // Report which SSID and IP is in use
+      WiFiConnected = 1;
+      Serial.println("WiFiConnected variable is :" + String(WiFiConnected));
+      wifiRunning = 1;
+      Serial.println("WiFiRunning variable is :" + String(wifiRunning));
+      if (useOTA != 0) {
+        OTA();
+      }
+      wifiChecker.detach();
+    }
   }
 }
 
@@ -421,15 +448,7 @@ void turnOffWebserver() {
 
 void connectWiFi() {
   WiFi.begin();
-  if (WiFi.status() == WL_CONNECTED) { // Wait for the Wi-Fi to connect: scan for Wi-Fi networks, and connect to the strongest of the networks above
-    Serial.println("\nConnected to " + WiFi.SSID() + "; IP address: " + WiFi.localIP().toString()); // Report which SSID and IP is in use
-    WiFiConnected = 1;
-    wifiRunning = 1;
-
-    if (useOTA != 0) {
-      OTA();
-    }
-  }
+  wifiChecker.attach(5, checkWiFi);
 }
 
 void disconnectWiFi() {
