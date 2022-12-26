@@ -141,7 +141,7 @@ void UpdateSettingsPointer() {
     switch ( settings_pointer )
     {
       case 0:
-        centeredText("Set buzzer on/off.", ILI9341_GREEN, 300);
+        centeredText("", ILI9341_GREEN, 300);
         break;
     }
   } else if ( state == 5 ) { //settings menu

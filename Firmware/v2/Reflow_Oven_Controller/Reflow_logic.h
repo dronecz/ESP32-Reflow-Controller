@@ -1,8 +1,8 @@
 #include <PID_v1.h>
 
 extern Adafruit_MAX31856 max31856;
-extern Button AXIS_X;
-extern Button AXIS_Y;
+//extern Button AXIS_X;
+//extern Button AXIS_Y;
 
 extern bool isFault;
 extern String activeStatus;
