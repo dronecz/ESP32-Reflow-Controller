@@ -745,7 +745,7 @@ void showInfo() {
     display.fillRect(0, 28, 240, 3, ILI9341_WHITE );
   }
   leftText("- FW version: " + fwVersion, ILI9341_WHITE, y, -15);
-  if (WiFiConnected != 0) {
+  if (wifiConnected != 0) {
     String ipAddress = WiFi.localIP().toString();
     leftText("- WiFi: " + String(WiFi.SSID()), ILI9341_WHITE, y + h, -15);
     leftText("- IP: " + ipAddress, ILI9341_WHITE, y + h * 2, -15);
@@ -839,12 +839,13 @@ void wifiSetupShow(int y) {
 }
 
 void setWiFi (int y) {
+  Serial.println("wifiConnected is: " + String(wifiConnected));
   display.fillRect( 30, y - 18, 200, 20, ILI9341_BLACK );
   display.setTextColor(ILI9341_WHITE);
   display.setTextSize(1);
   display.setCursor(30, y);
   display.print("Turn WiFi ");
-  if (wifiRunning != 0) {
+  if (wifiConnected != 0) {
     display.println("off");
   } else {
     display.println("on");
@@ -983,7 +984,7 @@ void wifiSettingsScreen() {
     numOfPointers++;
   }
 
-  if (wifiRunning != 0) {
+  if (wifiConnected != 0) {
     setWebserver(y);
     y += h;
     numOfPointers++;
@@ -993,6 +994,7 @@ void wifiSettingsScreen() {
 }
 
 void wifiConnectionScreen(int i) {
+  String ipAddress = WiFi.localIP().toString();
   previousState = state;
   state = 101;
   numOfPointers = 0;
@@ -1022,13 +1024,24 @@ void wifiConnectionScreen(int i) {
     centeredText("Connecting...", ILI9341_WHITE, y);
   } else if (i == 1) {
     centeredText("No AP found!", ILI9341_RED, y);
+    wifiConfigured = 0;
+    preferences.begin("store", false);
+    preferences.putBool("wifiConfigured", wifiConfigured);
+    preferences.getBool("wifiConfigured", wifiConfigured);
+    preferences.end();
+    Serial.println("wifiConfigured is: " + String(wifiConfigured));
   } else if (i == 2) {
     centeredText("Connection failed!", ILI9341_RED, y);
   } else if (i == 3) {
     centeredText("Connection successful.", ILI9341_GREEN, y);
+    centeredText("IP adress is:", ILI9341_GREEN, y += h);
+    centeredText(ipAddress, ILI9341_BLUE, y += h);
+    wifiConnected = 1;
+  } else if (i == 4) {
+    centeredText("WiFi disconnected..", ILI9341_GREEN, y);
   }
   centeredText("Press Back to cancel", ILI9341_BLUE, 280);
-  centeredText("/go back ", ILI9341_BLUE, 300);
+  centeredText("or go back ", ILI9341_BLUE, 300);
 }
 
 void testBuzzer(int y) {

@@ -209,12 +209,14 @@
 //  else                              fsize = String(bytes / 1024.0 / 1024.0 / 1024.0, 3) + " GB";
 //  return fsize;
 //}
+
+
 const char index_html[] PROGMEM = R"rawliteral(
 <!DOCTYPE HTML><html><head>
   <title>Captive Portal Demo</title>
   <meta name="viewport" content="width=device-width, initial-scale=1">
   </head><body>
-  <h3>Captive Portal Demo</h3>
+  <h3>Reflow Oven WiFi Setup</h3>
   <br><br>
   <form action="/get">
     <br>
@@ -270,14 +272,6 @@ void setupServer() {
 }
 
 
-void WiFiSoftAPSetup()
-{
-  WiFi.mode(WIFI_AP);
-  WiFi.softAP("esp-captive");
-  Serial.print("AP IP address: "); Serial.println(WiFi.softAPIP());
-}
-
-
 void WiFiStationSetup(String rec_ssid, String rec_password)
 {
   wifi_timeout = false;
@@ -287,6 +281,7 @@ void WiFiStationSetup(String rec_ssid, String rec_password)
   rec_ssid.toCharArray(ssid_arr, rec_ssid.length() + 1);
   rec_password.toCharArray(password_arr, rec_password.length() + 1);
   Serial.print("Received SSID: "); Serial.println(ssid_arr); Serial.print("And password: "); Serial.println(password_arr);
+
   WiFi.begin(ssid_arr, password_arr);
 
   uint32_t t1 = millis();
@@ -309,18 +304,27 @@ void WiFiStationSetup(String rec_ssid, String rec_password)
   }
   if (!wifi_timeout)
   {
-    is_setup_done = true;
     Serial.println("");  Serial.print("WiFi connected to: "); Serial.println(rec_ssid);
     Serial.print("IP address: ");  Serial.println(WiFi.localIP());
-    preferences.putBool("is_setup_done", is_setup_done);
-    preferences.putString("rec_ssid", rec_ssid);
-    preferences.putString("rec_password", rec_password);
+    setupWiFiScreenDone();
+    wifiConfigured = 1;
+    wifiConnected = 1;
+    preferences.begin("store", false);
+    preferences.putBool("wifiConfigured", wifiConfigured);
+    preferences.end();
+    Serial.println("Wifi configuration was saved.");
+    wifiChecker.detach();
+    wmRunning = 0;
   }
 }
 
 void StartCaptivePortal() {
   Serial.println("Setting up AP Mode");
-  WiFiSoftAPSetup();
+
+  WiFi.mode(WIFI_AP);
+  WiFi.softAP("ReflowOvenAP");
+  Serial.print("AP IP address: "); Serial.println(WiFi.softAPIP());
+
   Serial.println("Setting up Async WebServer");
   setupServer();
   Serial.println("Starting DNS Server");

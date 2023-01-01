@@ -10,14 +10,13 @@
 #include <HTTPClient.h>
 #include <Preferences.h>
 #include <WiFi.h>
-
 #include <Update.h>
 //#include "FS.h"
 #include <SD.h>
 //#include <WiFiManager.h>
 //#include "SPI.h"
 #include "config.h"
-//#include "Button.h"
+#include "Button.h"
 #include <SPIFFS.h>
 #include <Ticker.h>
 //#include <WebServer.h>
@@ -42,16 +41,14 @@ Ticker wifiChecker;
 
 extern void wifiConnectionScreen();
 
-//#define DEBOUNCE_MS 100
-//Button AXIS_Y = Button(BUTTON_AXIS_Y, true, DEBOUNCE_MS);
-//Button AXIS_X = Button(BUTTON_AXIS_X, true, DEBOUNCE_MS);
-//
-//int digitalButtonPins[] = {BUTTON_SELECT, BUTTON_MENU, BUTTON_BACK};
-//
-//#define numDigButtons sizeof(digitalButtonPins)
+#define DEBOUNCE_MS 100
+Button AXIS_Y = Button(BUTTON_AXIS_Y, true, DEBOUNCE_MS);
+Button AXIS_X = Button(BUTTON_AXIS_X, true, DEBOUNCE_MS);
 
-int btnPin[5] = {35, 34, 27, 32, 33};
-byte dataRead = 0;
+int digitalButtonPins[] = {BUTTON_SELECT, BUTTON_MENU, BUTTON_BACK};
+
+#define numDigButtons sizeof(digitalButtonPins)
+
 int buttonState;             // the current reading from the input pin
 int lastButtonState = LOW;
 unsigned long lastDebounceTime_ = 0;  // the last time the output pin was toggled
@@ -60,7 +57,7 @@ unsigned long debounceDelay = 200;    // the debounce time; increase if the outp
 String activeStatus = "";
 bool menu = 0;
 bool isFault = 0;
-bool WiFiConnected = 0;
+bool wifiConnected = 0;
 bool horizontal = 0;
 bool fan = 0;
 bool buttons = 0;
@@ -75,17 +72,16 @@ bool updataAvailable = 0;
 bool testState = 0;
 bool useSPIFFS = 0;
 bool wifiConfigured = 0;
-bool wifiRunning = 0;
 bool webserverRunning = 0;
 bool wmRunning;
 
 // Button variables
-//int buttonVal[numDigButtons] = {0};                            // value read from button
-//int buttonLast[numDigButtons] = {0};                           // buffered value of the button's previous state
-//long btnDnTime[numDigButtons];                               // time the button was pressed down
-//long btnUpTime[numDigButtons];                               // time the button was released
-//boolean ignoreUp[numDigButtons] = {false};                     // whether to ignore the button release because the click+hold was triggered
-//boolean menuMode[numDigButtons] = {false};                     // whether menu mode has been activated or not
+int buttonVal[numDigButtons] = {0};                            // value read from button
+int buttonLast[numDigButtons] = {0};                           // buffered value of the button's previous state
+long btnDnTime[numDigButtons];                               // time the button was pressed down
+long btnUpTime[numDigButtons];                               // time the button was released
+boolean ignoreUp[numDigButtons] = {false};                     // whether to ignore the button release because the click+hold was triggered
+boolean menuMode[numDigButtons] = {false};                     // whether menu mode has been activated or not
 int debounce = 50;
 int holdTime = 1000;
 int oldTemp = 0;
@@ -141,7 +137,7 @@ typedef struct {
 
 profile_t paste_profile[numOfProfiles]; //declaration of struct type array
 
-#include "reflow_logic.h"
+#include "Reflow_logic.h"
 
 void setup() {
   WiFi.mode(WIFI_STA); // explicitly set mode, esp defaults to STA+AP
@@ -211,22 +207,23 @@ void setup() {
 
   // Button initialization
 
-  pinMode(btnPin[0], INPUT);
-  pinMode(btnPin[1], INPUT);
-  pinMode(btnPin[2], INPUT_PULLUP);
-  pinMode(btnPin[3], INPUT_PULLUP);
+  //  pinMode(btnPin[0], INPUT);
+  //  pinMode(btnPin[1], INPUT);
+  //  pinMode(btnPin[2], INPUT_PULLUP);
+  //  pinMode(btnPin[3], INPUT_PULLUP);
+  //  pinMode(btnPin[4], INPUT_PULLUP);
 
-  //  pinMode(BUTTON_AXIS_Y, INPUT_PULLDOWN);
-  //  pinMode(BUTTON_AXIS_X, INPUT_PULLDOWN);
-  //
-  //  for (byte i = 0; i < numDigButtons - 1 ; i++) {
-  //    // Set button input pin
-  //    if (digitalButtonPins[i] > 20  && digitalButtonPins[i] < 40) {
-  //      pinMode(digitalButtonPins[i], INPUT_PULLUP);
-  //      digitalWrite(digitalButtonPins[i], LOW  );
-  //      Serial.println(digitalButtonPins[i]);
-  //    }
-  //  }
+  pinMode(BUTTON_AXIS_Y, INPUT_PULLDOWN);
+  pinMode(BUTTON_AXIS_X, INPUT_PULLDOWN);
+
+  for (byte i = 0; i < numDigButtons - 1 ; i++) {
+    // Set button input pin
+    if (digitalButtonPins[i] > 20  && digitalButtonPins[i] < 40) {
+      pinMode(digitalButtonPins[i], INPUT_PULLUP);
+      digitalWrite(digitalButtonPins[i], LOW  );
+      Serial.println(digitalButtonPins[i]);
+    }
+  }
 
   max31856.begin();
   max31856.setThermocoupleType(MAX31856_TCTYPE_K);
@@ -281,46 +278,43 @@ void updatePreferences() {
   }
 }
 
-byte processButtons() {
-  int anaRead[2];
-  bool digRead[3];
-  byte dataRead = 0;
-  anaRead[0] = analogRead(btnPin[0]);
-  anaRead[1] = analogRead(btnPin[1]);
-  digRead[0] = digitalRead(btnPin[2]);
-  digRead[1] = digitalRead(btnPin[3]);
-  digRead[2] = digitalRead(btnPin[4]);
-  if (anaRead[0] > 3000)      {
-    dataRead = 1;
-  }
-  else if (anaRead[0] > 1000) {
-    dataRead = 2;
-  }
-  if (anaRead[1] > 3000)      {
-    dataRead = 3;
-  }
-  else if (anaRead[1] > 1000) {
-    dataRead = 4;
-  }
-  if (digRead[0] == 0)        {
-    dataRead = 5;
-  }
-  if (digRead[1] == 0)        {
-    dataRead = 6;
-  }
-  if (digRead[2] == 0)        {
-    dataRead = 7;
-  }
-
-  if (dataRead > 0) {
-    //Serial.println("Button pressed: " + dataRead);
-    return dataRead;
-  }
-
-  //  for (int i = 0; i < numDigButtons; i++) {
-  //    digitalButton(digitalButtonPins[i]);
+void processButtons() {
+  //  int anaRead[2];
+  //  bool digRead[3];
+  //  buttonRead = 0;
+  //  anaRead[0] = analogRead(btnPin[0]);
+  //  anaRead[1] = analogRead(btnPin[1]);
+  //  digRead[0] = digitalRead(btnPin[2]);
+  //  digRead[1] = digitalRead(btnPin[3]);
+  //  digRead[2] = digitalRead(btnPin[4]);
+  //  if (anaRead[0] > 3000)      {
+  //    buttonRead = 1;
   //  }
-  //  readAnalogButtons();
+  //  else if (anaRead[0] > 1000) {
+  //    buttonRead = 2;
+  //  }
+  //  if (anaRead[1] > 3000)      {
+  //    buttonRead = 3;
+  //  }
+  //  else if (anaRead[1] > 1000) {
+  //    buttonRead = 4;
+  //  }
+  //  if (digRead[0] == 0)        {
+  //    buttonRead = 5;
+  //  }
+  //  if (digRead[1] == 0)        {
+  //    buttonRead = 6;
+  //  }
+  //  if (digRead[2] == 0)        {
+  //    buttonRead = 7;
+  //  }
+
+  //  digitalButtons(buttonRead);
+
+  for (int i = 0; i < numDigButtons; i++) {
+    digitalButton(digitalButtonPins[i]);
+  }
+  readAnalogButtons();
 }
 
 void loop() {
@@ -331,6 +325,9 @@ void loop() {
     reflow_main();
   }
   processButtons();
+  //  if (buttonRead > 0) {
+  //    Serial.println("Button pressed: " + String(buttonRead));
+  //  }
   //  server.handleClient(); // Listen for client connections
 }
 
@@ -429,11 +426,11 @@ void scanForProfiles() {
 
 void wifiSetup() {
   setupWiFiScreen();
-  is_setup_done = preferences.getBool("is_setup_done", false);
-  ssid = preferences.getString("rec_ssid", "Sample_SSID");
-  password = preferences.getString("rec_password", "abcdefgh");
+  preferences.begin("store", false);
+  preferences.getBool("wifiConfigured", wifiConfigured);
+  preferences.end();
 
-  if (!is_setup_done)
+  if (!wifiConfigured)
   {
     StartCaptivePortal();
   }
@@ -445,7 +442,7 @@ void wifiSetup() {
     WiFiStationSetup(ssid, password);
   }
 
-  while (!is_setup_done)
+  while (!wifiConfigured)
   {
     dnsServer.processNextRequest();
     delay(10);
@@ -471,7 +468,7 @@ void checkWiFi() {
     if (WiFi.status() == WL_CONNECTED) {
       setupWiFiScreenDone();
       wifiConfigured = 1;
-      WiFiConnected = 1;
+      wifiConnected = 1;
       preferences.begin("store", false);
       preferences.putBool("wifiConfigured", wifiConfigured);
       preferences.end();
@@ -495,13 +492,16 @@ void checkWiFi() {
     } else if (WiFi.status() == WL_CONNECTED) {
       wifiConnectionScreen(3);
       Serial.println("\nConnected to " + WiFi.SSID() + "; IP address: " + WiFi.localIP().toString()); // Report which SSID and IP is in use
-      WiFiConnected = 1;
-      Serial.println("WiFiConnected variable is :" + String(WiFiConnected));
-      wifiRunning = 1;
-      Serial.println("WiFiRunning variable is :" + String(wifiRunning));
+      wifiConnected = 1;
+      Serial.println("wifiConnected variable is :" + String(wifiConnected));
+      wifiConnected = 1;
+      Serial.println("WiFiRunning variable is :" + String(wifiConnected));
       if (useOTA != 0) {
         OTA();
       }
+      wifiChecker.detach();
+    } else if (WiFi.status() != WL_CONNECTED) {
+      wifiConnectionScreen(4);
       wifiChecker.detach();
     }
   }
@@ -509,20 +509,20 @@ void checkWiFi() {
 
 void turnOnWebserver() {
   //  server.on("/",         HomePage);
-  //  server.on("/download", File_Download);
-  //  server.on("/upload",   File_Upload);
-  //  server.on("/fupload",  HTTP_POST, []() {
-  //    server.send(200);
-  //  }, handleFileUpload);
-  //
-  //  server.begin();
+  //    server.on("/download", File_Download);
+  //    server.on("/upload",   File_Upload);
+  //    server.on("/fupload",  HTTP_POST, []() {
+  //  server.send(200);
+  //}, handleFileUpload);
 
-  Serial.println("HTTP server started");
+  //server.begin();
+
+  setupServer();
   webserverRunning = 1;
 }
 
 void turnOffWebserver() {
-  //  server.stop();
+  //  server.end;
   Serial.println("HTTP server was turned off");
   webserverRunning = 0;
 }
@@ -535,6 +535,9 @@ void connectWiFi() {
 void disconnectWiFi() {
   turnOffWebserver();
   WiFi.disconnect();
-  wifiRunning = 0;
+  wifiConnected = 0;
   Serial.println("WiFi was turned off");
+  wifiChecker.attach(1, checkWiFi);
+  //wifiConnectionScreen(4);
+
 }
