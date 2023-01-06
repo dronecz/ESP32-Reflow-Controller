@@ -153,10 +153,12 @@ void event1(byte pin) {
       //previousState = state;
       if (verboseOutput != 0) {
         Serial.println("---------------------");
+        Serial.println("Select button was pressed");
         Serial.println("Previous state is: " + String(previousState));
         Serial.println("State is: " + String(state));
         Serial.println("Settings pointer: " + String(settings_pointer));
         Serial.println("Previous settings pointer: " + String(previousSettingsPointer));
+        Serial.println("---------------------");
       }
       if (state == 0) {
         if (profileIsOn != 0) {
@@ -350,7 +352,6 @@ void event1(byte pin) {
               disconnectWiFi();
             }
             setWiFi(55);
-            //wifiSettingsScreen();
             if (wifiConnected != 1) {
               wifiConnectionScreen(0);
             } else {
@@ -370,8 +371,6 @@ void event1(byte pin) {
         Serial.println("---------------------");
       }
     } else if (pin == 32) { //Menu button
-      //state = 1;
-
       if (state == 0) {
         mainMenuScreen();
       }
@@ -408,7 +407,7 @@ void event1(byte pin) {
       }
       if (verboseOutput != 0) {
         Serial.println("---------------------");
-        Serial.println("Back");
+        Serial.println("Back button was pressed");
         Serial.println("State is :" + String(state));
         Serial.println("Settings pointer: " + String(settings_pointer));
         Serial.println("Previous settings pointer: " + String(previousSettingsPointer));
@@ -419,11 +418,6 @@ void event1(byte pin) {
     }
   }
   delay(50);
-  //  if (pin == 32) {
-  //    menuScreen();
-  //  } else if (pin == 33) {
-  //    loopScreen();
-  //  }
 }
 
 void event2(int pin)

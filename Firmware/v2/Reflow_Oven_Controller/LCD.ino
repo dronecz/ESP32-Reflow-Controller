@@ -424,7 +424,7 @@ void updateStatus(int yCord) {
   }
 }
 
-void updateSchowTemp() {
+void updateShowTemp() {
 
 }
 
@@ -672,9 +672,9 @@ void setupWiFiScreen() {
   state = 51;
   numOfPointers = 0;
   //  settings_pointer = 0; // clear pointer
-#ifdef DEBUG
-  Serial.println("State is :" + String(state));
-#endif
+  if (verboseOutput != 0) {
+    Serial.println("State is: " + String(state));
+  }
   int y = 55; //from left side of the LCD
   int h = 20;
   display.setRotation(2);
@@ -703,9 +703,9 @@ void setupWiFiScreenDone() {
   state = 52;
   numOfPointers = 0;
   //  settings_pointer = 0; // clear pointer
-#ifdef DEBUG
-  Serial.println("State is :" + String(state));
-#endif
+  if (verboseOutput != 0) {
+    Serial.println("State is: " + String(state));
+  }
   int y = 85; //from left side of the LCD
   int h = 20;
   display.setRotation(2);

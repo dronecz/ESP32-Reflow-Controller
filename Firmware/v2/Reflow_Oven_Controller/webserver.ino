@@ -166,8 +166,6 @@ void WiFiStationSetup(String rec_ssid, String rec_password)
       Serial.println("Timeout connecting to WiFi. The SSID and Password seem incorrect.");
       valid_ssid_received = false;
       valid_password_received = false;
-      is_setup_done = false;
-      preferences.putBool("is_setup_done", is_setup_done);
 
       StartCaptivePortal();
       wifi_timeout = true;

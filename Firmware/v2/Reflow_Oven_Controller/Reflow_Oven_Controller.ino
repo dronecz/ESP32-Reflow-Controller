@@ -103,7 +103,6 @@ char spaceName[] = "profile00";
 
 String ssid;
 String password;
-bool is_setup_done = false;
 bool valid_ssid_received = false;
 bool valid_password_received = false;
 bool wifi_timeout = false;
@@ -279,38 +278,6 @@ void updatePreferences() {
 }
 
 void processButtons() {
-  //  int anaRead[2];
-  //  bool digRead[3];
-  //  buttonRead = 0;
-  //  anaRead[0] = analogRead(btnPin[0]);
-  //  anaRead[1] = analogRead(btnPin[1]);
-  //  digRead[0] = digitalRead(btnPin[2]);
-  //  digRead[1] = digitalRead(btnPin[3]);
-  //  digRead[2] = digitalRead(btnPin[4]);
-  //  if (anaRead[0] > 3000)      {
-  //    buttonRead = 1;
-  //  }
-  //  else if (anaRead[0] > 1000) {
-  //    buttonRead = 2;
-  //  }
-  //  if (anaRead[1] > 3000)      {
-  //    buttonRead = 3;
-  //  }
-  //  else if (anaRead[1] > 1000) {
-  //    buttonRead = 4;
-  //  }
-  //  if (digRead[0] == 0)        {
-  //    buttonRead = 5;
-  //  }
-  //  if (digRead[1] == 0)        {
-  //    buttonRead = 6;
-  //  }
-  //  if (digRead[2] == 0)        {
-  //    buttonRead = 7;
-  //  }
-
-  //  digitalButtons(buttonRead);
-
   for (int i = 0; i < numDigButtons; i++) {
     digitalButton(digitalButtonPins[i]);
   }
@@ -318,17 +285,10 @@ void processButtons() {
 }
 
 void loop() {
-  //  if (wmRunning != 0) {
-  //    wm.process();
-  //  }
   if (state != 9) { // if we are in test menu, disable LED & SSR control in loop
     reflow_main();
   }
   processButtons();
-  //  if (buttonRead > 0) {
-  //    Serial.println("Button pressed: " + String(buttonRead));
-  //  }
-  //  server.handleClient(); // Listen for client connections
 }
 
 void listDir(fs::FS &fs, const char * dirname, uint8_t levels) {
@@ -383,12 +343,10 @@ void readFile(fs::FS & fs, String path, const char * type) {
 void scanForProfiles() {
   if (useSPIFFS != 0) {
     profileNum = 0;
-    //    listDir(SPIFFS, "/profiles", 0);
     listDir(SPIFFS, "/", 0);
   } else {
     // Reset number of profiles for fresh load from SD card
     profileNum = 0;
-    //      listDir(SD, "/profiles", 0);
     listDir(SD, "/", 0);
   }
 
@@ -452,15 +410,12 @@ void wifiSetup() {
       WiFiStationSetup(ssid, password);
     }
   }
-  //  wmRunning = 1;
-  //  wm.setConfigPortalBlocking(false);
-  //  wm.startConfigPortal("ReflowOvenAP");
-  //  wifiChecker.attach(10, checkWiFi);
 }
 
 void wifiSetupCancel() {
   //  wm.stopConfigPortal();
   //  wifiChecker.detach();
+  Serial.println("wifiSetupCancel reached");
 }
 
 void checkWiFi() {
@@ -508,15 +463,6 @@ void checkWiFi() {
 }
 
 void turnOnWebserver() {
-  //  server.on("/",         HomePage);
-  //    server.on("/download", File_Download);
-  //    server.on("/upload",   File_Upload);
-  //    server.on("/fupload",  HTTP_POST, []() {
-  //  server.send(200);
-  //}, handleFileUpload);
-
-  //server.begin();
-
   setupServer();
   webserverRunning = 1;
 }
