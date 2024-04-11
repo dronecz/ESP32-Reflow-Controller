@@ -671,7 +671,7 @@ void setupWiFiScreen() {
   previousState = state;
   state = 51;
   numOfPointers = 0;
-  //  settings_pointer = 0; // clear pointer
+    settings_pointer = 0; // clear pointer
   if (verboseOutput != 0) {
     Serial.println("State is: " + String(state));
   }

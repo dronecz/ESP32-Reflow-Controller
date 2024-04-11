@@ -70,7 +70,7 @@ bool profileIsOn = 0;
 bool noThermocouple = 0;
 bool updataAvailable = 0;
 bool testState = 0;
-bool useSPIFFS = 0;
+bool useSPIFFS = 1;
 bool wifiConfigured = 0;
 bool webserverRunning = 0;
 bool wmRunning;
@@ -85,6 +85,7 @@ boolean menuMode[numDigButtons] = {false};                     // whether menu m
 int debounce = 50;
 int holdTime = 1000;
 int oldTemp = 0;
+int btnPin[4] = {35, 34, 27, 33};
 
 byte numOfPointers = 0;
 byte state = 0; // 0 = boot, 1 = main menu, 2 = select profile, 3 = change profile, 4 = add profile, 5 = settings, 6 = info, 7 = start reflow, 8 = stop reflow, 9 = test outputs, 10 = WiFi & Webserver
@@ -206,23 +207,23 @@ void setup() {
 
   // Button initialization
 
-  //  pinMode(btnPin[0], INPUT);
-  //  pinMode(btnPin[1], INPUT);
-  //  pinMode(btnPin[2], INPUT_PULLUP);
-  //  pinMode(btnPin[3], INPUT_PULLUP);
-  //  pinMode(btnPin[4], INPUT_PULLUP);
+    pinMode(btnPin[0], INPUT);
+    pinMode(btnPin[1], INPUT);
+    pinMode(btnPin[2], INPUT_PULLUP);
+    pinMode(btnPin[3], INPUT_PULLUP);
+    pinMode(btnPin[4], INPUT_PULLUP);
 
-  pinMode(BUTTON_AXIS_Y, INPUT_PULLDOWN);
-  pinMode(BUTTON_AXIS_X, INPUT_PULLDOWN);
-
-  for (byte i = 0; i < numDigButtons - 1 ; i++) {
-    // Set button input pin
-    if (digitalButtonPins[i] > 20  && digitalButtonPins[i] < 40) {
-      pinMode(digitalButtonPins[i], INPUT_PULLUP);
-      digitalWrite(digitalButtonPins[i], LOW  );
-      Serial.println(digitalButtonPins[i]);
-    }
-  }
+//  pinMode(BUTTON_AXIS_Y, INPUT_PULLDOWN);
+//  pinMode(BUTTON_AXIS_X, INPUT_PULLDOWN);
+//
+//  for (byte i = 0; i < numDigButtons - 1 ; i++) {
+//    // Set button input pin
+//    if (digitalButtonPins[i] > 20  && digitalButtonPins[i] < 40) {
+//      pinMode(digitalButtonPins[i], INPUT_PULLUP);
+//      digitalWrite(digitalButtonPins[i], LOW  );
+//      Serial.println(digitalButtonPins[i]);
+//    }
+//  }
 
   max31856.begin();
   max31856.setThermocoupleType(MAX31856_TCTYPE_K);
@@ -246,6 +247,36 @@ void setup() {
   }
 
   scanForProfiles();
+}
+
+byte readBtn() {
+  int anaRead[2];
+  bool digRead[2];
+  byte dataRead = 0;
+  anaRead[0] = analogRead(btnPin[0]);
+  anaRead[1] = analogRead(btnPin[1]);
+  digRead[0] = digitalRead(btnPin[2]);
+  digRead[1] = digitalRead(btnPin[3]);
+  if (anaRead[0] > 3000)      {
+    dataRead = 1;
+  }
+  else if (anaRead[0] > 1000) {
+    dataRead = 2;
+  }
+  if (anaRead[1] > 3000)      {
+    dataRead = 3;
+  }
+  else if (anaRead[1] > 1000) {
+    dataRead = 4;
+  }
+  if (digRead[0] == 0)        {
+    dataRead = 5;
+  }
+  if (digRead[1] == 0)        {
+    dataRead = 6;
+  }
+
+  return dataRead;
 }
 
 void updatePreferences() {
@@ -288,7 +319,16 @@ void loop() {
   if (state != 9) { // if we are in test menu, disable LED & SSR control in loop
     reflow_main();
   }
-  processButtons();
+//  processButtons();
+  if (state == 51) {
+    dnsServer.processNextRequest();
+    delay(10);
+    if (valid_ssid_received && valid_password_received)
+    {
+      Serial.println("Attempting WiFi Connection!");
+      WiFiStationSetup(ssid, password);
+    }
+  }
 }
 
 void listDir(fs::FS &fs, const char * dirname, uint8_t levels) {
@@ -399,22 +439,10 @@ void wifiSetup() {
     Serial.print("Saved Password is "); Serial.println(password);
     WiFiStationSetup(ssid, password);
   }
-
-  while (!wifiConfigured)
-  {
-    dnsServer.processNextRequest();
-    delay(10);
-    if (valid_ssid_received && valid_password_received)
-    {
-      Serial.println("Attempting WiFi Connection!");
-      WiFiStationSetup(ssid, password);
-    }
-  }
 }
 
 void wifiSetupCancel() {
-  //  wm.stopConfigPortal();
-  //  wifiChecker.detach();
+  server.end();
   Serial.println("wifiSetupCancel reached");
 }
 

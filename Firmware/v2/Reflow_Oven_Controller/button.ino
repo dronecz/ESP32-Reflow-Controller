@@ -391,7 +391,7 @@ void event1(byte pin) {
         showSettings();
       } else if (state == 51 )  { // wifi setup screen
         settings_pointer = previousSettingsPointer;
-        showSettings();
+        wifiSettingsScreen();
         wifiSetupCancel();
       } else if (state == 52 )  { // wifi setup confirm screen
         settings_pointer = previousSettingsPointer;
