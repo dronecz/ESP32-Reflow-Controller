@@ -1,4 +1,4 @@
-//some code copied from https://github.com/smford/esp32-asyncwebserver-fileupload-example/blob/master/example-01/example-01.ino
+//some code copied from https://github.com/smford/esp32-asyncwebserver-fileupload-e xample/blob/master/example-01/example-01.ino
 //Many thanks for your code!
 String listFiles(bool ishtml = false);
 
@@ -12,13 +12,13 @@ const char index_html[] PROGMEM = R"rawliteral(
   <body>
   <h3>Reflow Oven WiFi Setup</h3>
   <br><br>
-  <form action="/get">
-    <br>
-    SSID: <input type="text" name="ssid">
-    <br>
-    Password: <input type="text" name="password">
-    <input type="submit" value="Submit">
-  </form>
+//  <form action="/get">
+//    <br>
+//    SSID: <input type="text" name="ssid">
+//    <br>
+//    Password: <input type="text" name="password">
+//    <input type="submit" value="Submit">
+//  </form>
     <p><h1>File Upload</h1></p>
   <p>Free Storage: %FREESPIFFS% | Used Storage: %USEDSPIFFS% | Total Storage: %TOTALSPIFFS%</p>
   <form method="POST" action="/upload" enctype="multipart/form-data"><input type="file" name="data"/><input type="submit" name="upload" value="Upload" title="Upload File"></form>
@@ -88,27 +88,27 @@ void setupServer() {
     Serial.println("Client Connected");
   });
 
-  server.on("/get", HTTP_GET, [] (AsyncWebServerRequest * request) {
-    String inputMessage;
-    String inputParam;
-
-    if (request->hasParam("ssid")) {
-      inputMessage = request->getParam("ssid")->value();
-      inputParam = "ssid";
-      ssid = inputMessage;
-      Serial.println(inputMessage);
-      valid_ssid_received = true;
-    }
-
-    if (request->hasParam("password")) {
-      inputMessage = request->getParam("password")->value();
-      inputParam = "password";
-      password = inputMessage;
-      Serial.println(inputMessage);
-      valid_password_received = true;
-    }
-    request->send(200, "text/html", "The values entered by you have been successfully sent to the device. It will now attempt WiFi connection");
-  });
+//  server.on("/get", HTTP_GET, [] (AsyncWebServerRequest * request) {
+//    String inputMessage;
+//    String inputParam;
+//
+//    if (request->hasParam("ssid")) {
+//      inputMessage = request->getParam("ssid")->value();
+//      inputParam = "ssid";
+//      ssid = inputMessage;
+//      Serial.println(inputMessage);
+//      valid_ssid_received = true;
+//    }
+//
+//    if (request->hasParam("password")) {
+//      inputMessage = request->getParam("password")->value();
+//      inputParam = "password";
+//      password = inputMessage;
+//      Serial.println(inputMessage);
+//      valid_password_received = true;
+//    }
+//    request->send(200, "text/html", "The values entered by you have been successfully sent to the device. It will now attempt WiFi connection");
+//  });
 
   // run handleUpload function when any file is uploaded
   server.on("/upload", HTTP_POST, [](AsyncWebServerRequest * request) {
@@ -189,16 +189,16 @@ void WiFiStationSetup(String rec_ssid, String rec_password)
 }
 
 void StartCaptivePortal() {
-  Serial.println("Setting up AP Mode");
-
-  WiFi.mode(WIFI_AP);
-  WiFi.softAP("ReflowOvenAP");
-  Serial.print("AP IP address: "); Serial.println(WiFi.softAPIP());
+//  Serial.println("Setting up AP Mode");
+//
+//  WiFi.mode(WIFI_AP);
+//  WiFi.softAP("ReflowOvenAP");
+//  Serial.print("AP IP address: "); Serial.println(WiFi.softAPIP());
 
   Serial.println("Setting up Async WebServer");
   setupServer();
   Serial.println("Starting DNS Server");
-  dnsServer.start(53, "*", WiFi.softAPIP());
+  dnsServer.start(53, "*", WiFi.localIP());
   server.addHandler(new CaptiveRequestHandler()).setFilter(ON_AP_FILTER);//only when requested from AP
   server.begin();
   dnsServer.processNextRequest();

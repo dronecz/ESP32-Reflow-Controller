@@ -476,7 +476,7 @@ void noThermocoupleScreen() {
   display.setTextSize(1);
   centeredText("Can not start reflow", ILI9341_RED, infoText);
   centeredText("profile as there is no", ILI9341_RED, infoText + 20);
-  centeredText("thermocouple connnected!", ILI9341_RED, infoText + 40);
+  centeredText("thermocouple connected!", ILI9341_RED, infoText + 40);
   delay(5000);
   loopScreen();
 }
