@@ -3,22 +3,18 @@
 #include <Adafruit_MAX31856.h>
 #include <Adafruit_GFX.h>
 #include <ArduinoJson.h>
-#include <AsyncTCP.h>
-#include "ESPAsyncWebServer.h"
 #include <Fonts/FreeSans9pt7b.h>
-#include <DNSServer.h>
 #include <HTTPClient.h>
 #include <Preferences.h>
 #include <WiFi.h>
 #include <Update.h>
-//#include "FS.h"
 #include <SD.h>
 #include <WiFiManager.h>
-//#include "SPI.h"
 #include "config.h"
 #include <SPIFFS.h>
 #include <Ticker.h>
-//#include <WebServer.h>
+#include <WebServer.h>
+#include "FS.h"
 
 HTTPClient http;
 
@@ -33,7 +29,7 @@ Adafruit_ILI9341 display = Adafruit_ILI9341(display_cs, display_dc, display_rst)
 Preferences preferences;
 WiFiManager wm;
 DNSServer dnsServer;
-AsyncWebServer server(80);
+WebServer server(80);
 Ticker wifiChecker;
 
 extern void wifiConnectionScreen();
@@ -152,19 +148,16 @@ void setup() {
   Serial.println("Wifi is (not configured = 0, configured = 1): " + String(wifiConfigured));
   Serial.println();
 
-  // load profiles from ESP32 memory
-  for (int i = 0; i < numOfProfiles; i++) {
-    loadProfiles(i);
-  }
-
   display.begin();
   startScreen();
 
   if ( !SPIFFS.begin(FORMAT_SPIFFS_IF_FAILED)) {
     Serial.println("Error mounting SPIFFS");
+    SPIFFS_present = false;
     return;
   } else {
     Serial.println("SPIFFS was mounted");
+    SPIFFS_present = true;
   }
 
   // SSR pin initialization to ensure reflow oven is off
@@ -219,6 +212,11 @@ void setup() {
   }
 
   scanForProfiles();
+
+  // load profiles from ESP32 memory
+  for (int i = 0; i < numOfProfiles; i++) {
+    loadProfiles(i);
+  }
 }
 
 void updatePreferences() {
@@ -252,19 +250,11 @@ void updatePreferences() {
 
 void loop() {
   wm.process();
+  server.handleClient();
   if (state != 9) { // if we are in test menu, disable LED & SSR control in loop
     reflow_main();
   }
   readButtons();
-  //  if (state == 51) {
-  //    dnsServer.processNextRequest();
-  //    delay(10);
-  //    if (valid_ssid_received && valid_password_received)
-  //    {
-  //      Serial.println("Attempting WiFi Connection!");
-  //      WiFiStationSetup(ssid, password);
-  //    }
-  //  }
 }
 
 void listDir(fs::FS &fs, const char * dirname, uint8_t levels) {
@@ -382,7 +372,6 @@ void wifiSetup() {
     Serial.println("Using saved SSID and Password to attempt WiFi Connection!");
     Serial.print("Saved SSID is "); Serial.println(ssid);
     Serial.print("Saved Password is "); Serial.println(password);
-    //    WiFiStationSetup(ssid, password);
   }
 }
 
@@ -435,34 +424,17 @@ void checkWiFi() {
   }
 }
 
-//void startWebserver() {
-//  //  setupServer();
-//
-//}
-//
-//void stopWebserver() {
-//
-//}
-
 void connectWiFi() {
   WiFi.begin();
   wifiChecker.attach(5, checkWiFi);
-    Serial.println("Webserver was turned on");
-  webserverRunning = 1;
-  Serial.println("Setting up Async WebServer");
-  setupServer();
-  Serial.println("Starting DNS Server");
-  dnsServer.start(53, "*", WiFi.localIP());
-//  server.addHandler(new CaptiveRequestHandler()).setFilter(ON_AP_FILTER);//only when requested from AP
-  server.begin();
-  dnsServer.processNextRequest();
+  turnOnWebserver();
+
 }
 
 void disconnectWiFi() {
-//  stopWebserver();
+  //  stopWebserver();
   WiFi.disconnect();
   wifiConnected = 0;
-//  server.end;
   Serial.println("Webserver was turned off");
   webserverRunning = 0;
   Serial.println("WiFi was turned off");
