@@ -51,6 +51,8 @@ You will need these libraries to compile FW from source code:
  - ArduinoJson (v. 6.13.0 in Library Manager)
  - PID (v. 1.2.0 in Library Manager)
  - WiFiManager (https://github.com/tzapu/WiFiManager/tree/development)- install it in IDE from ZIP file
+
+   **Please use 1.0.6 version of the ESP32 support, otherwise your board will enter endless restart loop.**
  
 
 #### This firmware include following:
