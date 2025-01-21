@@ -13,7 +13,6 @@ void parseJsonProfile(fs::FS &fs, String someName, int num, profile_t* profile) 
 
   JsonArray array = newDoc.to<JsonArray>();
 
-  Serial.println();
   Serial.println("Starting to parse " + someName + " file.");
 
   // Open file for reading
@@ -63,24 +62,24 @@ void parseJsonProfile(fs::FS &fs, String someName, int num, profile_t* profile) 
 
 
   file.close();
-
-  Serial.println("Profile data: "
-                 + String(profile[num].title) + ","
-                 + String(profile[num].alloy) + ","
-                 + String(profile[num].melting_point) + ","
-                 + String(profile[num].temp_range_0) + ","
-                 + String(profile[num].temp_range_1) + ","
-                 + String(profile[num].time_range_0) + ","
-                 + String(profile[num].time_range_1) + ","
-                 + String(profile[num].reference) + ","
-                 + String(profile[num].stages_preheat_0) + ","
-                 + String(profile[num].stages_preheat_1) + ","
-                 + String(profile[num].stages_soak_0) + ","
-                 + String(profile[num].stages_soak_1) + ","
-                 + String(profile[num].stages_reflow_0) + ","
-                 + String(profile[num].stages_reflow_1) + ","
-                 + String(profile[num].stages_cool_0) + ","
-                 + String(profile[num].stages_cool_1));
+  //  Serial.println("Profile data: "
+  //                 + String(profile[num].title) + ","
+  //                 + String(profile[num].alloy) + ","
+  //                 + String(profile[num].melting_point) + ","
+  //                 + String(profile[num].temp_range_0) + ","
+  //                 + String(profile[num].temp_range_1) + ","
+  //                 + String(profile[num].time_range_0) + ","
+  //                 + String(profile[num].time_range_1) + ","
+  //                 + String(profile[num].reference) + ","
+  //                 + String(profile[num].stages_preheat_0) + ","
+  //                 + String(profile[num].stages_preheat_1) + ","
+  //                 + String(profile[num].stages_soak_0) + ","
+  //                 + String(profile[num].stages_soak_1) + ","
+  //                 + String(profile[num].stages_reflow_0) + ","
+  //                 + String(profile[num].stages_reflow_1) + ","
+  //                 + String(profile[num].stages_cool_0) + ","
+  //                 + String(profile[num].stages_cool_1));
+  //
 
   array.add(profile[num].title);
   array.add(profile[num].alloy);
@@ -100,6 +99,7 @@ void parseJsonProfile(fs::FS &fs, String someName, int num, profile_t* profile) 
   array.add(profile[num].stages_cool_1);
 
   // serialize the array and send the result to Serial
+  Serial.print("Profile data: ");
   serializeJson(newDoc, Serial);
   Serial.println();
   size_t len = measureJson(newDoc); //get length of the array
@@ -122,53 +122,60 @@ void loadProfiles(int num) {
   sprintf(spaceName, "profile%d", num);
   // Extract "profiles" from memory
   preferences.begin(spaceName);
-  // Extract the size of saved array
-  size_t schLen = preferences.getBytes(spaceName, NULL, NULL);
-  // Get array to buffer and check the size
-  char buffer[schLen];
-  preferences.getBytes(spaceName, buffer, schLen);
-  // Check, that Preferences are not empty
-  if (schLen > 0) {
-    if (schLen % sizeof(profile_t)) {
-      log_e("Data is not correct size!");
-      return;
-    }
-    else {
-      Serial.print("Buffer: ");
-      Serial.println(buffer);
-    }
-    // Save the extracted data into variable
-    profile_t *profiles = (profile_t *) buffer;
-    profileSize = schLen / sizeof(profile_t);
-    // Load profiles from memory to array for program usage
-    if (profileSize == 1) {
-      paste_profile[num] = profiles[0];
-      // Print of Title names loaded from Preferences
-      Serial.println("Title from loaded profile: ");
-      Serial.print((String)num + ". ");
-      Serial.println(paste_profile[num].title);
-      Serial.println();
-      profileNum++;
-    }
-    else {
-      Serial.println("Error during load of data in loadProfiles.");
+
+  bool spaceNameExist = preferences.isKey(spaceName);
+
+  if (spaceNameExist) {
+    // Extract the size of saved array
+    size_t schLen = preferences.getBytes(spaceName, NULL, NULL);
+    // Get array to buffer and check the size
+    char buffer[schLen];
+    preferences.getBytes(spaceName, buffer, schLen);
+    // Check, that Preferences are not empty
+    if (schLen > 0) {
+      if (schLen % sizeof(profile_t)) {
+        log_e("Data is not correct size!");
+        return;
+      }
+      else {
+        if (profileNum != 0) {
+          Serial.print("  Buffer: ");
+          Serial.println(buffer);
+        }
+      }
+      // Save the extracted data into variable
+      profile_t *profiles = (profile_t *) buffer;
+      profileSize = schLen / sizeof(profile_t);
+      // Load profiles from memory to array for program usage
+      if (profileSize == 1) {
+        paste_profile[num] = profiles[0];
+        // Print of Title names loaded from Preferences
+        Serial.print("  Title from loaded profile: ");
+        Serial.print((String)num + ". ");
+        Serial.println(paste_profile[num].title);
+        Serial.println();
+        profileNum++;
+      }
+      else {
+        Serial.println("Error during load of data in loadProfiles.");
+      }
     }
   }
   else {
-    Serial.print("No data found in Preferences memory n");
+    Serial.print("No data found in Preferences memory number: ");
     Serial.println(num);
   }
   preferences.end();
 }
 
 void saveProfiles(int num, profile_t profile) {
+  Serial.println("Trying to save profiles in to the memory:");
   sprintf(spaceName, "profile%0d", num);
   // Put all profiles into Preferences
   preferences.begin(spaceName);
 
   uint8_t content[sizeof(profile_t)];
   convert_to_byte(profile, content, 0);
-
 
   // Get the possible length of saved array
   size_t schLen = sizeof(profile_t);
@@ -186,8 +193,8 @@ void saveProfiles(int num, profile_t profile) {
 
   profile_t *profiles = (profile_t *) buffer;
   // Check of Saved profiles
-  Serial.println("Title from saved profile: ");
-  Serial.print((String)num + ". ");
+  Serial.print("  Title from saved profile: ");
+  //  Serial.print((String)num + ". ");
   Serial.println(profiles[0].title);
   Serial.println();
   preferences.end();
@@ -196,11 +203,13 @@ void saveProfiles(int num, profile_t profile) {
 void compareProfiles(profile_t profile_new, profile_t profile_saved, int number) {
   if (profile_new.title[number] == profile_saved.title[number])
   {
-    Serial.println("Profile " + String(number) + " match");
+    Serial.println("Reflow profile " + String(number) + " match");
+    Serial.println("");
   }
   else
   {
-    Serial.println("Profile " + String(number) + " do not match");
+    Serial.println("Reflow profile " + String(number) + " do not match");
+    Serial.println("");
     saveProfiles(number, profile_new); //////////
   }
 }

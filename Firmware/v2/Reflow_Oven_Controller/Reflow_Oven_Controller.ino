@@ -71,7 +71,7 @@ byte previousState = 0;
 
 byte settings_pointer = 0;
 byte previousSettingsPointer = 0;
-bool   SD_present = false;
+bool SD_present = false;
 //char* json = "";
 int profileNum = 0;
 #define numOfProfiles 10
@@ -126,16 +126,18 @@ void setup() {
 
   Serial.println("FW version is: " + String(fwVersion) + "_&_" + String(__DATE__) + "_&_" + String(__TIME__));
 
-  preferences.begin("store", false);
-  buttons = preferences.getBool("buttons", 0);
-  fan = preferences.getBool("fan", 0);
-  horizontal = preferences.getBool("horizontal", 0);
-  buzzer = preferences.getBool("buzzer", 0);
-  useOTA = preferences.getBool("useOTA", 0);
-  profileUsed = preferences.getInt("profileUsed", 0);
-  useSPIFFS = preferences.getBool("useSPIFFS", 0);
-  wifiConfigured = preferences.getBool("wifiConfigured", 0);
-  preferences.end();
+  //  preferences.begin("store", false);
+  //  buttons = preferences.getBool("buttons", 0);
+  //  fan = preferences.getBool("fan", 0);
+  //  horizontal = preferences.getBool("horizontal", 0);
+  //  buzzer = preferences.getBool("buzzer", 0);
+  //  useOTA = preferences.getBool("useOTA", 0);
+  //  profileUsed = preferences.getInt("profileUsed", 0);
+  //  useSPIFFS = preferences.getBool("useSPIFFS", 0);
+  //  wifiConfigured = preferences.getBool("wifiConfigured", 0);
+  //  preferences.end();
+
+  updatePreferences();
 
   Serial.println();
   Serial.println("Buttons: " + String(buttons));
@@ -217,6 +219,18 @@ void setup() {
   for (int i = 0; i < numOfProfiles; i++) {
     loadProfiles(i);
   }
+
+  Serial.println("End of the setup!");
+  Serial.println();
+}
+
+void loop() {
+  wm.process();
+  server.handleClient();
+  if (state != 9) { // if we are in test menu, disable LED & SSR control in loop
+    reflow_main();
+  }
+  readButtons();
 }
 
 void updatePreferences() {
@@ -248,27 +262,21 @@ void updatePreferences() {
   }
 }
 
-void loop() {
-  wm.process();
-  server.handleClient();
-  if (state != 9) { // if we are in test menu, disable LED & SSR control in loop
-    reflow_main();
-  }
-  readButtons();
-}
-
 void listDir(fs::FS &fs, const char * dirname, uint8_t levels) {
   Serial.printf("Listing directory: % s\r\n", dirname);
 
   File root = fs.open(dirname);
-  if (!root) {
+  /* Do not need this, but I will keep it here*/
+  /*
+    if (!root) {
     Serial.println("Failed to open directory");
     return;
-  }
-  if (!root.isDirectory()) {
+    }
+    if (!root.isDirectory()) {
     Serial.println("Not a directory");
     return;
-  }
+    }
+  */
 
   File file = root.openNextFile();
   String tempFileName;
@@ -285,11 +293,15 @@ void listDir(fs::FS &fs, const char * dirname, uint8_t levels) {
         Serial.println("Find this JSON file: "  + tempFileName);
         jsonName[profileNum] = tempFileName;
         profileNum++;
+      } else {
+        Serial.print("Found file (not reflow profile): ");
+        Serial.println(file.name());
       }
     }
     file = root.openNextFile();
   }
 }
+
 
 void readFile(fs::FS & fs, String path, const char * type) {
   Serial.printf("Reading file: % s\n", path);
@@ -309,11 +321,11 @@ void readFile(fs::FS & fs, String path, const char * type) {
 void scanForProfiles() {
   if (useSPIFFS != 0) {
     profileNum = 0;
-    listDir(SPIFFS, " / ", 0);
+    listDir(SPIFFS, "/", 0);
   } else {
     // Reset number of profiles for fresh load from SD card
     profileNum = 0;
-    listDir(SD, " / ", 0);
+    listDir(SD, "/", 0);
   }
 
   // Load data from selected storage
@@ -333,19 +345,22 @@ void scanForProfiles() {
       compareProfiles(paste_profile_load[i], paste_profile[i], i);
     }
   }
+  if (profileNum != 0) {
+    Serial.println();
+    Serial.print("Number of profiles : ");
+    Serial.println(profileNum);
 
-  Serial.println();
-  Serial.print("Number of profiles : ");
-  Serial.println(profileNum);
-
-  Serial.println("Titles and alloys : ");
-  for (int i = 0; i < profileNum; i++) {
-    Serial.print((String)i + ". ");
-    Serial.print(paste_profile[i].title);
-    Serial.print(", ");
-    Serial.println(paste_profile[i].alloy);
+    Serial.println("Titles and alloys : ");
+    for (int i = 0; i < profileNum; i++) {
+      Serial.print((String)i + ". ");
+      Serial.print(paste_profile[i].title);
+      Serial.print(", ");
+      Serial.println(paste_profile[i].alloy);
+    }
+    Serial.println();
+  } else {
+    Serial.println("No reflow profiles found!");
   }
-  Serial.println();
 }
 
 void wifiSetup() {
@@ -362,6 +377,9 @@ void wifiSetup() {
     wm.setConfigPortalBlocking(false);
     if (wm.autoConnect("ReflowOvenAP")) {
       Serial.println("connected...yeey :)");
+      wifiConfigured = 1;
+      updatePreferences();
+      turnOnWebserver();
     }
     else {
       Serial.println("Configportal running");
@@ -428,7 +446,6 @@ void connectWiFi() {
   WiFi.begin();
   wifiChecker.attach(5, checkWiFi);
   turnOnWebserver();
-
 }
 
 void disconnectWiFi() {
@@ -440,5 +457,4 @@ void disconnectWiFi() {
   Serial.println("WiFi was turned off");
   wifiChecker.attach(1, checkWiFi);
   //wifiConnectionScreen(4);
-
 }

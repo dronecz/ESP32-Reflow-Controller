@@ -201,9 +201,9 @@ int timerSeconds;
 PID reflowOvenPID(&input, &output, &setpoint, kp, ki, kd, DIRECT);
 
 void reflow_main() {
+
   // Current time
   unsigned long now;
-  //loopScreen();
 
   // Time to read thermocouple?
   if (millis() > nextRead) {
@@ -232,13 +232,13 @@ void reflow_main() {
       if (state == 0) {
         loopScreen();
       }
-#ifdef Serial
+if (verboseOutput != 0) {
       if ((input > 0) && (input <= 500)) {
         Serial.print("Float temp: " + String(input));
         Serial.print(" ; ");
         Serial.println("Integer temp: " + String(inputInt));
       }
-#endif
+}
     }
     // If thermocouple problem detected
     if (input == MAX31856_FAULT_CJRANGE) {
